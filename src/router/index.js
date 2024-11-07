@@ -33,11 +33,11 @@ router.beforeEach(async (routeTo, routeFrom, next) => {
   axios.defaults.headers.common["authorization"] =
     "Bearer " + localStorage.getItem("jwt"); // for all requests
   await axios
-    .get(process.env.VUE_APP_API_URL + "/cms/v1/me")
+    .get(process.env.VUE_APP_API_URL + "/v1/me")
     .then((data) => {
-      localStorage.setItem("userdata", JSON.stringify(data.data.data));
-      localStorage.setItem("userid", data.data.data.id);
-      localStorage.setItem("user", JSON.stringify(data.data.data));
+      localStorage.setItem("userdata", JSON.stringify(data.data));
+      localStorage.setItem("userid", data.data.id);
+      localStorage.setItem("user", JSON.stringify(data.data));
       next();
     })
     .catch(() => {
