@@ -7,10 +7,7 @@ form .form-control{
 form .form-select,form .form-control,form label{
     font-size: 1rem;
 }
-.form-check-input{
-    width: 2rem;
-    height: 2rem;
-}
+
 /* .form-check-input:checked{
     background: #3E97FF;
     border-color: #3E97FF;
