@@ -93,6 +93,7 @@ export default {
             showModalDelete: false,
             showModalCheck: false,
             showModalReject: false,
+            type: null,
         };
     },
     watch: {
@@ -173,8 +174,9 @@ export default {
             this.deleteId = id;
             this.showModalDelete = true;
         },
-        showModalCheckMethod(id) {
+        showModalCheckMethod(id,type) {
             this.deleteId = id;
+            this.type = type;
             this.showModalCheck = true;
         },
         showModalRejectMethod(id) {
@@ -184,7 +186,7 @@ export default {
 
         deleteDataMethod() {
             // this.showModalDelete = false
-            axios.delete(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.deleteId).then(() => {
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/users/' + this.deleteId).then(() => {
                 this.getData();
                 this.deleteId = null;
                 this.showModalDelete = false;
@@ -229,6 +231,15 @@ export default {
                 .catch((error) => {
                     console.log(error);
                 });
+        },
+        checkDataMethod() {
+            const status = this.type == 'mengaprove' ? 'active' : 'inactive';
+            axios.put(process.env.VUE_APP_API_URL + '/v1/users/' + this.deleteId+'/status', {
+                status: status
+            }).then(() => {
+                this.getData();
+                this.showModalCheck = false;
+            });
         }
     },
     mounted() {
@@ -249,6 +260,29 @@ export default {
 
 
         <HeaderPage title="Role Management" pageTitle="Role Management" />
+
+        <!-- Modal Delete -->
+        <BModal v-model="showModalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="showModalDelete = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataMethod">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <!-- //Modal Delete -->
+
+        <BModal v-model="showModalCheck" hide-footer hide-header-close centered  class="v-modal-custom" width="200">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin {{type}} data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="showModalCheck = false">Kembali</BButton>
+                    <BButton variant="light" @click="checkDataMethod">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+
 
         <BRow>
             <BCol xl="6" md="12">
@@ -351,6 +385,9 @@ export default {
                                     <!-- Span Badge success -->
                                     <span class="badge rounded-pill bg-success-subtle text-success fs-12"
                                         v-if="item.status == 'active'">Aktif</span>
+
+                                    <!-- waiting_review -->
+                                    <span class="badge rounded-pill bg-warning-subtle text-warning fs-12" v-else-if="item.status == 'waiting_review'">Menunggu Review</span>
                                     <!-- Span Badge danger -->
                                     <span class="badge rounded-pill bg-danger-subtle text-danger fs-12" v-else>Tidak
                                         Aktif</span>
@@ -359,6 +396,16 @@ export default {
                                     <BButton variant="link" class="link-dark" size="sm"
                                         :to="`/user-management/edit/${item.id}`">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
+                                    </BButton>
+                                    <BButton variant="link" class="link-opacity-75" size="sm" @click="showModalDeleteMethod(item.id)">
+                                        <img src="@/assets/icons/delete.svg" alt="delete" />
+                                    </BButton>
+
+                                    <BButton variant="link" class="link-opacity-75 bg-success p-1 mx-1 rounded-2" size="sm" v-if="item.status == 'waiting_review'" @click="showModalCheckMethod(item.id,'mengaprove')">
+                                        <img src="@/assets/icons/check.svg" width="14"  alt="check" />
+                                    </BButton>
+                                    <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm" v-if="item.status == 'waiting_review'" @click="showModalCheckMethod(item.id,'menolak')">
+                                        <img src="@/assets/icons/cancel.svg" width="14"  alt="cancel" />
                                     </BButton>
                                 </template>
 
