@@ -11,9 +11,14 @@ import {
     authFackMethods,
     notificationMethods,
 } from "@/state/helpers";
+import { BFormGroup, BFormInput } from "bootstrap-vue-next";
 
 
 export default {
+    components: {
+        BFormGroup,
+        BFormInput
+    },
     data() {
         return {
             showPassword: false,
@@ -27,6 +32,10 @@ export default {
             modalShow1: false,
             modalShow2: false,
             otp: Array(6).fill(''),
+            otpError: false,
+            typeRequestOtp: null,
+            forgotEmail: "",
+            forgotPasswordError: false,
             otpLength: 6, // Adjust the OTP length as needed
         };
     },
@@ -60,6 +69,7 @@ export default {
         },
 
         async signinapi() {
+            this.typeRequestOtp = 'login';
             this.processing = true;
             await axios.post(process.env.VUE_APP_API_URL + "/v1/auth/login", {
                 emailOrWa: this.email,
@@ -85,14 +95,22 @@ export default {
         },
 
         verifyOtp() {
-            console.log(this.otp);
             axios.post(process.env.VUE_APP_API_URL + "/v1/auth/valid-otp", {
                 otp: this.otp.join(''),
                 otpToken: localStorage.getItem('otpToken')
             }).then(response => {
                 //set jwt
-                localStorage.setItem('jwt', response.data.data.accessToken);
-                this.$router.push('/dashboard');
+                
+                console.log("response", response.data.data);
+                if(this.typeRequestOtp == 'login') {
+                    localStorage.setItem('jwt', response.data.data.accessToken);
+                    this.$router.push('/dashboard');
+                } else {
+                    localStorage.setItem('forgotPasswordToken', response.data.data.resetPasswordToken);
+                    this.$router.push('/reset-password');
+                }
+            }).catch(() => {
+                this.otpError = true;
             });
         },
 
@@ -118,6 +136,28 @@ export default {
             }
         },
 
+        submitForgotPassword() {
+            this.typeRequestOtp = 'forgot-password';
+            axios.post(process.env.VUE_APP_API_URL + "/v1/auth/forgot-password", {
+                email: this.forgotEmail
+            }).then(response => {
+                localStorage.setItem('otpToken', response.data.data.otpToken);
+                localStorage.setItem('email', this.forgotEmail);
+
+                this.modalShow1 = false;
+                this.modalShow2 = true;
+            }).catch(() => {
+                this.forgotPasswordError = true;
+            });
+        },
+
+
+        hideEmail(email) {
+            if(email) {
+                return email.replace(/\.(?=.*@)/, '*');
+            }
+            return '';
+        }
     },
 };
 </script>
@@ -170,7 +210,7 @@ export default {
                                         <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
                                         <input type="email" id="form2Example18" class="form-control form-control-lg"
                                             v-model="email" />
-
+                                        <span class="text-danger text-start" v-if="isAuthError">Email atau password salah</span>
                                     </div>
 
                                     <div data-mdb-input-init class="form-outline mb-4">
@@ -183,7 +223,9 @@ export default {
                                             <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
                                                 @click="togglePassword"
                                                 style="position: absolute; right: 15px; top: 15px; cursor: pointer;"></i>
+                                                <span class="text-danger text-start" v-if="isAuthError">Email atau password salah</span>
                                         </div>
+                                        
                                     </div>
 
                                     <div class="d-flex justify-content-between mb-4">
@@ -225,7 +267,7 @@ export default {
                     :height="120" :width="120" />
                 <div class="mt-4">
                     <h4 class="mb-3 title-auth">Masukkan Kode OTP</h4>
-                    <p class="text-muted mb-4">Silakan masukkan kode verifikasi yang kami kirimkan ke Agan@*****.com
+                    <p class="text-muted mb-4">Silakan masukkan kode verifikasi yang kami kirimkan ke 
                         untuk memvalidasi akun Anda.</p>
                     <div class="vstack gap-3 justify-content-center" id="otp-input">
 
@@ -233,7 +275,7 @@ export default {
                             <input v-for="(digit, index) in otp" :key="index" v-model="otp[index]" type="text"
                                 maxlength="1" class="otp-box" :ref="'otp' + index" @input="focusNext(index)"
                                 @keydown.backspace="focusPrev(index, $event)" />
-                            <p class="mt1"> <span class="text-danger text-start" v-if="isOtpError">Kode OTP tidak
+                            <p class="mt1"> <span class="text-danger text-start" v-if="otpError">Kode OTP tidak
                                     valid</span></p>
                         </div>
 
@@ -245,6 +287,28 @@ export default {
 
 
                         <BButton @click="verifyOtp" class="btn btn-dark">Verifikasi</BButton>
+                    </div>
+                </div>
+            </div>
+        </BModal>
+
+        <BModal v-model="modalShow1" hide-footer class="v-modal-custom" hide-header-close centered>
+            <div class="modal-body">
+                <lottie colors="primary:#121331,secondary:#08a88a" trigger="loop" :options="defaultOptions"
+                    :height="120" :width="120" />
+                <div class="mt-4">
+                    <h4 class="mb-3 title-auth text-center">Lupa Password</h4>
+                    <p class="text-muted mb-4 text-center">Silakan masukkan alamat email, Anda akan menerima Kode OTP untuk mengatur ulang kata sandi Anda.</p>
+                    <div class="vstack gap-5 justify-content-center" id="otp-input">
+
+                        <BFormGroup>
+                            <BFormLabel class="form-label">Email</BFormLabel>
+                            <BFormInput v-model="forgotEmail" />
+                            <span class="text-danger text-start" v-if="forgotPasswordError">Email tidak ditemukan</span>
+                        </BFormGroup>
+
+
+                        <BButton @click="submitForgotPassword" class="btn btn-dark">Verifikasi</BButton>
                     </div>
                 </div>
             </div>

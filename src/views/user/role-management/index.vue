@@ -33,7 +33,7 @@ export default {
                 },
                 {
                     title: 'Jumlah User',
-                    key: 'code_fleet',
+                    key: 'userCount',
                     show: true,
                     order:true
                 },

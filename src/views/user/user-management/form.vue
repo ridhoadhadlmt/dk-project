@@ -80,7 +80,7 @@ export default {
                 email: this.form.email,
                 phoneNumber: this.form.phone_number,
                 whatsappNumber: this.form.whatsapp_number,
-                roleId: parseInt(this.form.role_id),
+                roleId: this.form.role_id,
                 password: this.form.password,
             }
 
@@ -120,10 +120,23 @@ export default {
             }
         },
 
+        getUser() {
+            if(this.$route.params.id) {
+                axios.get(process.env.VUE_APP_API_URL + '/v1/users/' + this.$route.params.id).then((response) => {
+                    this.form.full_name = response.data.data.fullName;
+                    this.form.email = response.data.data.email;
+                    this.form.phone_number = response.data.data.phoneNumber;
+                    this.form.whatsapp_number = response.data.data.whatsappNumber;
+                    this.form.role_id = response.data.data.roleId;
+                });
+            }
+        },
+
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);  
         this.getRole();
+        this.getUser();
     }
 
 };
@@ -141,14 +154,14 @@ export default {
                     </BCardHeader> -->
 
                     <BCardBody>
-                        <form>
+                        <form @submit.prevent="submitForm">
                             <!-- <BForm> -->
                             <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
                                         <label for="name" class="form-label">Nama Lengkap <span
                                                 class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="name" v-model="form.full_name" require
+                                        <input type="text" class="form-control" id="name" v-model="form.full_name" required
                                             placeholder="Masukan nama">
                                     </div>
                                 </BCol>
@@ -185,6 +198,7 @@ export default {
                                         <input type="password" class="form-control" id="password" v-model="form.password" required placeholder="Masukan password">
                                     </div>
                                 </BCol>
+                                
                             </BRow>
 
 
@@ -192,7 +206,7 @@ export default {
                                 <router-link to="/role-management">
                                     <BButton variant="light" class="me-2">Kembali</BButton>
                                 </router-link>
-                                <BButton type="button" variant="primary" @click="submitForm">Submit</BButton>
+                                <BButton type="submit" variant="primary">Submit</BButton>
                             </div>
                         </form>
                     </BCardBody>

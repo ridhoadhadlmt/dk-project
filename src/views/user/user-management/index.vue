@@ -23,52 +23,52 @@ export default {
                     title: 'No',
                     key: 'no',
                     show: true,
-                    order:false
+                    order: false
                 },
                 {
                     title: 'Nama Lengkap',
                     key: 'fullName',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Email',
                     key: 'email',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Nomor Handphone',
                     key: 'phoneNumber',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Nomor Whatsapp',
                     key: 'whatsappNumber',
                     show: true,
-                    order:true
+                    order: true
                 },
                 //Role
                 {
                     title: 'Role',
                     key: 'role.name',
                     show: true,
-                    order:true
+                    order: true
                 },
                 //Status
                 {
                     title: 'Status',
                     key: 'status',
                     show: true,
-                    order:true
+                    order: true
                 },
                 //Action
                 {
                     title: 'Action',
                     key: 'action',
                     show: true,
-                    order:false
+                    order: false
                 }
             ],
             data: [
@@ -79,11 +79,15 @@ export default {
                 search: '',
                 sortBy: 'id.desc',
             },
-            config:{
+            config: {
                 total_pages: 0,
                 total_items: 0,
             },
-            
+            summary: {
+                total: 0,
+                active: 0,
+            },
+
             deleteId: null,
             showSelectHeader: false,
             showModalDelete: false,
@@ -192,7 +196,7 @@ export default {
         },
         changePage(pageNumber) {
             console.log("Change Page", pageNumber);
-            
+
             this.params.page = pageNumber;
         },
         sort(sortBy) {
@@ -200,25 +204,36 @@ export default {
             this.getData();
         },
         exportExcel() {
-			axios.defaults.responseType = 'blob';
-			axios.get(process.env.VUE_APP_API_URL+'/v1/users/export', {
-                params:{
-					sortBy:"fullName.asc",
-				}
+            axios.defaults.responseType = 'blob';
+            axios.get(process.env.VUE_APP_API_URL + '/v1/users/export', {
+                params: {
+                    sortBy: "fullName.asc",
+                }
             }).then((res) => {
-					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
-					const link = document.createElement('a');
-					link.href = url;
-					link.setAttribute('download', `Program Maintenance.xlsx`);
-					document.body.appendChild(link);
-					link.click();
-					axios.defaults.responseType = 'json'
+                const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `Program Maintenance.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                axios.defaults.responseType = 'json'
 
-				});
-		},
+            });
+        },
+        getSummary() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/users/summary')
+                .then((response) => {
+                    this.summary.total = response.data.data.total;
+                    this.summary.active = response.data.data.active;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
     },
     mounted() {
         this.getData();
+        this.getSummary();
         window.addEventListener("resize", this.resizerightcolumn);
     }
 
@@ -228,11 +243,60 @@ export default {
 <template>
     <Layout>
 
-        
-        <SelectHeader :showModal="showSelectHeader" :headers="headers" @hideModal="hideSelectHeaderMethod" @selectHeader="selectHeaderMethod" />
-        
+
+        <SelectHeader :showModal="showSelectHeader" :headers="headers" @hideModal="hideSelectHeaderMethod"
+            @selectHeader="selectHeaderMethod" />
+
 
         <HeaderPage title="Role Management" pageTitle="Role Management" />
+
+        <BRow>
+            <BCol xl="6" md="12">
+                <BCard no-body class="card-animate">
+                    <BCardBody class="p-4">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <img src="@/assets/icons/abstract.svg" alt="abstraction" />
+                                <h5 class="text-muted mt-3 fs-14">
+                                    Total User Terdaftar
+                                </h5>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <h5 class="fs-36 mb-0">
+                                    {{ summary.total }}
+                                </h5>
+                            </div>
+                        </div>
+                    </BCardBody>
+
+                </BCard>
+
+            </BCol>
+
+            <!-- Jumlah user aktif -->
+            <BCol xl="6" md="12">
+                <BCard no-body class="card-animate">
+                    <BCardBody class="p-4">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <img src="@/assets/icons/abstract2.svg" alt="abstraction" />
+                                <h5 class="text-muted mt-3 fs-14">
+                                    Total User Aktif
+                                </h5>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <h5 class="fs-36 mb-0">
+                                    {{ summary.active }} / <span class="text-muted fs-24">{{ summary.total - summary.active }}</span>
+                                </h5>
+                            </div>
+                        </div>
+                    </BCardBody>
+
+                </BCard>
+
+            </BCol>
+        </BRow>
+
 
         <BRow>
             <BCol xl="12">
@@ -259,9 +323,11 @@ export default {
                                     Download Data
                                 </BButton> -->
 
-                                <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
+                                <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0"
+                                    style="flex-grow: 1;">
                                     <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                        <input type="text" class="form-control" placeholder="Search..."
+                                            style="width: 100%;" v-model="params.search">
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
 
@@ -274,43 +340,52 @@ export default {
                             </div>
                         </div>
                         <div class="live-preview">
-                            <table-component :headers="headers" :data="data" :action="action" v-if="data.length > 0" @sort="sort($event.sortBy)">
+                            <table-component :headers="headers" :data="data" :action="action" v-if="data.length > 0"
+                                @sort="sort($event.sortBy)">
                                 <!-- NO -->
                                 <template #no="{ index }">
                                     {{ index + 1 }}
                                 </template>
                                 <!-- //Status -->
-                                <template #status="{ item }">   
+                                <template #status="{ item }">
                                     <!-- Span Badge success -->
-                                    <span class="badge rounded-pill bg-success-subtle text-success fs-12" v-if="item.status == 'active'">Aktif</span>
+                                    <span class="badge rounded-pill bg-success-subtle text-success fs-12"
+                                        v-if="item.status == 'active'">Aktif</span>
                                     <!-- Span Badge danger -->
-                                    <span class="badge rounded-pill bg-danger-subtle text-danger fs-12" v-else>Tidak Aktif</span>
+                                    <span class="badge rounded-pill bg-danger-subtle text-danger fs-12" v-else>Tidak
+                                        Aktif</span>
                                 </template>
                                 <template #action="{ item }">
-                                    <BButton variant="link" class="link-dark" size="sm" :to="`/user-management/edit/${item.id}`">
+                                    <BButton variant="link" class="link-dark" size="sm"
+                                        :to="`/user-management/edit/${item.id}`">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
                                     </BButton>
                                 </template>
 
-                                <template #pagination>  
+                                <template #pagination>
 
                                     <div class="d-flex justify-content-between mt-3" v-if="config.total_items >= 1">
                                         <div class="d-flex align-items-center">
                                             <!-- <label for="perPageSelect" class="me-2">Items per page:</label> -->
-                                            <select id="perPageSelect" v-model="params.limit" class="form-select" >
-                                                <option v-for="option in [10, 20, 30, 50]" :key="option" :value="option">{{ option }}</option>
+                                            <select id="perPageSelect" v-model="params.limit" class="form-select">
+                                                <option v-for="option in [10, 20, 30, 50]" :key="option"
+                                                    :value="option">{{ option }}</option>
                                             </select>
                                         </div>
                                         <div class="pagination-wrap hstack gap-2">
-                                            <BButton class="page-item pagination-prev" variant="light"  :disabled="params.page <= 1" @click="params.page--">
+                                            <BButton class="page-item pagination-prev" variant="light"
+                                                :disabled="params.page <= 1" @click="params.page--">
                                                 <i class="ri-arrow-left-s-line"></i>
                                             </BButton>
                                             <ul class="pagination listjs-pagination mb-0">
-                                                <li :class="{active: pageNumber == params.page, disabled: pageNumber == '...'}" v-for="(pageNumber, index) in config.total_pages" :key="index" @click="changePage(pageNumber)">
-                                                <BButton class="page" >{{ pageNumber }}</BButton>
+                                                <li :class="{ active: pageNumber == params.page, disabled: pageNumber == '...' }"
+                                                    v-for="(pageNumber, index) in config.total_pages" :key="index"
+                                                    @click="changePage(pageNumber)">
+                                                    <BButton class="page">{{ pageNumber }}</BButton>
                                                 </li>
                                             </ul>
-                                            <BButton class="page-item pagination-next" variant="light"  :disabled="params.page >= config.total_pages" @click="params.page++">
+                                            <BButton class="page-item pagination-next" variant="light"
+                                                :disabled="params.page >= config.total_pages" @click="params.page++">
                                                 <i class="ri-arrow-right-s-line"></i>
                                             </BButton>
                                         </div>
