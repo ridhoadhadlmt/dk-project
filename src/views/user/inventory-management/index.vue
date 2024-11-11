@@ -88,7 +88,7 @@ export default {
                 total_pages: 0,
                 total_items: 0,
             },
-            
+            search: '',
             deleteId: null,
             showSelectHeader: false,
             showModalDelete: false
@@ -106,6 +106,11 @@ export default {
                 this.getData();
             },
             deep: true
+        },
+        search: {
+            handler(){
+                this.getData({ search: this.search})
+            }
         }
     },
     methods: {
@@ -113,7 +118,7 @@ export default {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventories", {
                 params: this.params,
                 headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCQwVk1ONUR4QllYallDb0xERG9Udm9PeDl2L2NiZDBxcnZzSDBML090bTdtN2NMR3BpYjQxNiIsImlhdCI6MTczMDk0NzA1NSwiZXhwIjoxNzMxMTE5ODU1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.9r5YorohwZjTHK9_rZHhAk9bwe7Q8FZB_BH9hHXHI0ryPMIcLGZADqGfdQDXN1FMl1Q1YtGKifQBvq28sHkxiw'
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
                 },
             })
                 .then((response) => {
@@ -178,7 +183,11 @@ export default {
 
         deleteDataMethod() {
             // this.showModalDelete = false
-            axios.delete(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.deleteId).then(() => {
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.deleteId, {
+                headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                },
+            }).then(() => {
                 this.getData();
                 this.deleteId = null;
                 this.showModalDelete = false;
@@ -216,8 +225,8 @@ export default {
 		},
     },
     mounted() {
-        this.getData();
         window.addEventListener("resize", this.resizerightcolumn);
+        this.getData();
     }
 
 };
@@ -271,7 +280,7 @@ export default {
 
                                 <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                     <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
 

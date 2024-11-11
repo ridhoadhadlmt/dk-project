@@ -29,7 +29,7 @@ export default {
             path: "view/:id",
             name: "program-maintenance-view",
             component: ViewProgramMaintenance,
-            meta: { title: "View Program Maintenance", description: "Program Maintenance - View Program Maintenance",authRequired: false },
+            meta: { title: "Detail Program Maintenance", description: "Program Maintenance - Detail Program Maintenance",authRequired: false },
         },
     ]
 }

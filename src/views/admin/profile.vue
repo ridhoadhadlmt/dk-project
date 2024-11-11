@@ -37,22 +37,7 @@ export default {
     watch: {
     },
     methods: {
-        onPickFile() {
-            this.$refs.fileInput.click()
-        },
-        onFilePicked(event) {
-            const files = event.target.files
-            // let filename = files[0].name
-            const fileReader = new FileReader()
-            fileReader.addEventListener('load', () => {
-                this.imageUrl = fileReader.result
-            })
-            fileReader.readAsDataURL(files[0])
-            this.imageUrl = files[0]
-
-            console.log(files[0]);
-            
-        },
+        
         rightcolumn() {
             if (document.querySelector('.layout-rightside-col').classList.contains('d-block')) {
                 document.querySelector('.layout-rightside-col').classList.remove('d-block');

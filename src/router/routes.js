@@ -126,7 +126,7 @@ export default [
   {
     path: "/profile",
     name: "profile",
-    meta: { title: "Profile", description: "Home - Profile", authRequired: true },
+    meta: { title: "Profile", description: "Home - Profile", authRequired: false },
     component: () => import("../views/admin/profile.vue"),
   },
  

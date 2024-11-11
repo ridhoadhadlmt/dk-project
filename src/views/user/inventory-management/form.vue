@@ -5,12 +5,14 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
-
+import MultiSelect from 'vue-multiselect'
+// import MultiSelect from '@vueform/multiselect'
 export default {
     name: "inventory-management-create",
     components: {
         Layout,
-        HeaderPage
+        HeaderPage,
+        MultiSelect,
     },
     data() {
         return {
@@ -24,40 +26,72 @@ export default {
                 upc: "",
                 unit: "",
                 price: "",
-                stock: "",
+                minStock: "",
+                type: '',
+                tags: [],
+                
 
             },
             types: [
                 {text : 'Tools', value: 'tools'},
                 {text : 'Spare Part', value: 'sparepart'},
             ],
-            formSelected: 'tools',
+            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
+            labelValue: [],
+            labelCustom: '',
+            value: '',
             successAddModal: false,
+            photo: null,
+            photoUrl: '',
+            document: null,
+            documentUrl: '',
         };
     },
     watch: {
-    },
+            
+        },
+
     methods: {
-        saveAndAdd(){
-            axios.post(process.env.VUE_APP_API_URL, + '/v1/inventories', this.form, {
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCQwVk1ONUR4QllYallDb0xERG9Udm9PeDl2L2NiZDBxcnZzSDBML090bTdtN2NMR3BpYjQxNiIsImlhdCI6MTczMDk0NzA1NSwiZXhwIjoxNzMxMTE5ODU1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.9r5YorohwZjTHK9_rZHhAk9bwe7Q8FZB_BH9hHXHI0ryPMIcLGZADqGfdQDXN1FMl1Q1YtGKifQBvq28sHkxiw'
-                }
-            }).then(()=> {
-                this.successAddModal = true
-                Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                this.$router.push('/inventory-management');
-            }).catch((err) => {
-                Swal.fire("Gagal!", "Gagal menambah data", "error");
-                console.log(err)
+        selectOpt(option){
+            const arrVal = []
+            arrVal.push(option)
+            arrVal.forEach(item => {
+                this.form.tags.push(item.value)
+                console.log(this.labelCustom)
             })
         },
+        uploadImage(event){
+            this.photo = event.target.files[0]
+            const formData = new FormData();
+            formData.append('file', this.photo)
+            axios.post(process.env.VUE_APP_API_URL + '/misc/upload', formData).then((res) => {
+                this.form.photo = res.data.data.location
+            }).catch((err) => {
+                Swal.fire("Gagal!", "Gagal mengupload foto", "error");
+                console.log((err));
+            })
+            console.log(this.photo)
+        },
+        uploadDocument(event){
+            this.document = event.target.files[0]
+            const formData = new FormData();
+            formData.append('file', this.document)
+            axios.post(process.env.VUE_APP_API_URL + '/misc/upload', formData).then((res) => {
+                this.form.document = res.data.data.location
+            }).catch((err) => {
+                Swal.fire("Gagal!", "Gagal mengupload foto", "error");
+                console.log((err));
+            })
+            console.log(this.document)
+        },
         saveData(){
-            axios.post(process.env.VUE_APP_API_URL, + '/v1/inventories', {
+
+
+            axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form, {
                 headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCQwVk1ONUR4QllYallDb0xERG9Udm9PeDl2L2NiZDBxcnZzSDBML090bTdtN2NMR3BpYjQxNiIsImlhdCI6MTczMDk0NzA1NSwiZXhwIjoxNzMxMTE5ODU1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.9r5YorohwZjTHK9_rZHhAk9bwe7Q8FZB_BH9hHXHI0ryPMIcLGZADqGfdQDXN1FMl1Q1YtGKifQBvq28sHkxiw'
-                }
-            }, this.form).then(()=> {
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                },
+            }).then(()=> {
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                 this.$router.push('/inventory-management');
             }).catch((err) => {
@@ -65,6 +99,31 @@ export default {
                 console.log(err)
             })
             
+        },
+        updateData(){
+            
+            
+            axios.put(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id , this.form, {
+                headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                },
+            }).then(()=> {
+                Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                this.$router.push('/inventory-management');
+            }).catch((err) => {
+                Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                console.log(err)
+            })
+            
+        },
+        handleAction(){
+            if(this.$route.params.id){
+                this.updateData()
+            }
+            else{
+                this.saveData()
+            }
+
         },
         rightcolumn() {
             if (document.querySelector('.layout-rightside-col').classList.contains('d-block')) {
@@ -107,7 +166,11 @@ export default {
         fetchData() {
             if(this.$route.params.id) {
                
-                axios.get(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id).then((response) => {
+                axios.get(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id, {
+                    headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                    },
+                }).then((response) => {
                     this.form.type = response.data.data.type;
                     this.form.name = response.data.data.name;
                     this.form.description = response.data.data.description;
@@ -116,18 +179,23 @@ export default {
                     this.form.upc = response.data.data.upc;
                     this.form.unit = response.data.data.unit;
                     this.form.price = response.data.data.price;
+                    this.value = response.data.data.tags;
+                    this.form.minStock = response.data.data.minStock;
                     
                 }).catch((error) => {
                     console.log(error);
                 });
             }
         },
+        
 
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        this.fetchRoles();
         this.fetchData();
+    },
+    computed: {
+        
     }
 
 };
@@ -152,91 +220,85 @@ export default {
                     </BCardHeader> -->
 
                     <BCardBody>
-                        <div class="mb-4">
-                            <label for="">Kategori</label>
-                            <BFormRadioGroup
-                            size="lg"
-                            v-model="formSelected"
-                            :options="types"
-                            name="radio-options"
-                            />
-                        </div>
-                        <!-- <BFormRadioGroup id="radio-group-2" v-model="formSelected" name="radio-sub-component">
-                            <BFormRadio value="first">Tools</BFormRadio>
-                            <BFormRadio value="second">Spare Part</BFormRadio>
-                        </BFormRadioGroup> -->
-                        <BForm @submit.prevent="saveData">
+                        <BForm>
+                            <div class="mb-4">
+                                <label for="">Kategori</label>
+                                <BFormRadioGroup
+                                size="lg"
+                                v-model="form.type"
+                                :options="types"
+                                name="radio-options"
+                                />
+                            </div>
                             <BRow class="gy-4">
                                 <BCol md="6">
-                                    <div v-if="formSelected ==='tools'">
+                                    <div v-if="form.type ==='tools'">
                                         <label for="name" class="form-label">Nama Perfleetan<span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="name" placeholder="Masukkan nama perfleetan" v-model="form.name" required>
+                                        <input type="text" class="form-control" id="name" placeholder="Masukkan nama perfleetan" v-model="form.name">
                                     </div>
-                                    <div v-if="formSelected === 'sparepart'">
+                                    <div v-if="form.type === 'spareparts'">
                                         <label for="name" class="form-label">Nama Sparepart<span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="name" placeholder="Masukkan nama sparepart" v-model="form.name" required>
+                                        <input type="text" class="form-control" id="name" placeholder="Masukkan nama sparepart" v-model="form.name">
                                     </div>
                                 </BCol>
                                 <BCol md="12">
                                     <div>
-                                        <label for="deskripsi" class="form-label">Deskripsi <span v-if="formSelected === 'sparepart'" class="text-danger">*</span></label>
-                                        <textarea name="" class="form-control" id="deskripsi" cols="10" rows="5" v-model="form.description" required></textarea>
+                                        <label for="deskripsi" class="form-label">Deskripsi <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <textarea name="" class="form-control" id="deskripsi" cols="10" rows="5" v-model="form.description"></textarea>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="photo" class="form-label">Foto <span v-if="formSelected === 'sparepart'" class="text-danger">*</span></label>
-                                        <input type="file" class="form-control" id="photo" placeholder="Upload foto" v-bind="form.photo">
-                                        <!-- <div class="input-group">
-                                            <input type="text" class="form-control" id="photo" placeholder="Upload foto" v-model="form.photo" required>
+                                        <label for="photo" class="form-label">Foto <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="file" ref="photo" @change="uploadImage" class="form-control" id="photo">
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
-                                        </div> -->
+                                        </div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="document" class="form-label">Dokumen <span v-if="formSelected === 'sparepart'" class="text-danger">*</span></label>
-                                        <input type="file" class="form-control" id="photo" placeholder="Upload foto" v-bind="form.document``">
-                                        <!-- <div class="input-group">
-                                            <input type="text" class="form-control" id="document" placeholder="Upload Dokumen" v-model="form.document" required>
+                                        <label for="document" class="form-label">Dokumen <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                         <div class="input-group">
+                                            <input type="file" ref="document" @change="uploadDocument" class="form-control" id="document">
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
-                                        </div> -->
+                                        </div>
                                     </div>
                                 </BCol>
                                 
                                 <BCol md="6">
                                     <div>
-                                        <label for="merk" class="form-label">Merk <span v-if="formSelected === 'sparepart'" class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="merk" placeholder="Masukkan merk" v-model="form.merk" required>
+                                        <label for="merk" class="form-label">Merk <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="merk" placeholder="Masukkan merk" v-model="form.merk">
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="part-number" class="form-label">Part Number <span v-if="formSelected === 'sparepart'" class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="part-number" placeholder="Masukkan part number" v-model="form.partNumber" required>
+                                        <label for="part-number" class="form-label">Part Number <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="part-number" placeholder="Masukkan part number" v-model="form.partNumber">
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="upc" class="form-label">UPC <span v-if="formSelected === 'sparepart'" class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="upc" placeholder="Masukkan UPC" v-model="form.upc" required>
+                                        <label for="upc" class="form-label">UPC <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="upc" placeholder="Masukkan UPC" v-model="form.upc">
                                     </div>
                                 </BCol>
                                 <BCol md="6">
-                                    <label for="unitSize" class="form-label">Unit Ukuran <span v-if="formSelected === 'sparepart'" class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="unitSize" placeholder="Masukkan unit ukuran" v-model="form.unit" required>
+                                    <label for="unitSize" class="form-label">Unit Ukuran <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="unitSize" placeholder="Masukkan unit ukuran" v-model="form.unit">
                                 </BCol>
-                                <BCol md="6" v-if="formSelected != 'sparepart'">
+                                <BCol md="6" v-if="form.type != 'sparepart'">
                                     <label for="unitPrice" class="form-label">Harga/Unit <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="unitPrice" placeholder="Rp 0" v-model="form.price" required>
+                                    <input type="number" class="form-control" id="unitPrice" placeholder="Rp 0" v-model="form.price">
                                 </BCol>
                                 <BCol md="6">
                                     <label for="label" class="form-label">Label Bebas <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="label" placeholder="Masukkan label bebas" v-model="form.tags" required>
+                                    <MultiSelect v-model="value" label="name" track-by="value" :taggable="true" @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
                                 </BCol>
                                 <BCol md="6">
-                                    <label for="remember" class="form-label">Ingatkan jika persediaan mencapai <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="remember" placeholder="0 Unit" v-model="form.remember" required>
+                                    <label for="stock" class="form-label">Ingatkan jika persediaan mencapai <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="stock" placeholder="0 Unit" v-model="form.minStock">
                                 </BCol>
                             </BRow>
                             <div class="d-flex justify-content-between mt-4">
@@ -244,7 +306,7 @@ export default {
                                     <BButton variant="light">Batalkan</BButton>
                                 </router-link>
                                 <div class="cta-right">
-                                    <BButton type="submit"  variant="primary" class="me-2">Simpan</BButton>
+                                    <BButton type="submit"  variant="primary" @click="handleAction" class="me-2">Simpan</BButton>
                                     <BButton type="submit" variant="light" @click="saveAndAdd()">Simpan dan Tambah Lagi</BButton>
 
                                 </div>
@@ -256,3 +318,5 @@ export default {
         </BRow>
     </Layout>
 </template>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
