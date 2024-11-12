@@ -246,7 +246,7 @@ export default {
                                             LOGIN
                                         </BButton>
 
-                                        <p class="text-center">Belum punya akun? <BLink href="javascript:void(0);"
+                                        <p class="text-center">Belum punya akun? <BLink href="/register"
                                                 class="text-primary fw-bold text-link text-decoration-underline">Buat Akun</BLink>
                                         </p>
                                     </div>
