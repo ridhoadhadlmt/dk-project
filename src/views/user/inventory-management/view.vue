@@ -84,6 +84,7 @@ export default {
             },
             showModalDelete: false,
             mutationId: '',
+            inventoryId: '',
             
             
         };
@@ -138,13 +139,12 @@ export default {
         getData() {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventories/" + this.$route.params.id,{
                 headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
                     },
                 }
             )
                 .then(response => {
                     this.detail = response.data.data;
-                    this.inventoryId = response.data.data.id;
 
                 })
                 .catch(error => {
@@ -156,12 +156,12 @@ export default {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventory-mutations",{
             params: this.params,
             headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
                 },
             })
             .then(response => {
                 this.data = response.data.data.items;
-                this.mutationId = this.data.id;
+                console.log(this.data)
                 this.config.total_pages = response.data.data.meta.totalPages;
                 this.config.total_items = response.data.data.meta.totalItems;
             
@@ -177,7 +177,7 @@ export default {
         deleteData() {
             axios.delete(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.mutationId, {
                 headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
                 },
             }).then(() => {
                 this.listData();
@@ -189,6 +189,10 @@ export default {
                 console.log(error);
             });
         },
+        createMutation(id){
+            this.$router.push(`/inventory-management/${id}/mutation-create`)
+            console.log(id)
+        }
     },
 
     mounted() {
@@ -239,7 +243,7 @@ export default {
                     <BRow class="mb-3">
                         <BCol xl="2">
                             <div class="">
-                                <img :src="detail.photo" class="rounded-4 w-75" alt="">
+                                <img :src="detail.photo" class="rounded-4 img-fluid" alt="">
                             </div>
                         </BCol>
                         <BCol xl="10">
@@ -287,10 +291,13 @@ export default {
                                     <i class="ri-search-line search-icon"></i>
                                 </div>
 
-                                <BButton variant="primary" class="btn btn-md" style="white-space: nowrap;">
-                                    <router-link :to="'/inventory-management/'+ this.$route.params.id + '/mutation-create'" class="text-white">
+                                <!-- <BButton variant="primary" class="btn btn-md" style="white-space: nowrap;">
+                                    <router-link to='/inventory-management/mutation-create' class="text-white">
                                     Tambah Mutasi Inventory
                                     </router-link>
+                                </BButton> -->
+                                <BButton variant="primary" @click="createMutation(detail.id)" class="btn btn-md" style="white-space: nowrap;">
+                                    Tambah Mutasi Inventory
                                 </BButton>
                                 
                             </div>

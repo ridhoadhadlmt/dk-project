@@ -36,7 +36,7 @@ export default {
                 {text : 'Tools', value: 'tools'},
                 {text : 'Spare Part', value: 'sparepart'},
             ],
-            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
+            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}, {name: 'Body', value: 'body'}],
             labelValue: '',
             customValue: '',
             value: [],
@@ -168,7 +168,7 @@ export default {
                
                 axios.get(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id, {
                     headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
                     },
                 }).then((response) => {
                     this.form.type = response.data.data.type;
@@ -299,7 +299,7 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <label for="label" class="form-label">Label Bebas <span class="text-danger">*</span></label>
-                                    <MultiSelect v-model="value" label="name" track-by="value"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
+                                    <MultiSelect maxHeight="100" v-model="value" label="name" track-by="name"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="stock" class="form-label">Ingatkan jika persediaan mencapai <span class="text-danger">*</span></label>

@@ -13,11 +13,13 @@ export default {
         return {
             form: {
                 inventoryId: this.$route.params.id,
+                // refId: this.$route.params.id,
+                // inventoryCode: '',
                 mutationType: "in",
                 category: "return",
-                purchaseDate: null,
+                purchaseDate: "",
                 price: 10000,
-                vendor: "PT.XYZ",
+                vendor: "",
                 note: "",
                 items: [
                     {inventoryCode: "001", qty: 1},
@@ -40,9 +42,10 @@ export default {
             ],
             data: [],
             inventoryCodes : [
-                {inventoryCode: "001", qty: 1},
-                {inventoryCode: "002", qty: 1},
+                {upc: "001", qty: 1},
+                {upc: "002", qty: 1},
             ],
+            selectedInventoryCode: null,
             
         };
     },
@@ -54,18 +57,93 @@ export default {
         
         
         saveData(){
-
-            axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', this.form, {
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
-                },
-            }).then(()=> {
-                Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                this.$router.push('/inventory-management');
-            }).catch((err) => {
-                Swal.fire("Gagal!", "Gagal menambah data", "error");
-                console.log(err)
-            })
+            if(this.form.mutationType == 'in' && this.form.category == 'return'){
+                const form = {}
+                form.inventoryId = this.form.inventoryId
+                form.refId = this.form.inventoryId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.inventoryCode = this.form.inventoryCode
+                form.returnDate = this.form.returnDate
+                form.location = this.form.location
+                form.note = this.form.note
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                    },
+                }).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                    this.$router.push('/inventory-management');
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal menambah data", "error");
+                    console.log(err)
+                })
+            }
+            if(this.form.mutationType == 'in' && this.form.category == 'purchase'){
+                const form = {}
+                form.inventoryId = this.form.inventoryId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.purchaseDate = this.form.purchaseDate
+                form.price = this.form.price
+                form.vendor = this.form.vendor
+                form.note = this.form.note
+                form.items = this.form.items
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                    },
+                }).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                    this.$router.push('/inventory-management');
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal menambah data", "error");
+                    console.log(err)
+                })
+            }
+            if(this.form.mutationType == 'out' && this.form.category == 'use'){
+                const form = {}
+                form.inventoryId = this.form.inventoryId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.dateUse = this.form.dateUse
+                form.dateReturnReminder = this.form.dateReturnReminder
+                form.userId = this.form.userId
+                form.note = this.form.note
+                form.items = this.form.items
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                    },
+                }).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                    this.$router.push('/inventory-management');
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal menambah data", "error");
+                    console.log(err)
+                })
+            }
+            if(this.form.mutationType == 'out' && this.form.category == 'lost'){
+                const form = {}
+                form.inventoryId = this.form.inventoryId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.dateLost = this.form.dateLost
+                form.note = this.form.note
+                form.items = this.form.items
+                
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                    },
+                }).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                    this.$router.push('/inventory-management');
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal menambah data", "error");
+                    console.log(err)
+                })
+            }
             
         },
         
@@ -105,41 +183,56 @@ export default {
                 element.classList.add("d-none");
             }
         },
-
-
-        handleMutationType(event){
-            console.log(event);
-
-            
+        selectInventory(){
+            // this.form.items.push(event.id)
         },
-        handleCategory(event){
-            console.log(event);
-        },
+        // listCodeInventory() {
+        //     axios.get(process.env.VUE_APP_API_URL + "/v1/inventories", {
+        //         params: this.params,
+        //         headers: {
+        //             'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+        //         },
+        //     })
+        //         .then((response) => {
+        //             this.inventoryCodes = response.data.data.items;
+        //             console.log(this.inventoryCodes)
 
-        fetchData(){
-            if(this.$route.params.id){
-                axios.get(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.$route.params.id, {
-                headers: {
-                'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
-                },
-            }).then((response) => {
-                    this.form.mutationType = response.data.data.mutationType;
-                    this.form.category = response.data.data.in.category;
-                    this.form.note = response.data.data.in.note;
-                    this.form.purchaseDate = response.data.data.in.purchaseDate;
-                
-                
-            }).catch((error) => {
-                console.log(error);
-            });
-            }
+        //         })
+        //         .catch((error) => {
+        //             console.log(error);
+        //         });
+
+        // },
+        getPurchaseDate(event){
+            console.log(event)
+            console.log(this.form.purchaseDate)
         }
+        
+        // fetchData(){
+        //     if(this.$route.params.id){
+        //         axios.get(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.$route.params.id, {
+        //         headers: {
+        //         'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+        //         },
+        //     }).then((response) => {
+        //             this.form.mutationType = response.data.data.mutationType;
+        //             this.form.category = response.data.data.in.category;
+        //             this.form.note = response.data.data.in.note;
+        //             this.form.purchaseDate = response.data.data.in.purchaseDate;
+                
+                
+        //     }).catch((error) => {
+        //         console.log(error);
+        //     });
+        //     }
+        // }
         
 
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        this.fetchData();
+        // this.fetchData();
+        // this.listCodeInventory();
     },
     computed: {
         
@@ -183,10 +276,9 @@ export default {
                                         <label for="">Jenis Mutasi</label>
                                         <BFormRadioGroup
                                         size="lg"
-                                        v-model="mutationType"
+                                        v-model="form.mutationType"
                                         :options="types"
                                         name="radio-mutation-type"
-                                        @change="handleMutationType"
                                         />
                                     </div>
                                 </BCol>
@@ -195,18 +287,18 @@ export default {
                                         <label for="">Alasan</label>
                                         <BFormRadioGroup
                                         size="lg"
-                                        v-model="category"
-                                        :options="reasonIn ?? reasonOut"
+                                        v-model="form.category"
+                                        
+                                        :options="form.mutationType === 'out' && form.category === 'use' ? reasonOut : reasonIn "
                                         name="radio-category"
-                                        @change="handleCategory"
                                         />
                                     </div>
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType !== 'out' && form.category !== 'purchase'">
                                     <div>
                                         <label>Kode Inventory <span class="text-danger">*</span></label>
-                                        <select v-model="form.items" class="form-select">
-                                            <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.inventoryCode">{{ inventoryCode.inventoryCode }}</option>
+                                        <select v-model="form.inventoryCode" class="form-select" @change="selectInventory">
+                                            <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.id" :value="inventoryCode.upc">{{ inventoryCode.upc }}</option>
                                         </select>
                                     </div>
                                 </BCol>
@@ -215,8 +307,8 @@ export default {
                                     <label>Kode Inventory</label>
                                     <BCol md="11">
                                         <div>
-                                            <select v-model="form.items" class="form-select">
-                                                <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.inventoryCode">{{ inventoryCode.inventoryCode }}</option>
+                                            <select v-model="form.items" class="form-select" @change="selectInventory">
+                                                <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.id">{{ inventoryCode.upc }}</option>
                                             </select>
                                         </div>
                                     </BCol>
@@ -241,7 +333,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'in' && form.category == 'purchase'" >
                                     <label for="note" class="form-label">Tanggal Pembelian <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.returnDate" required>
+                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
                                     <!--<div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.returnDate" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
@@ -279,7 +371,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'out'">
                                     <label for="note" class="form-label">Tanggal Dipinjam <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
+                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" equired>
                                     <!--<div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
