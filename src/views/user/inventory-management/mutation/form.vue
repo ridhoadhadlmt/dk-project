@@ -13,8 +13,8 @@ export default {
         return {
             form: {
                 inventoryId: this.$route.params.id,
-                // refId: this.$route.params.id,
-                // inventoryCode: '',
+                refId: this.$route.params.id,
+                inventoryCode: '',
                 mutationType: "in",
                 category: "return",
                 purchaseDate: "",
@@ -42,8 +42,8 @@ export default {
             ],
             data: [],
             inventoryCodes : [
-                {upc: "001", qty: 1},
-                {upc: "002", qty: 1},
+                {inventoryCode: "001", qty: 1},
+                {inventoryCode: "002", qty: 1},
             ],
             selectedInventoryCode: null,
             
@@ -80,7 +80,9 @@ export default {
                 })
             }
             if(this.form.mutationType == 'in' && this.form.category == 'purchase'){
-                const form = {}
+                const form = {
+                    items: []
+                }
                 form.inventoryId = this.form.inventoryId
                 form.mutationType = this.form.mutationType
                 form.category = this.form.category
@@ -88,7 +90,7 @@ export default {
                 form.price = this.form.price
                 form.vendor = this.form.vendor
                 form.note = this.form.note
-                form.items = this.form.items
+                form.items.push(...this.form.items)
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
                     headers: {
                         'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
@@ -102,7 +104,9 @@ export default {
                 })
             }
             if(this.form.mutationType == 'out' && this.form.category == 'use'){
-                const form = {}
+                const form = {
+                    items: [],
+                }
                 form.inventoryId = this.form.inventoryId
                 form.mutationType = this.form.mutationType
                 form.category = this.form.category
@@ -110,7 +114,7 @@ export default {
                 form.dateReturnReminder = this.form.dateReturnReminder
                 form.userId = this.form.userId
                 form.note = this.form.note
-                form.items = this.form.items
+                form.items.push(...this.form.items)
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
                     headers: {
                         'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
@@ -124,14 +128,15 @@ export default {
                 })
             }
             if(this.form.mutationType == 'out' && this.form.category == 'lost'){
-                const form = {}
+                const form = {
+                    items: []
+                }
                 form.inventoryId = this.form.inventoryId
                 form.mutationType = this.form.mutationType
                 form.category = this.form.category
                 form.dateLost = this.form.dateLost
                 form.note = this.form.note
-                form.items = this.form.items
-                
+                form.items.push(...this.form.items)
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
                     headers: {
                         'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
@@ -298,7 +303,7 @@ export default {
                                     <div>
                                         <label>Kode Inventory <span class="text-danger">*</span></label>
                                         <select v-model="form.inventoryCode" class="form-select" @change="selectInventory">
-                                            <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.id" :value="inventoryCode.upc">{{ inventoryCode.upc }}</option>
+                                            <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.inventoryCode" >{{ inventoryCode.inventoryCode }}</option>
                                         </select>
                                     </div>
                                 </BCol>
@@ -307,8 +312,8 @@ export default {
                                     <label>Kode Inventory</label>
                                     <BCol md="11">
                                         <div>
-                                            <select v-model="form.items" class="form-select" @change="selectInventory">
-                                                <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.id">{{ inventoryCode.upc }}</option>
+                                            <select v-model="form.inventoryCode" class="form-select" @change="selectInventory">
+                                                <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.inventoryCode">{{ inventoryCode.inventoryCode }}</option>
                                             </select>
                                         </div>
                                     </BCol>
@@ -388,7 +393,7 @@ export default {
                             </BRow>
                             <div class="d-flex justify-content-end mt-4">
                                 <div class="cta-right">
-                                    <BButton variant="light">
+                                    <BButton variant="light" class="me-2">
                                         <router-link to="/inventory-management">
                                             Kembali
                                         </router-link>
