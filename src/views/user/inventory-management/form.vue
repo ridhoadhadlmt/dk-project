@@ -37,9 +37,9 @@ export default {
                 {text : 'Spare Part', value: 'sparepart'},
             ],
             labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
-            labelValue: [],
-            labelCustom: '',
-            value: '',
+            labelValue: '',
+            customValue: '',
+            value: [],
             successAddModal: false,
             photo: null,
             photoUrl: '',
@@ -52,12 +52,12 @@ export default {
         },
 
     methods: {
+        
         selectOpt(option){
             const arrVal = []
             arrVal.push(option)
             arrVal.forEach(item => {
                 this.form.tags.push(item.value)
-                console.log(this.labelCustom)
             })
         },
         uploadImage(event){
@@ -179,8 +179,13 @@ export default {
                     this.form.upc = response.data.data.upc;
                     this.form.unit = response.data.data.unit;
                     this.form.price = response.data.data.price;
-                    this.value = response.data.data.tags;
+                    response.data.data.tags.forEach((item) => {
+                        this.value.push(item)
+                    });
+                    this.form.tags = this.value;
                     this.form.minStock = response.data.data.minStock;
+                    this.form.photo = response.data.data.photo;
+                    this.form.document = response.data.data.document;
                     
                 }).catch((error) => {
                     console.log(error);
@@ -251,7 +256,7 @@ export default {
                                     <div>
                                         <label for="photo" class="form-label">Foto <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="file" ref="photo" @change="uploadImage" class="form-control" id="photo">
+                                            <BFormFile v-model="photo" @change="uploadImage"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
                                     </div>
@@ -260,7 +265,7 @@ export default {
                                     <div>
                                         <label for="document" class="form-label">Dokumen <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
                                          <div class="input-group">
-                                            <input type="file" ref="document" @change="uploadDocument" class="form-control" id="document">
+                                            <BFormFile v-model="document" @change="uploadDocument"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
                                         </div>
                                     </div>
@@ -294,7 +299,7 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <label for="label" class="form-label">Label Bebas <span class="text-danger">*</span></label>
-                                    <MultiSelect v-model="value" label="name" track-by="value" :taggable="true" @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
+                                    <MultiSelect v-model="value" label="name" track-by="value"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="stock" class="form-label">Ingatkan jika persediaan mencapai <span class="text-danger">*</span></label>

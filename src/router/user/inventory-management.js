@@ -1,5 +1,6 @@
 const Inventory = () => import("@/views/user/inventory-management/index.vue")
 const FormInventory = () => import("@/views/user/inventory-management/form.vue")
+const FormMutation = () => import("@/views/user/inventory-management/mutation/form.vue")
 const ViewInventory = () => import("@/views/user/inventory-management/view.vue")
 
 export default {
@@ -30,6 +31,18 @@ export default {
             name: "inventory-management-view",
             component: ViewInventory,
             meta: { title: "Detail Inventory", description: "Inventory Management - Detail Inventory",authRequired: false },
+        },
+        {
+            path: ":id/mutation-create",
+            name: "inventory-mutation-create",
+            component: FormMutation,
+            meta: { title: "Tambah Mutasi Inventory", description: "Inventory Management - Detail Inventory",authRequired: false },
+        },
+        {
+            path: ":id/mutation-edit",
+            name: "inventory-mutation-edit",
+            component: FormMutation,
+            meta: { title: "Edit Mutasi Inventory", description: "Inventory Management - Detail Inventory",authRequired: false },
         },
     ]
 }
