@@ -39,7 +39,7 @@ export default {
                 },
                 {
                     title: 'Penugasan',
-                    key: 'assignment',
+                    key: 'users',
                     show: true,
                     order:true
                 },
@@ -51,11 +51,7 @@ export default {
                     order:false
                 }
             ],
-            data: [
-                {id: 1, name: 'Program 1', qty: 2, type: 'Teknis', assignment: 'Ahmad Wicaksono', meta: {totalPages: 10} },
-                {id: 2, name: 'Program 2', qty: 2, type: 'Non Teknis', assignment: '3 User', meta: {totalPages: 10}},
-                
-            ],
+            data: [],
             
             params: {
                 page: 1,
@@ -82,24 +78,27 @@ export default {
         },
         params: {
             handler() {
-                this.getData();
+                this.listData();
             },
             deep: true
         }
     },
     methods: {
-        getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins", {
-            //     params: this.params
-            // })
-            //     .then((response) => {
-            //         this.data = response.data.data.items;
-            //         this.config.total_pages = response.data.data.meta.totalPages;
-            //         this.config.total_items = response.data.data.meta.totalItems;
-            //     })
-            //     .catch((error) => {
-            //         console.log(error);
-            //     });
+        listData() {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/maintenance-programs", {
+                params: this.params,
+                headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                },
+            })
+            .then((response) => {
+                this.data = response.data.data.items;
+                this.config.total_pages = response.data.data.meta.totalPages;
+                this.config.total_items = response.data.data.meta.totalItems;
+            })
+            .catch((error) => {
+                console.log(error);
+            });
        
         },
         rightcolumn() {
@@ -154,8 +153,8 @@ export default {
 
         deleteDataMethod() {
             // this.showModalDelete = false
-            axios.delete(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.deleteId).then(() => {
-                this.getData();
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.deleteId).then(() => {
+                this.listData();
                 this.deleteId = null;
                 this.showModalDelete = false;
 
@@ -171,7 +170,7 @@ export default {
         },
         sort(sortBy) {
             this.params.sortBy = `${sortBy}.desc`;
-            this.getData();
+            this.listData();
         },
         exportExcel() {
 			axios.defaults.responseType = 'blob';
@@ -192,8 +191,8 @@ export default {
 		},
     },
     mounted() {
-        this.getData();
         window.addEventListener("resize", this.resizerightcolumn);
+        this.listData();
     }
 
 };
@@ -251,7 +250,7 @@ export default {
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
 
-                                    <router-link :to="{ name: 'program-maintenance-create' }">
+                                    <router-link :to="{ name: 'maintenance-programs-create' }">
                                         <BButton variant="primary" class="btn btn-md" style="white-space: nowrap;">
                                             Tambah Progran
                                         </BButton>
@@ -270,13 +269,13 @@ export default {
                                     <span :class="item.isActive === true ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.isActive) ? 'Aktif' : 'Tidak Aktif' }}</span>
                                 </template>
                                 <template #action="{ item }">
-                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/program-maintenance/edit/${item.id}`">
+                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/maintenance-programs/edit/${item.id}`">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
                                     </BButton>
                                     <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
                                         <img src="@/assets/icons/delete.svg" alt="delete" />
                                     </BButton>
-                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/program-maintenance/view/${item.id}`">
+                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/maintenance-programs/view/${item.id}`">
                                         <img src="@/assets/icons/view.svg" alt="eye" />
                                     </BButton>
                                 </template>

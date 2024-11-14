@@ -3,16 +3,18 @@
 import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
 import axios from "axios";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
 import TableComponent from "@/components/table.vue";
+import MultiSelect from "vue-multiselect";
 
 export default {
     name: "program-maintenance-create",
     components: {
         Layout,
         HeaderPage,
-        TableComponent
+        TableComponent,
+        MultiSelect,
     },
     data() {
         return {
@@ -31,7 +33,7 @@ export default {
                 },
                 {
                     title: 'Sub Total',
-                    key: 'subTotal',
+                    key: 'subtotal',
                     show: true,
                     order:true
                 },
@@ -45,37 +47,40 @@ export default {
             form: {
                 name: "",
                 type: "",
-                duration: "",
-                notification: "",
-                assignment: "",
-                isActive: true,
-                roleId: null
+                parameterDuration: "",
+                parameterDurationNotification: "",
+                users: [],
+                activities: [],
             },
-            options: [
+            types: [
                 {label: 'Teknis', value: 'teknis'},
                 {label: 'Non Teknis', value: 'nonteknis'},
             ],
             users: [
-                {id: 1, name: 'User1'},
-                {id: 2, name: 'User2'},
             ],
-            data: [
-                { id: 1, title: 'Lorem Ipsum', subTotal: "Rp.4.500.000"}
-            ],
+            data: [],
             params: {
                 page: 1,
                 limit: 10,
                 search: '',
                 sortBy: 'id.desc',
+                maintenanceProgramId: '',
             },
             config:{
                 total_pages: 0,
                 total_item: 0,
             },
+            valueUser: '',
             showModalActivity: false,
         }
     },
     watch: {
+        params: {
+            handler(){
+                this.listData()
+            },
+            deep: true,
+        }
     },
     methods: {
         showModalActivityMethod(){
@@ -118,61 +123,68 @@ export default {
             }
         },
 
-        submit() {
-            if(this.form.password !== this.form.confirmPassword) {
-                Swal.fire("Gagal!", "Password dan Konfirmasi Password tidak sama", "error");
-                return;
-            }
+        
 
-            if(this.$route.params.id) {
-                axios.put(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.$route.params.id, this.form).then(() => {
-                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
-                    this.$router.push('/program-maintenance');
-                }).catch((error) => {
-                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
-                    console.log(error);
-                });
-            } else {
-                axios.post(process.env.VUE_APP_API_URL + '/cms/v1/admins', this.form).then(() => {
-                    Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                    this.$router.push('/program-maintenance');
-                }).catch((error) => {
-                    Swal.fire("Gagal!", "Gagal menambahkan data", "error");
-                    console.log(error);
-                });
-            }
-        },
-
-        fetchRoles() {
-            // axios.get(process.env.VUE_APP_API_URL + '/cms/v1/roles').then((response) => {
-            //     this.roles = response.data.data.items;
-            // }).catch((error) => {
-            //     console.log(error);
-            // });
-        },
+        
 
         fetchData() {
-            if(this.$route.params.id) {
-                // axios.get(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.$route.params.id).then((response) => {
-                //     this.form.fullName = response.data.data.fullName;
-                //     this.form.email = response.data.data.email;
-                //     this.form.phoneNumber = response.data.data.phoneNumber;
-                //     this.form.whatsappNumber = response.data.data.whatsappNumber;
-                //     this.form.password = '';
-                //     this.form.confirmPassword = '';
-                //     this.form.roleId = response.data.data.roleId;
-                //     this.form.isActive = response.data.data.isActive;
-                // }).catch((error) => {
-                //     console.log(error);
-                // });
+            if(this.$route.params.id){
+                axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id,{
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                    },
+                }).then((response) => {
+                    this.form = response.data.data
+                }).catch((error) => {
+                    console.log(error);
+                });
             }
+            this.params.maintenanceProgramId = this.$route.params.id
+        },
+        listData() {
+            if(this.$route.params.id){
+                axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-program-activities',{
+                    params: this.params,
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                    }, 
+                }).then((response) => {
+                    this.data = response.data.data.items
+                    
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
+            axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-program-activities',{
+                headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                },
+            }).then((response) => {
+                this.data = response.data.data.items
+                
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataUser() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/users',{
+                headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
+                },
+            }).then((response) => {
+                this.users = response.data.data.items
+                
+            }).catch((error) => {
+                console.log(error);
+            });
         },
 
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        this.fetchRoles();
         this.fetchData();
+        this.listData();
+        this.listDataUser();
     }
 
 };
@@ -299,7 +311,7 @@ export default {
                     </BCardHeader> -->
 
                     <BCardBody>
-                        <BForm @submit.prevent="submit">
+                        <BForm>
                             <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
@@ -310,22 +322,22 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="teknis" class="form-label">Teknis <span class="text-danger">*</span></label>
-                                        <select id="teknis" class="form-select" v-model="form.roleId" required>
-                                            <option v-for="option in options" :key="option.label" :value="option.label">{{ option.label }}</option>
+                                        <select id="teknis" class="form-select" v-model="form.type" required>
+                                            <option v-for="type in types" :key="type.label" :value="form.type">{{ type.label }}</option>
                                         </select>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="duration" class="form-label">Durasi Parameter <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="duration" placeholder="0" v-model="form.duration" required>
+                                        <input type="text" class="form-control" id="duration" placeholder="0" v-model="form.parameterDuration" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="notification" class="form-label">Notifikasi Sebelum Parameter <span class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="text" class="form-control" placeholder="0" aria-label="notification" aria-describedby="notification">
+                                            <input type="text" class="form-control" placeholder="0" v-model="form.parameterDurationNotification" aria-label="notification" aria-describedby="notification">
                                             <span class="input-group-text" id="notification">Jam</span>
                                         </div>
                                     </div>
@@ -333,18 +345,11 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="assignment" class="form-label">Penugasan <span class="text-danger">*</span></label>
-                                        <select id="assignment" class="form-select" v-model="form.roleId" required>
-                                            <option v-for="user in users" :key="user.id" :value="user.name">{{ user.name }}</option>
-                                        </select>
+                                        <MultiSelect v-model="valueUser" :options="users" label="fullName" track-by="fullName" placeholder="Pilih Penugasan" @select="selectOpt" :multiple="true"></MultiSelect>
                                     </div>
                                 </BCol>
                             </BRow>
-                            <div class="d-flex justify-content-end mt-4">
-                                <router-link to="/program-maintenance">
-                                    <BButton variant="light" class="me-2">Kembali</BButton>
-                                </router-link>
-                                <BButton type="submit" variant="primary">Simpan</BButton>
-                            </div>
+                           
                         </BForm>
                     </BCardBody>
                 </BCard>
@@ -429,3 +434,5 @@ export default {
         </BRow>
     </Layout>
 </template>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

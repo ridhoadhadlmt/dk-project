@@ -238,9 +238,9 @@ export default {
         </li>
 
         <li class="nav-item mb-2">
-          <router-link class="nav-link menu-link" to="/program-maintenance">
+          <router-link class="nav-link menu-link" to="/maintenance-programs">
             <img src="@/assets/images/sidebar/icon/role.svg" alt="role" class="me-2">
-            <span data-key="t-program-maintenance" class="nav-item-text">Program Maintenance</span>
+            <span data-key="t-maintenance-programs" class="nav-item-text">Program Maintenance</span>
           </router-link>
         </li>
 
