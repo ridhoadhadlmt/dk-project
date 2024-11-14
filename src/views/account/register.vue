@@ -61,6 +61,14 @@ export default {
       required: helpers.withMessage("Password is required", required),
     },
   },
+  watch: {
+    modalShow2(newVal, oldVal) {
+      if (oldVal == true) {
+        this.otp = Array(6).fill('');
+        this.otpError = false;
+      }
+    }
+  },
   computed: {
 
   },
@@ -203,8 +211,8 @@ export default {
     <div class="container pt-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <img src="@/assets/images/logo-black.svg" alt="Logo" class="logo" style="fill: #000;">
-        <button class="btn btn-link " @click="goBack"><i class="ri-arrow-left-s-line"></i> <span
-            class="text-decoration-underline">Kembali ke homepage</span></button>
+        <button class="btn btn-link" @click="goBack"><i class="ri-arrow-left-s-line"></i> <span
+          class="text-decoration-underline"><a href="https://jupital.stagingapp.xyz">Kembali ke homepage</a></span></button>
       </div>
     </div>
 

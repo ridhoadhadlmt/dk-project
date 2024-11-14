@@ -48,6 +48,14 @@ export default {
             required: helpers.withMessage("Password is required", required),
         },
     },
+    watch: {
+        modalShow2(newVal, oldVal) {
+            if (oldVal == true) {
+                this.otp = Array(6).fill('');
+                this.otpError = false;
+            }
+        }
+    },
     computed: {
 
     },
@@ -100,9 +108,9 @@ export default {
                 otpToken: localStorage.getItem('otpToken')
             }).then(response => {
                 //set jwt
-                
+
                 console.log("response", response.data.data);
-                if(this.typeRequestOtp == 'login') {
+                if (this.typeRequestOtp == 'login') {
                     localStorage.setItem('jwt', response.data.data.accessToken);
                     this.$router.push('/dashboard');
                 } else {
@@ -114,7 +122,7 @@ export default {
             });
         },
 
-    
+
         togglePassword() {
             this.showPassword = !this.showPassword;
         },
@@ -153,8 +161,10 @@ export default {
 
 
         hideEmail(email) {
-            if(email) {
-                return email.replace(/\.(?=.*@)/, '*');
+            if (email) {
+                const [localPart, domain] = email.split('@');
+                const hiddenLocalPart = localPart.slice(0, 2) + '******' + localPart.slice(-1);
+                return `${hiddenLocalPart}@${domain}`;
             }
             return '';
         }
@@ -190,8 +200,9 @@ export default {
         <div class="container pt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <img src="@/assets/images/logo-black.svg" alt="Logo" class="logo" style="fill: #000;">
-                <button class="btn btn-link " @click="goBack"><i class="ri-arrow-left-s-line"></i> <span
-                        class="text-decoration-underline">Kembali ke homepage</span></button>
+                <button class="btn btn-link" @click="goBack"><i class="ri-arrow-left-s-line"></i> <span
+                        class="text-decoration-underline"><a href="https://jupital.stagingapp.xyz">Kembali ke
+                            homepage</a></span></button>
             </div>
         </div>
 
@@ -210,7 +221,8 @@ export default {
                                         <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
                                         <input type="email" id="form2Example18" class="form-control form-control-lg"
                                             v-model="email" />
-                                        <span class="text-danger text-start" v-if="isAuthError">Email atau password salah</span>
+                                        <span class="text-danger text-start" v-if="isAuthError">Email atau password
+                                            salah</span>
                                     </div>
 
                                     <div data-mdb-input-init class="form-outline mb-4">
@@ -223,9 +235,10 @@ export default {
                                             <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
                                                 @click="togglePassword"
                                                 style="position: absolute; right: 15px; top: 15px; cursor: pointer;"></i>
-                                                <span class="text-danger text-start" v-if="isAuthError">Email atau password salah</span>
+                                            <span class="text-danger text-start" v-if="isAuthError">Email atau password
+                                                salah</span>
                                         </div>
-                                        
+
                                     </div>
 
                                     <div class="d-flex justify-content-between mb-4">
@@ -247,7 +260,8 @@ export default {
                                         </BButton>
 
                                         <p class="text-center">Belum punya akun? <BLink href="/register"
-                                                class="text-primary fw-bold text-link text-decoration-underline">Buat Akun</BLink>
+                                                class="text-primary fw-bold text-link text-decoration-underline">Buat
+                                                Akun</BLink>
                                         </p>
                                     </div>
 
@@ -261,13 +275,14 @@ export default {
         </section>
 
 
-        <BModal v-model="modalShow2" hide-footer class="v-modal-custom" hide-header-close centered>
+        <BModal v-model="modalShow2" hide-footer class="v-modal-custom" centered>
             <div class="modal-body text-center">
                 <lottie colors="primary:#121331,secondary:#08a88a" trigger="loop" :options="defaultOptions"
                     :height="120" :width="120" />
                 <div class="mt-4">
                     <h4 class="mb-3 title-auth">Masukkan Kode OTP</h4>
-                    <p class="text-muted mb-4">Silakan masukkan kode verifikasi yang kami kirimkan ke 
+                    <p class="text-muted mb-4">Silakan masukkan kode verifikasi yang kami kirimkan ke <b>{{
+                            hideEmail(email) }}</b>
                         untuk memvalidasi akun Anda.</p>
                     <div class="vstack gap-3 justify-content-center" id="otp-input">
 
@@ -298,7 +313,8 @@ export default {
                     :height="120" :width="120" />
                 <div class="mt-4">
                     <h4 class="mb-3 title-auth text-center">Lupa Password</h4>
-                    <p class="text-muted mb-4 text-center">Silakan masukkan alamat email, Anda akan menerima Kode OTP untuk mengatur ulang kata sandi Anda.</p>
+                    <p class="text-muted mb-4 text-center">Silakan masukkan alamat email, Anda akan menerima Kode OTP
+                        untuk mengatur ulang kata sandi Anda.</p>
                     <div class="vstack gap-5 justify-content-center" id="otp-input">
 
                         <BFormGroup>

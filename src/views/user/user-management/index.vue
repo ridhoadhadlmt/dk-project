@@ -320,7 +320,7 @@ export default {
                             </div>
                             <div class="flex-shrink-0">
                                 <h5 class="fs-36 mb-0">
-                                    {{ summary.active }} / <span class="text-muted fs-24">{{ summary.total - summary.active }}</span>
+                                    {{ summary.active }} / <span class="text-muted fs-24">{{ summary.total }}</span>
                                 </h5>
                             </div>
                         </div>
