@@ -232,56 +232,72 @@ export default {
 
         <li class="nav-item mb-2">
           <router-link class="nav-link menu-link" to="/inventory-management">
-            <img src="@/assets/images/sidebar/icon/administrator.svg" alt="administrator" class="me-2">
+            <img src="@/assets/images/sidebar/icon/setting.svg" alt="administrator" class="me-2">
             <span data-key="t-inventory-management" class="nav-item-text">Inventory Management</span>
           </router-link>
         </li>
 
         <li class="nav-item mb-2">
           <router-link class="nav-link menu-link" to="/program-maintenance">
-            <img src="@/assets/images/sidebar/icon/role.svg" alt="role" class="me-2">
+            <img src="@/assets/images/sidebar/icon/calendar.svg" alt="role" class="me-2">
             <span data-key="t-program-maintenance" class="nav-item-text">Program Maintenance</span>
           </router-link>
         </li>
 
         <li class="nav-item mb-2">
           <router-link class="nav-link menu-link" to="/fleet-management">
-            <img src="@/assets/images/sidebar/icon/client.svg" alt="fleet-management" class="me-2">
+            <img src="@/assets/images/sidebar/icon/bulldozer.svg" alt="fleet-management" class="me-2">
             <span data-key="t-fleet-management" class="nav-item-text">Fleet Management</span>
           </router-link>
         </li>
 
         <li class="nav-item mb-2">
           <router-link class="nav-link menu-link" to="/issue-report">
-            <img src="@/assets/images/sidebar/icon/subscription.svg" alt="issue-report" class="me-2">
+            <img src="@/assets/images/sidebar/icon/document.svg" alt="issue-report" class="me-2">
             <span data-key="t-issue-report" class="nav-item-text">Issue Report</span>
           </router-link>
         </li> 
 
         <li class="nav-item mb-2">
           <router-link class="nav-link menu-link" to="/work-order-report">
-            <img src="@/assets/images/sidebar/icon/auditlog.svg" alt="work-order-report" class="me-2">
+            <img src="@/assets/images/sidebar/icon/enginer.svg" alt="work-order-report" class="me-2">
             <span data-key="t-work-order-report" class="nav-item-text">Work Order Report</span>
           </router-link>
         </li>
 
         <li class="nav-item mb-2"> 
           <router-link class="nav-link menu-link" to="/backlog-report">
-            <img src="@/assets/images/sidebar/icon/report.svg" alt="backlog-report" class="me-2">
+            <img src="@/assets/images/sidebar/icon/engineer2.svg" alt="backlog-report" class="me-2">
             <span data-key="t-backlog-report" class="nav-item-text">Backlog Report</span>
           </router-link>
         </li>
 
         <li class="nav-item mb-2"> 
           <router-link class="nav-link menu-link" to="/inspection-template">
-            <img src="@/assets/images/sidebar/icon/setting.svg" alt="inspection-template" class="me-2">
+            <img src="@/assets/images/sidebar/icon/magnify.svg" alt="inspection-template" class="me-2">
             <span data-key="t-setting" class="nav-item-text">Inspection Template</span>
           </router-link>
         </li>
         <li class="nav-item mb-2"> 
           <router-link class="nav-link menu-link" to="/inspection-response">
-            <img src="@/assets/images/sidebar/icon/setting.svg" alt="inspection-response" class="me-2">
+            <img src="@/assets/images/sidebar/icon/paper.svg" alt="inspection-response" class="me-2">
             <span data-key="t-setting" class="nav-item-text">Inspection Response</span>
+          </router-link>
+        </li>
+
+        <hr>
+
+        <li class="nav-item mb-2"> 
+          <router-link class="nav-link menu-link" to="/role-management">
+            <img src="@/assets/images/sidebar/icon/role.svg" alt="role-management" class="me-2">
+            <span data-key="t-role-management" class="nav-item-text">Role Management</span>
+          </router-link>
+        </li>
+
+        <li class="nav-item mb-2"> 
+          <router-link class="nav-link menu-link" to="/user-management">
+            <img src="@/assets/images/sidebar/icon/administrator.svg" alt="user-management" class="me-2">
+            <span data-key="t-user-management" class="nav-item-text">User Management</span>
           </router-link>
         </li>
 

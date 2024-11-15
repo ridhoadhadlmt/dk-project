@@ -9,6 +9,8 @@ import backlogReport from "./user/backlog-report";
 import workOrderReport from "./user/work-order-report";
 import inspectionResponse from "./user/inspection-response";
 import inspectionTemplate from "./user/inspection-template";
+import roleManagement from "./user/role-management";
+import userManagement from "./user/user-management";
 
 
 export default [
@@ -21,6 +23,8 @@ export default [
   workOrderReport,
   inspectionResponse,
   inspectionTemplate,
+  roleManagement,
+  userManagement,
   {
     path: "/login",
     name: "login",
