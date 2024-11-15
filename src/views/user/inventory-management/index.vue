@@ -109,7 +109,9 @@ export default {
         },
         search: {
             handler(){
-                this.getData({ search: this.search})
+                if(this.search.length === 0 || this.search.length > 5){
+                    this.getData({ search: this.search})
+                }
             }
         }
     },

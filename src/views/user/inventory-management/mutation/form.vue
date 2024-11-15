@@ -4,6 +4,7 @@ import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
+
 export default {
     name: "inventory-mutation",
     components: {
@@ -13,17 +14,20 @@ export default {
         return {
             form: {
                 inventoryId: this.$route.params.id,
-                refId: this.$route.params.id,
-                inventoryCode: '',
+                refId: "",
+                userId: "",
+                inventoryCode: "",
                 mutationType: "in",
                 category: "return",
-                purchaseDate: "",
                 price: 10000,
+                dateUse: "",
+                dateLost: "",
+                purchaseDate: "",
+                returnDate: "",
+                dateReturnReminder: "",
                 vendor: "",
                 note: "",
                 items: [
-                    {inventoryCode: "001", qty: 1},
-                    {inventoryCode: "002", qty: 1},
                 ],
                 
             },
@@ -41,11 +45,16 @@ export default {
                 {text : 'Pembelian', value: 'purchase'},
             ],
             data: [],
-            inventoryCodes : [
-                {inventoryCode: "001", qty: 1},
-                {inventoryCode: "002", qty: 1},
-            ],
+            inventoryCodes : [],
+            users : [],
+            inventoryCode : '',
+            params: {
+                inventoryId: this.$route.params.id,
+            },
             selectedInventoryCode: null,
+            items : [
+            ],
+
             
         };
     },
@@ -55,12 +64,16 @@ export default {
 
     methods: {
         
-        
+        selectMutation(){
+            if(this.form.mutationType == 'out'){
+                this.form.category === 'use'
+            }
+        },
         saveData(){
             if(this.form.mutationType == 'in' && this.form.category == 'return'){
                 const form = {}
                 form.inventoryId = this.form.inventoryId
-                form.refId = this.form.inventoryId
+                form.refId = this.form.refId
                 form.mutationType = this.form.mutationType
                 form.category = this.form.category
                 form.inventoryCode = this.form.inventoryCode
@@ -73,6 +86,7 @@ export default {
                 }).catch((err) => {
                     Swal.fire("Gagal!", "Gagal menambah data", "error");
                     console.log(err)
+                    console.log(form)
                 })
             }
             if(this.form.mutationType == 'in' && this.form.category == 'purchase'){
@@ -89,7 +103,7 @@ export default {
                 form.items.push(...this.form.items)
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                    this.$router.push('/inventory-management');
+                    this.$router.push('/inventory-management/view/' + this.$route.params.id);
                 }).catch((err) => {
                     Swal.fire("Gagal!", "Gagal menambah data", "error");
                     console.log(err)
@@ -103,13 +117,14 @@ export default {
                 form.mutationType = this.form.mutationType
                 form.category = this.form.category
                 form.dateUse = this.form.dateUse
+                form.userId = this.form.userId
                 form.dateReturnReminder = this.form.dateReturnReminder
                 form.userId = this.form.userId
                 form.note = this.form.note
                 form.items.push(...this.form.items)
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                    this.$router.push('/inventory-management');
+                    this.$router.push('/inventory-management/view/' + this.$route.params.id);
                 }).catch((err) => {
                     Swal.fire("Gagal!", "Gagal menambah data", "error");
                     console.log(err)
@@ -127,7 +142,7 @@ export default {
                 form.items.push(...this.form.items)
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                    this.$router.push('/inventory-management');
+                    this.$router.push('/inventory-management/view/' + this.$route.params.id);
                 }).catch((err) => {
                     Swal.fire("Gagal!", "Gagal menambah data", "error");
                     console.log(err)
@@ -173,55 +188,76 @@ export default {
             }
         },
         selectInventory(){
-            // this.form.items.push(event.id)
+            this.form.refId = this.inventoryCode.id
+            this.form.inventoryCode = this.inventoryCode.code
+            console.log(this.inventoryCode)
+            // const qty = 1
+            const purchase = {
+                inventoryCode: this.inventoryCode.code,
+                qty: 1,
+            }
+            const useOrLost = {
+                inventoryCode: this.inventoryCode.code,
+                refId: this.inventoryCode.id,
+                qty: 1,
+            }
+            if(this.form.category === 'purchase'){
+                this.form.items.push(purchase)
+            }
+            if(this.form.category === 'use' || this.form.category === 'lost'){
+                this.form.items.push(useOrLost)
+            }
+            // this.form.refId = event
         },
-        // listCodeInventory() {
-        //     axios.get(process.env.VUE_APP_API_URL + "/v1/inventories", {
-        //         params: this.params,
-        //         headers: {
-        //             'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-        //         },
-        //     })
-        //         .then((response) => {
-        //             this.inventoryCodes = response.data.data.items;
-        //             console.log(this.inventoryCodes)
+        listCodeInventory() {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/inventory-mutations/code", {
+                params: this.params,
+                
+            })
+                .then((response) => {
+                    this.inventoryCodes = response.data.data;
 
-        //         })
-        //         .catch((error) => {
-        //             console.log(error);
-        //         });
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
 
-        // },
-        getPurchaseDate(event){
-            console.log(event)
-            console.log(this.form.purchaseDate)
-        }
+        },
+        listUser() {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/users")
+                .then((response) => {
+                    this.users = response.data.data.items;
+
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+
+        },
         
-        // fetchData(){
-        //     if(this.$route.params.id){
-        //         axios.get(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.$route.params.id, {
-        //         headers: {
-        //         'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-        //         },
-        //     }).then((response) => {
-        //             this.form.mutationType = response.data.data.mutationType;
-        //             this.form.category = response.data.data.in.category;
-        //             this.form.note = response.data.data.in.note;
-        //             this.form.purchaseDate = response.data.data.in.purchaseDate;
+        
+        fetchData(){
+            if(this.$route.params.id){
+                axios.get(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.$route.params.id, ).then((response) => {
+                    this.form.mutationType = response.data.data.mutationType;
+                    this.form.category = response.data.data.in.category;
+                    this.form.note = response.data.data.in.note;
+                    this.form.purchaseDate = response.data.data.in.purchaseDate;
                 
                 
-        //     }).catch((error) => {
-        //         console.log(error);
-        //     });
-        //     }
-        // }
+            }).catch((error) => {
+                console.log(error);
+            });
+            }
+        }
         
 
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
         // this.fetchData();
-        // this.listCodeInventory();
+        this.listCodeInventory();
+        this.listUser();
     },
     computed: {
         
@@ -268,6 +304,7 @@ export default {
                                         v-model="form.mutationType"
                                         :options="types"
                                         name="radio-mutation-type"
+                                        @change="selectMutation"
                                         />
                                     </div>
                                 </BCol>
@@ -277,8 +314,7 @@ export default {
                                         <BFormRadioGroup
                                         size="lg"
                                         v-model="form.category"
-                                        
-                                        :options="form.mutationType === 'out' && form.category === 'use' ? reasonOut : reasonIn "
+                                        :options="form.mutationType === 'in' ? reasonIn : reasonOut "
                                         name="radio-category"
                                         />
                                     </div>
@@ -286,18 +322,18 @@ export default {
                                 <BCol md="6" v-if="form.mutationType !== 'out' && form.category !== 'purchase'">
                                     <div>
                                         <label>Kode Inventory <span class="text-danger">*</span></label>
-                                        <select v-model="form.inventoryCode" class="form-select" @change="selectInventory">
-                                            <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.inventoryCode" >{{ inventoryCode.inventoryCode }}</option>
+                                        <select v-model="inventoryCode" class="form-select" @change="selectInventory">
+                                            <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
                                         </select>
                                     </div>
                                 </BCol>
                                 
-                                <BRow class="align-items-center" v-if="form.mutationType == 'in' && form.category == 'purchase' || form.mutationType == 'in' && form.category == 'purchase    '">
+                                <BRow class="align-items-center" v-if="form.mutationType !== 'in' || form.category !== 'return'">
                                     <label>Kode Inventory</label>
                                     <BCol md="11">
                                         <div>
-                                            <select v-model="form.inventoryCode" class="form-select" @change="selectInventory">
-                                                <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.inventoryCode">{{ inventoryCode.inventoryCode }}</option>
+                                            <select v-model="inventoryCode" class="form-select" @change="selectInventory">
+                                                <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
                                             </select>
                                         </div>
                                     </BCol>
@@ -337,10 +373,11 @@ export default {
                                     <label for="note" class="form-label">Lokasi Penyimpanan <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="note" placeholder="Masukkan Lokasi" v-model="form.location">
                                 </BCol>
-                                <BCol md="6" v-if="form.mutationType == 'out'">
+                                <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
                                     <label for="peminjam" class="form-label">Peminjam <span class="text-danger">*</span></label>
-                                    <select class="form-select">
+                                    <select class="form-select" v-model="form.userId">
                                         <option selected>Masukkan Peminjam</option>
+                                        <option v-for="user in users" :key="user.id" :value="user.id">{{  user.fullName }}</option>
                                         
                                     </select>
                                 </BCol>
@@ -358,21 +395,30 @@ export default {
                                     <label for="note" class="form-label">Catatan</label>
                                     <input type="text" class="form-control" id="note" placeholder="Masukkan Catatan" v-model="form.note">
                                 </BCol>
-                                <BCol md="6" v-if="form.mutationType == 'out'">
+                                <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
                                     <label for="note" class="form-label">Tanggal Dipinjam <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" equired>
+                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.useDate" equired>
                                     <!--<div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
                                     </div>
                                     -->
                                 </BCol>
-                                <BCol md="6" v-if="form.mutationType == 'out'">
+                                <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
                                     <label for="note" class="form-label">Tanggal Pengingat Balik <span class="text-danger">*</span></label>
-                                    <div class="input-group">
+                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.dateUseReminder" required>
+                                    <!-- <div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
-                                    </div>
+                                    </div> -->
+                                </BCol>
+                                <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'lost'">
+                                    <label for="note" class="form-label">Tanggal Hilang <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.dateLost" required>
+                                    <!-- <div class="input-group">
+                                        <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" required>
+                                        <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
+                                    </div> -->
                                 </BCol>
                             </BRow>
                             <div class="d-flex justify-content-end mt-4">

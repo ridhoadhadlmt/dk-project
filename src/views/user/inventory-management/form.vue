@@ -6,7 +6,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
 import MultiSelect from 'vue-multiselect'
-// import MultiSelect from '@vueform/multiselect'
+
 export default {
     name: "inventory-management-create",
     components: {
@@ -311,4 +311,3 @@ export default {
     </Layout>
 </template>
 
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
