@@ -82,65 +82,6 @@ export default {
             });  
         },
 
-<<<<<<< HEAD
-        // Try to log the user in with the username
-        // and password they provided.
-        tryToLogIn() {
-            this.processing = true;
-            this.submitted = true;
-            // stop here if form is invalid
-            this.$touch;
-
-            if (this.$invalid) {
-                return;
-            } else {
-                if (process.env.VUE_APP_DEFAULT_AUTH === "firebase") {
-                    this.tryingToLogIn = true;
-                    // Reset the authError if it existed.
-                    this.authError = null;
-                    return (
-                        this.logIn({
-                            email: this.email,
-                            password: this.password,
-                        })
-                            // eslint-disable-next-line no-unused-vars
-                            .then((token) => {
-                                this.tryingToLogIn = false;
-                                this.isAuthError = false;
-                                // Redirect to the originally requested page, or to the home page
-                                this.$router.push({
-                                    path: '/'
-                                });
-                            })
-                            .catch((error) => {
-                                this.tryingToLogIn = false;
-                                this.authError = error ? error : "";
-                                this.isAuthError = true;
-                                this.processing = false;
-                            })
-                    );
-                } else if (process.env.VUE_APP_DEFAULT_AUTH === "fakebackend") {
-                    const { email, password } = this;
-                    if (email && password) {
-                        this.login({
-                            email,
-                            password,
-                        });
-                    }
-                } else if (process.env.VUE_APP_DEFAULT_AUTH === "authapi") {
-                    axios
-                        .post("http://127.0.0.1:8000/api/login", {
-                            email: this.email,
-                            password: this.password,
-                        })
-                        .then((res) => {
-                            return res;
-                        });
-                }
-            }
-        },
-
-=======
         resendOtp(type) {
             axios.post(process.env.VUE_APP_API_URL + "/v1/auth/request-otp", {
                 email: localStorage.getItem('email'),
@@ -171,7 +112,6 @@ export default {
         },
 
 
->>>>>>> Login
         togglePassword() {
             this.showPassword = !this.showPassword;
         },
@@ -242,32 +182,10 @@ export default {
                     <img src="@/assets/images/logo.svg" alt="Logo" class="image-auth" />
                     <div class="d-flex flex-column justify-content-center align-items-center"
                         style="height: 70%;padding: 0px 64px;">
-
-
-<<<<<<< HEAD
-                        <div class="text-white">
-                            <p class="title-auth">
-                                Solusi All-In-One
-                                Manajemen Armada
-                            </p>
-
-                            <p class="subtitle-auth">
-                                Mengoptimalkan kinerja armada, meningkatkan <span class="text-sub-primary">efisiensi
-                                    operasional</span>, dan
-                                <span class="text-sub-primary">memaksimalkan profitabilitas</span>
-                            </p>
-                        </div>
-                    </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="col-sm-8 text-black bg-white">
-
-                    <div class="d-flex justify-content-center align-items-center vh-100">
-                        <form style="width: 23rem">
-                            <h3 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px">
-                                Log in
-                            </h3>
-=======
         <div class="container pt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <img src="@/assets/images/logo-black.svg" alt="Logo" class="logo" style="fill: #000;">
@@ -277,11 +195,11 @@ export default {
             </div>
         </div>
 
-        <section class="">
             <div class="container login-page">
                 <div class="row d-flex justify-content-center align-items-center h-100">
                     <div class="col-12 col-md-8 col-lg-6 col-xl-6">
                         <div class="card bg-white text-dark ">
+                            <form>
                             <div class="card-body card-login">
 
                                 <div class="">
@@ -335,50 +253,49 @@ export default {
                                                 Akun</BLink>
                                         </p>
                                     </div>
->>>>>>> Login
-
-                            <div data-mdb-input-init class="form-outline mb-4">
-                                <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
-                                <input type="email" id="form2Example18" class="form-control form-control-lg" v-model="email" />
-
-                            </div>
-
-                            <div data-mdb-input-init class="form-outline mb-4">
-                                <label class="form-label" for="form2Example28">Password</label>
-                                <div class="form-outline mb-4 position-relative">
-                                    <input :type="showPassword ? 'text' : 'password'" v-model="password"
-                                        id="form2Example28" class="form-control form-control-lg" />
-
-                                    <!-- Eye Icon -->
-                                    <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'" @click="togglePassword"
-                                        style="position: absolute; right: 15px; top: 15px; cursor: pointer;"></i>
                                 </div>
-                            </div>
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
+                                    <input type="email" id="form2Example18" class="form-control form-control-lg" v-model="email" />
 
-                            <div class="d-flex justify-content-between mb-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="rememberMe" />
-                                    <label class="form-check-label" for="rememberMe">Ingat saya</label>
                                 </div>
-                                <div>
-                                    <BLink href="javascript:void(0);" @click="modalShow1 = !modalShow1"
-                                        class="text-primary">Lupa password?
-                                    </BLink>
+
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <label class="form-label" for="form2Example28">Password</label>
+                                    <div class="form-outline mb-4 position-relative">
+                                        <input :type="showPassword ? 'text' : 'password'" v-model="password"
+                                            id="form2Example28" class="form-control form-control-lg" />
+
+                                        <!-- Eye Icon -->
+                                        <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'" @click="togglePassword"
+                                            style="position: absolute; right: 15px; top: 15px; cursor: pointer;"></i>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="d-flex justify-content-between mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="rememberMe" />
+                                        <label class="form-check-label" for="rememberMe">Ingat saya</label>
+                                    </div>
+                                    <div>
+                                        <BLink href="javascript:void(0);" @click="modalShow1 = !modalShow1"
+                                            class="text-primary">Lupa password?
+                                        </BLink>
+                                    </div>
+                                </div>
 
                             <div class="pt-1 mb-4">
                                 <button type="button"
                                     class="btn btn-dark btn-lg btn-block w-100 waves-effect waves-light"
                                     @click="signinapi" :disabled="processing">LOGIN</button>
                             </div>
+                        </div>
                         </form>
                     </div>
-
+                </div>
                 </div>
             </div>
         </div>
-
 
         <!-- Vertically Centered -->
         <BModal v-model="modalShow1" hide-footer class="v-modal-custom" hide-header-close centered>
@@ -413,16 +330,11 @@ export default {
                     <div class="vstack gap-3 justify-content-center" id="otp-input">
 
                         <div class="otp-input">
-<<<<<<< HEAD
-                            <input type="text" v-for="i in otpLength" :key="i" :value="otp[i - 1]"
-                                @input="handleOtpChange($event, i)" maxlength="1" :ref="'otp' + i" />
-=======
                             <input v-for="(digit, index) in otp" :key="index" v-model="otp[index]" type="text"
                                 maxlength="1" class="otp-box" :ref="'otp' + index" @input="focusNext(index)"
                                 @keydown.backspace="focusPrev(index, $event)" />
                             <p class="mt1"> <span class="text-danger text-start" v-if="otpError">Kode OTP tidak
                                     valid</span></p>
->>>>>>> Login
                         </div>
 
                         <p class="text-muted mb-4">Tidak menerima kode?</p>
@@ -461,4 +373,5 @@ export default {
             </div>
         </BModal>
     </section>
+
 </template>

@@ -67,11 +67,7 @@ export default {
                 form.returnDate = this.form.returnDate
                 form.location = this.form.location
                 form.note = this.form.note
-                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
-                    headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                    },
-                }).then(()=> {
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                     this.$router.push('/inventory-management');
                 }).catch((err) => {
@@ -91,11 +87,7 @@ export default {
                 form.vendor = this.form.vendor
                 form.note = this.form.note
                 form.items.push(...this.form.items)
-                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
-                    headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                    },
-                }).then(()=> {
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                     this.$router.push('/inventory-management');
                 }).catch((err) => {
@@ -115,11 +107,7 @@ export default {
                 form.userId = this.form.userId
                 form.note = this.form.note
                 form.items.push(...this.form.items)
-                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
-                    headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                    },
-                }).then(()=> {
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                     this.$router.push('/inventory-management');
                 }).catch((err) => {
@@ -137,11 +125,7 @@ export default {
                 form.dateLost = this.form.dateLost
                 form.note = this.form.note
                 form.items.push(...this.form.items)
-                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form, {
-                    headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                    },
-                }).then(()=> {
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                     this.$router.push('/inventory-management');
                 }).catch((err) => {
