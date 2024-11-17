@@ -67,7 +67,7 @@ export default {
             }
         },
         getRole() {
-            axios.get(process.env.VUE_APP_API_URL + '/v1/roles').then((response) => {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/roles',{params:{isActive:true}}).then((response) => {
                 this.role = response.data.data.items;
             });
         },

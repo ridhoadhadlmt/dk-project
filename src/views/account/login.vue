@@ -102,23 +102,30 @@ export default {
             });
         },
 
-        verifyOtp() {
-            axios.post(process.env.VUE_APP_API_URL + "/v1/auth/valid-otp", {
+        async verifyOtp() {
+            await axios.post(process.env.VUE_APP_API_URL + "/v1/auth/valid-otp", {
                 otp: this.otp.join(''),
                 otpToken: localStorage.getItem('otpToken')
-            }).then(response => {
+            }).then(async response => {
                 //set jwt
-
-                console.log("response", response.data.data);
                 if (this.typeRequestOtp == 'login') {
                     localStorage.setItem('jwt', response.data.data.accessToken);
-                    this.$router.push('/dashboard');
+                    
                 } else {
                     localStorage.setItem('forgotPasswordToken', response.data.data.resetPasswordToken);
                     this.$router.push('/reset-password');
                 }
             }).catch(() => {
                 this.otpError = true;
+            });
+
+            await axios.get(process.env.VUE_APP_API_URL + "/v1/me/menu", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                }
+            }).then(response => {
+                localStorage.setItem('menu', JSON.stringify(response.data.data));
+                this.$router.push('/dashboard');
             });
         },
 
