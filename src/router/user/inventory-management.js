@@ -29,7 +29,7 @@ export default {
             path: "view/:id",
             name: "inventory-management-view",
             component: ViewInventory,
-            meta: { title: "View Inventory", description: "Inventory Management - View Admin",authRequired: false },
+            meta: { title: "Detail Inventory", description: "Inventory Management - Detail Inventory",authRequired: false },
         },
     ]
 }

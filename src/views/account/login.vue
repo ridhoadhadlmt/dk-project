@@ -22,8 +22,8 @@ export default {
     data() {
         return {
             showPassword: false,
-            email: "013ichsanm@gmail.com",
-            password: "p@ssword123",
+            email: "admin@themesbrand.com",
+            password: "123456",
             submitted: false,
             authError: null,
             tryingToLogIn: false,
@@ -63,29 +63,18 @@ export default {
         ...authMethods,
         ...authFackMethods,
         ...notificationMethods,
-        // Fungsi untuk fokus ke input selanjutnya
-        focusNext(index) {
-            if (this.otp[index].length === 1 && index < this.otp.length - 1) {
-                this.$refs[`otp${index + 1}`][0].focus();
-            }
-        },
-        // Fungsi untuk fokus ke input sebelumnya saat backspace
-        focusPrev(index, event) {
-            if (event.key === 'Backspace' && index > 0 && !this.otp[index]) {
-                this.$refs[`otp${index - 1}`][0].focus();
-            }
-        },
 
         async signinapi() {
             this.typeRequestOtp = 'login';
             this.processing = true;
-            await axios.post(process.env.VUE_APP_API_URL + "/v1/auth/login", {
-                emailOrWa: this.email,
+            await axios.post(process.env.VUE_APP_API_URL + "/cms/v1/auth/login", {
+                email: this.email,
                 password: this.password
             }).then(response => {
-                localStorage.setItem('otpToken', response.data.data.otpToken);
-                localStorage.setItem('email', this.email);
-                this.modalShow2 = true;
+                localStorage.setItem('jwt', response.data.data.accessKey.accessToken);
+                this.$router.push({
+                    path: '/dashboard'
+                });
             }).catch(error => {
                 this.authError = error.response.data.message;
                 this.isAuthError = true;
@@ -93,13 +82,61 @@ export default {
             });
         },
 
-        resendOtp(type) {
-            axios.post(process.env.VUE_APP_API_URL + "/v1/auth/request-otp", {
-                email: localStorage.getItem('email'),
-                platform: type
-            }).then(response => {
-                localStorage.setItem('otpToken', response.data.data.otpToken);
-            });
+        // Try to log the user in with the username
+        // and password they provided.
+        tryToLogIn() {
+            this.processing = true;
+            this.submitted = true;
+            // stop here if form is invalid
+            this.$touch;
+
+            if (this.$invalid) {
+                return;
+            } else {
+                if (process.env.VUE_APP_DEFAULT_AUTH === "firebase") {
+                    this.tryingToLogIn = true;
+                    // Reset the authError if it existed.
+                    this.authError = null;
+                    return (
+                        this.logIn({
+                            email: this.email,
+                            password: this.password,
+                        })
+                            // eslint-disable-next-line no-unused-vars
+                            .then((token) => {
+                                this.tryingToLogIn = false;
+                                this.isAuthError = false;
+                                // Redirect to the originally requested page, or to the home page
+                                this.$router.push({
+                                    path: '/'
+                                });
+                            })
+                            .catch((error) => {
+                                this.tryingToLogIn = false;
+                                this.authError = error ? error : "";
+                                this.isAuthError = true;
+                                this.processing = false;
+                            })
+                    );
+                } else if (process.env.VUE_APP_DEFAULT_AUTH === "fakebackend") {
+                    const { email, password } = this;
+                    if (email && password) {
+                        this.login({
+                            email,
+                            password,
+                        });
+                    }
+                } else if (process.env.VUE_APP_DEFAULT_AUTH === "authapi") {
+                    axios
+                        .post("http://127.0.0.1:8000/api/login", {
+                            email: this.email,
+                            password: this.password,
+                        })
+                        .then((res) => {
+                            return res;
+                        });
+                }
+            }
         },
 
         async verifyOtp() {
@@ -110,7 +147,7 @@ export default {
                 //set jwt
                 if (this.typeRequestOtp == 'login') {
                     localStorage.setItem('jwt', response.data.data.accessToken);
-                    
+
                 } else {
                     localStorage.setItem('forgotPasswordToken', response.data.data.resetPasswordToken);
                     this.$router.push('/reset-password');
@@ -187,100 +224,150 @@ export default {
     border-radius: 5px;
     margin: 0 5px;
 }
-
-.gradient-custom {
-    background: rgb(255, 213, 0);
-    background: radial-gradient(circle, rgba(255, 213, 0, 0.4458158263305322) 0%, rgba(255, 251, 229, 1) 100%);
-}
-
-.card-login {
-    border-radius: 4px;
-    padding: 60px 40px 20px 40px;
-    ;
-}
 </style>
 
-<template class="">
+<template>
 
-    <section class="gradient-custom vh-100">
+    <section class="vh-100">
+        <div class="container-fluid">
+            <div class="row">
 
-        <div class="container pt-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <img src="@/assets/images/logo-black.svg" alt="Logo" class="logo" style="fill: #000;">
-                <button class="btn btn-link" @click="goBack"><i class="ri-arrow-left-s-line"></i> <span
-                        class="text-decoration-underline"><a href="https://jupital.stagingapp.xyz">Kembali ke
-                            homepage</a></span></button>
+                <div class="container pt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <img src="@/assets/images/logo-black.svg" alt="Logo" class="logo" style="fill: #000;">
+                        <button class="btn btn-link" @click="goBack"><i class="ri-arrow-left-s-line"></i> <span
+                                class="text-decoration-underline"><a href="https://jupital.stagingapp.xyz">Kembali ke
+                                    homepage</a></span></button>
+                    </div>
+                </div>
+
+
+                <div class="text-white">
+                    <p class="title-auth">
+                        Solusi All-In-One
+                        Manajemen Armada
+                    </p>
+
+                    <h2 class="text-uppercase mb-5">Login</h2>
+
+                    <div data-mdb-input-init class="form-outline mb-4">
+                        <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
+                        <input type="email" id="form2Example18" class="form-control form-control-lg" v-model="email" />
+                        <span class="text-danger text-start" v-if="isAuthError">Email atau password
+                            salah</span>
+                    </div>
+
+                    <div data-mdb-input-init class="form-outline mb-4">
+                        <label class="form-label" for="form2Example28">Password</label>
+                        <div class="form-outline mb-4 position-relative">
+                            <input :type="showPassword ? 'text' : 'password'" v-model="password" id="form2Example28"
+                                class="form-control form-control-lg" />
+
+                            <!-- Eye Icon -->
+                            <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'" @click="togglePassword"
+                                style="position: absolute; right: 15px; top: 15px; cursor: pointer;"></i>
+                            <span class="text-danger text-start" v-if="isAuthError">Email atau password
+                                salah</span>
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <div class="">
+                            <input class="" type="checkbox" value="" id="rememberMe" />
+                            <label class="form-check-label" for="rememberMe">Ingat saya</label>
+                        </div>
+                        <div>
+                            <BLink href="javascript:void(0);" @click="modalShow1 = !modalShow1"
+                                class="text-primary fw-bold text-link text-decoration-underline">Lupa
+                                password?
+                            </BLink>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-5">
+                        <BButton type="button" variant="dark" @click="signinapi">
+                            LOGIN
+                        </BButton>
+
+                        <p class="text-center">Belum punya akun? <BLink href="/register"
+                                class="text-primary fw-bold text-link text-decoration-underline">Buat
+                                Akun</BLink>
+                        </p>
+                    </div>
+
+                </div>
             </div>
         </div>
 
-        <section class="">
-            <div class="container login-page">
-                <div class="row d-flex justify-content-center align-items-center h-100">
-                    <div class="col-12 col-md-8 col-lg-6 col-xl-6">
-                        <div class="card bg-white text-dark ">
-                            <div class="card-body card-login">
+        <div class="col-sm-8 text-black bg-white">
 
-                                <div class="">
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                <form style="width: 23rem">
+                    <h3 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px">
+                        Log in
+                    </h3>
 
-                                    <h2 class="text-uppercase mb-5">Login</h2>
+                    <div data-mdb-input-init class="form-outline mb-4">
+                        <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
+                        <input type="email" id="form2Example18" class="form-control form-control-lg" v-model="email" />
 
-                                    <div data-mdb-input-init class="form-outline mb-4">
-                                        <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
-                                        <input type="email" id="form2Example18" class="form-control form-control-lg"
-                                            v-model="email" />
-                                        <span class="text-danger text-start" v-if="isAuthError">Email atau password
-                                            salah</span>
-                                    </div>
+                    </div>
 
-                                    <div data-mdb-input-init class="form-outline mb-4">
-                                        <label class="form-label" for="form2Example28">Password</label>
-                                        <div class="form-outline mb-4 position-relative">
-                                            <input :type="showPassword ? 'text' : 'password'" v-model="password"
-                                                id="form2Example28" class="form-control form-control-lg" />
+                    <div data-mdb-input-init class="form-outline mb-4">
+                        <label class="form-label" for="form2Example28">Password</label>
+                        <div class="form-outline mb-4 position-relative">
+                            <input :type="showPassword ? 'text' : 'password'" v-model="password" id="form2Example28"
+                                class="form-control form-control-lg" />
 
-                                            <!-- Eye Icon -->
-                                            <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
-                                                @click="togglePassword"
-                                                style="position: absolute; right: 15px; top: 15px; cursor: pointer;"></i>
-                                            <span class="text-danger text-start" v-if="isAuthError">Email atau password
-                                                salah</span>
-                                        </div>
-
-                                    </div>
-
-                                    <div class="d-flex justify-content-between mb-4">
-                                        <div class="">
-                                            <input class="" type="checkbox" value="" id="rememberMe" />
-                                            <label class="form-check-label" for="rememberMe">Ingat saya</label>
-                                        </div>
-                                        <div>
-                                            <BLink href="javascript:void(0);" @click="modalShow1 = !modalShow1"
-                                                class="text-primary fw-bold text-link text-decoration-underline">Lupa
-                                                password?
-                                            </BLink>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-grid gap-5">
-                                        <BButton type="button" variant="dark" @click="signinapi">
-                                            LOGIN
-                                        </BButton>
-
-                                        <p class="text-center">Belum punya akun? <BLink href="/register"
-                                                class="text-primary fw-bold text-link text-decoration-underline">Buat
-                                                Akun</BLink>
-                                        </p>
-                                    </div>
-
-                                </div>
-
-                            </div>
+                            <!-- Eye Icon -->
+                            <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'" @click="togglePassword"
+                                style="position: absolute; right: 15px; top: 15px; cursor: pointer;"></i>
                         </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="rememberMe" />
+                            <label class="form-check-label" for="rememberMe">Ingat saya</label>
+                        </div>
+                        <div>
+                            <BLink href="javascript:void(0);" @click="modalShow1 = !modalShow1" class="text-primary">
+                                Lupa password?
+                            </BLink>
+                        </div>
+                    </div>
+
+                    <div class="pt-1 mb-4">
+                        <button type="button" class="btn btn-dark btn-lg btn-block w-100 waves-effect waves-light"
+                            @click="signinapi" :disabled="processing">LOGIN</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+
+        <!-- Vertically Centered -->
+        <BModal v-model="modalShow1" hide-footer class="v-modal-custom" hide-header-close centered>
+            <div class="modal-body text-center">
+                <lottie colors="primary:#121331,secondary:#08a88a" trigger="loop" :options="defaultOptions"
+                    :height="120" :width="120" />
+                <div class="mt-4">
+                    <h4 class="mb-3 title-auth">Lupa password?</h4>
+                    <p class="text-muted mb-4">Silakan masukkan alamat email, Anda akan menerima Kode OTP untuk mengatur
+                        ulang kata sandi Anda.</p>
+                    <div class="vstack gap-5 justify-content-center">
+                        <BFormInput type="email" placeholder="Email" />
+                        <BButton type="button" variant="dark" @click="() => {
+                            modalShow1 = false;
+                            modalShow2 = true;
+                        }">
+                            Kirim OTP</BButton>
                     </div>
                 </div>
             </div>
-        </section>
-
+        </BModal>
 
         <BModal v-model="modalShow2" hide-footer class="v-modal-custom" centered>
             <div class="modal-body text-center">
@@ -289,7 +376,7 @@ export default {
                 <div class="mt-4">
                     <h4 class="mb-3 title-auth">Masukkan Kode OTP</h4>
                     <p class="text-muted mb-4">Silakan masukkan kode verifikasi yang kami kirimkan ke <b>{{
-                            hideEmail(email) }}</b>
+                        hideEmail(email) }}</b>
                         untuk memvalidasi akun Anda.</p>
                     <div class="vstack gap-3 justify-content-center" id="otp-input">
 
@@ -303,12 +390,12 @@ export default {
 
                         <p class="text-muted mb-4">Tidak menerima kode?</p>
 
-                        <BLink @click="resendOtp('email')" class="text-primary">Kirim ulang via email</BLink>
+                        <BLink href="javascript:void(0);" class="text-primary">Kirim ulang via email</BLink>
 
-                        <BLink @click="resendOtp('wa')" class="text-primary">Kirim ulang via WhatsApp</BLink>
+                        <BLink href="javascript:void(0);" class="text-primary">Kirim ulang via WhatsApp</BLink>
 
 
-                        <BButton @click="verifyOtp" class="btn btn-dark">Verifikasi</BButton>
+                        <router-link to="/reset-password" class="btn btn-dark">Verifikasi</router-link>
                     </div>
                 </div>
             </div>

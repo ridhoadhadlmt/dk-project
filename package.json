@@ -59,6 +59,7 @@
     "vue-feather": "^2.0.0",
     "vue-flatpickr-component": "^11.0.3",
     "vue-i18n": "^9.8.0",
+    "vue-multiselect": "^3.1.0",
     "vue-prismjs": "^1.2.0",
     "vue-router": "^4.2.5",
     "vue3-apexcharts": "^1.4.4",
