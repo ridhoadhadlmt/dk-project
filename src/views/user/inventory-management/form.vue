@@ -6,7 +6,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
 import MultiSelect from 'vue-multiselect'
-// import MultiSelect from '@vueform/multiselect'
+
 export default {
     name: "inventory-management-create",
     components: {
@@ -36,10 +36,10 @@ export default {
                 {text : 'Tools', value: 'tools'},
                 {text : 'Spare Part', value: 'sparepart'},
             ],
-            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
-            labelValue: [],
-            labelCustom: '',
-            value: '',
+            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}, {name: 'Body', value: 'body'}],
+            labelValue: '',
+            customValue: '',
+            value: [],
             successAddModal: false,
             photo: null,
             photoUrl: '',
@@ -52,12 +52,12 @@ export default {
         },
 
     methods: {
+        
         selectOpt(option){
             const arrVal = []
             arrVal.push(option)
             arrVal.forEach(item => {
                 this.form.tags.push(item.value)
-                console.log(this.labelCustom)
             })
         },
         uploadImage(event){
@@ -87,11 +87,7 @@ export default {
         saveData(){
 
 
-            axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form, {
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
-                },
-            }).then(()=> {
+            axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                 this.$router.push('/inventory-management');
             }).catch((err) => {
@@ -103,11 +99,7 @@ export default {
         updateData(){
             
             
-            axios.put(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id , this.form, {
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
-                },
-            }).then(()=> {
+            axios.put(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id , this.form).then(()=> {
                 Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
                 this.$router.push('/inventory-management');
             }).catch((err) => {
@@ -165,12 +157,7 @@ export default {
 
         fetchData() {
             if(this.$route.params.id) {
-               
-                axios.get(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id, {
-                    headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRMenJTVHBKbm1vL3FsS0tKcURIemouNDguMEhCZmlwMnlFaHphSjZsc0duQk1iaTBYRTdEcSIsImlhdCI6MTczMTI4NzY3NSwiZXhwIjoxNzMxNDYwNDc1LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.zev9CiJjt4a9vpI0RIQBpcV2CiCcmpXz6nskNsRqwKHdtdLyMTpEwc7wtP4c1SaL8g7lyEacf9gf8QfVsiHr2g'
-                    },
-                }).then((response) => {
+                axios.get(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id).then((response) => {
                     this.form.type = response.data.data.type;
                     this.form.name = response.data.data.name;
                     this.form.description = response.data.data.description;
@@ -179,8 +166,13 @@ export default {
                     this.form.upc = response.data.data.upc;
                     this.form.unit = response.data.data.unit;
                     this.form.price = response.data.data.price;
-                    this.value = response.data.data.tags;
+                    response.data.data.tags.forEach((item) => {
+                        this.value.push(item)
+                    });
+                    this.form.tags = this.value;
                     this.form.minStock = response.data.data.minStock;
+                    this.form.photo = response.data.data.photo;
+                    this.form.document = response.data.data.document;
                     
                 }).catch((error) => {
                     console.log(error);
@@ -251,7 +243,7 @@ export default {
                                     <div>
                                         <label for="photo" class="form-label">Foto <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="file" ref="photo" @change="uploadImage" class="form-control" id="photo">
+                                            <BFormFile v-model="photo" @change="uploadImage"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
                                     </div>
@@ -260,7 +252,7 @@ export default {
                                     <div>
                                         <label for="document" class="form-label">Dokumen <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
                                          <div class="input-group">
-                                            <input type="file" ref="document" @change="uploadDocument" class="form-control" id="document">
+                                            <BFormFile v-model="document" @change="uploadDocument"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
                                         </div>
                                     </div>
@@ -294,7 +286,7 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <label for="label" class="form-label">Label Bebas <span class="text-danger">*</span></label>
-                                    <MultiSelect v-model="value" label="name" track-by="value" :taggable="true" @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
+                                    <MultiSelect maxHeight="100" v-model="value" label="name" track-by="name"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="stock" class="form-label">Ingatkan jika persediaan mencapai <span class="text-danger">*</span></label>
@@ -319,4 +311,3 @@ export default {
     </Layout>
 </template>
 
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
