@@ -41,6 +41,7 @@ export default {
             customValue: '',
             value: [],
             successAddModal: false,
+            saveAndAdd: true,
             photo: null,
             photoUrl: '',
             document: null,
@@ -86,10 +87,18 @@ export default {
         },
         saveData(){
 
-
+            console.log(this.saveAndAdd)
             axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                this.$router.push('/inventory-management');
+                if(this.saveAndAdd === true){
+                    this.successAddModal = true
+                    this.form = {}
+                }
+                else{
+                    this.$router.push('/inventory-management') 
+                    
+                }
+                
             }).catch((err) => {
                 Swal.fire("Gagal!", "Gagal menambah data", "error");
                 console.log(err)
@@ -299,7 +308,7 @@ export default {
                                 </router-link>
                                 <div class="cta-right">
                                     <BButton type="submit"  variant="primary" @click="handleAction" class="me-2">Simpan</BButton>
-                                    <BButton type="submit" variant="light" @click="saveAndAdd()">Simpan dan Tambah Lagi</BButton>
+                                    <BButton type="submit" variant="light" v-model="saveAndAdd" @click="handleAction">Simpan dan Tambah Lagi</BButton>
 
                                 </div>
                             </div>
@@ -310,4 +319,4 @@ export default {
         </BRow>
     </Layout>
 </template>
-
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

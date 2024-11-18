@@ -18,7 +18,7 @@ export default {
                 userId: "",
                 inventoryCode: "",
                 mutationType: "in",
-                category: "return",
+                category: "",
                 price: 10000,
                 dateUse: "",
                 dateLost: "",
@@ -61,14 +61,19 @@ export default {
     watch: {
             
         },
-
+    computed: {
+        mutationType :{
+            get(){
+                return this.mutationType
+            },
+            set(){
+                this.mutationType == 'in'
+            }
+        }
+    },
     methods: {
         
-        selectMutation(){
-            if(this.form.mutationType == 'out'){
-                this.form.category === 'use'
-            }
-        },
+        
         saveData(){
             if(this.form.mutationType == 'in' && this.form.category == 'return'){
                 const form = {}
@@ -82,7 +87,7 @@ export default {
                 form.note = this.form.note
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                    this.$router.push('/inventory-management');
+                    this.$router.push('/inventory-management/view/' + this.$route.params.id);
                 }).catch((err) => {
                     Swal.fire("Gagal!", "Gagal menambah data", "error");
                     console.log(err)
@@ -93,6 +98,10 @@ export default {
                 const form = {
                     items: []
                 }
+                const obj = {
+                    inventoryCode: this.inventoryCode,
+                    qty: 1,
+                }
                 form.inventoryId = this.form.inventoryId
                 form.mutationType = this.form.mutationType
                 form.category = this.form.category
@@ -100,6 +109,7 @@ export default {
                 form.price = this.form.price
                 form.vendor = this.form.vendor
                 form.note = this.form.note
+                form.items.push(obj)
                 form.items.push(...this.form.items)
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
@@ -187,27 +197,26 @@ export default {
                 element.classList.add("d-none");
             }
         },
+        inputInventory(){
+            const obj = {
+                inventoryCode: this.inventoryCode,
+                qty: 1,
+            }
+            if(this.inventoryCode.length > 3){
+
+                this.form.items.push(obj)
+            }
+        },
         selectInventory(){
             this.form.refId = this.inventoryCode.id
             this.form.inventoryCode = this.inventoryCode.code
-            console.log(this.inventoryCode)
-            // const qty = 1
-            const purchase = {
-                inventoryCode: this.inventoryCode.code,
-                qty: 1,
-            }
-            const useOrLost = {
+            
+            const obj = {
                 inventoryCode: this.inventoryCode.code,
                 refId: this.inventoryCode.id,
                 qty: 1,
             }
-            if(this.form.category === 'purchase'){
-                this.form.items.push(purchase)
-            }
-            if(this.form.category === 'use' || this.form.category === 'lost'){
-                this.form.items.push(useOrLost)
-            }
-            // this.form.refId = event
+            this.form.items.push(obj)
         },
         listCodeInventory() {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventory-mutations/code", {
@@ -259,9 +268,6 @@ export default {
         this.listCodeInventory();
         this.listUser();
     },
-    computed: {
-        
-    }
 
 };
 </script>
@@ -314,7 +320,8 @@ export default {
                                         <BFormRadioGroup
                                         size="lg"
                                         v-model="form.category"
-                                        :options="form.mutationType === 'in' ? reasonIn : reasonOut "
+                                        @change="selectCategory"
+                                        :options="form.mutationType == 'in' ? reasonIn : reasonOut "
                                         name="radio-category"
                                         />
                                     </div>
@@ -328,12 +335,35 @@ export default {
                                     </div>
                                 </BCol>
                                 
-                                <BRow class="align-items-center" v-if="form.mutationType !== 'in' || form.category !== 'return'">
+                                <BRow class="align-items-center" v-if="form.category === 'purchase'">
+                                    <label>Kode Inventory</label>
+                                    <BCol md="11">
+                                        <div>
+                                            <input type="text" class="form-control" id="kode" placeholder="Kode Inventory" v-model="inventoryCode">
+                                            
+                                        </div>
+                                    </BCol>
+                                    <BCol md="1">
+                                        <div class="d-flex">
+                                            <div class="mx-1">
+                                                <BButton variant="light" class="rounded-circle" size="sm">
+                                                    <img src="@/assets/icons/copy.svg" width="12" alt="cancel" />
+                                                </BButton>
+                                            </div>
+                                            <div class="mx-1">
+                                                <BButton variant="light" class="rounded-circle" size="sm">
+                                                    <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
+                                                </BButton>
+                                            </div>
+                                        </div>
+                                    </BCol>
+                                </BRow>
+                                <BRow class="align-items-center" v-if="form.mutationType === 'out' ">
                                     <label>Kode Inventory</label>
                                     <BCol md="11">
                                         <div>
                                             <select v-model="inventoryCode" class="form-select" @change="selectInventory">
-                                                <option  v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
+                                                <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
                                             </select>
                                         </div>
                                     </BCol>
