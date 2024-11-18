@@ -155,4 +155,10 @@ router.beforeResolve(async (routeTo, routeFrom, next) => {
   next();
 });
 
+//before resolve
+router.beforeResolve((routeTo, routeFrom, next) => {
+  axios.defaults.headers.common["authorization"] = "Bearer " + localStorage.getItem("jwt"); // for all requests
+  next();
+});
+
 export default router;
