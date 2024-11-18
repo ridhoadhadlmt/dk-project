@@ -271,10 +271,6 @@ export default {
                                                 Akun</BLink>
                                         </p>
                                     </div>
-                                </div>
-                                <div data-mdb-input-init class="form-outline mb-4">
-                                    <label class="form-label" for="form2Example18">Email atau Nomor WhatsApp</label>
-                                    <input type="email" id="form2Example18" class="form-control form-control-lg" v-model="email" />
 
                                 </div>
 
