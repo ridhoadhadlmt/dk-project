@@ -13,3 +13,7 @@ export const actions = {
     commit('SET_PERMISSION', permission);
   },
 };
+
+export const getters = {
+  permission: (state) => state.permission,
+};
