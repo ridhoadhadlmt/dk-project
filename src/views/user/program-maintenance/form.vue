@@ -18,7 +18,7 @@ export default {
     },
     data() {
         return {
-            headers: [
+            headersActivity: [
                 {
                     title: 'No',
                     key: 'no',
@@ -67,21 +67,22 @@ export default {
                 dueDate: '',
                 actualFinishDate: '',
                 subtotal: 0,
-                items: [],
+                items: [
+                    {
+                        type: '',
+                        inventoryId: '',
+                        unit: '',
+                        value: '',
+                        qty: 0,
+                        price: 0,
+                        total: 0,
+                    },
+
+                ],
             },
-            item: {
-                type: '',
-                inventoryId: '',
-                unit: '',
-                value: '',
-                qty: 0,
-                price: 0,
-                total: 0,
-            },
-            lineItems: '',
             users: [],
             inventories: [],
-            data: [],
+            dataActivity: [],
             params: {
                 page: 1,
                 limit: 10,
@@ -93,8 +94,11 @@ export default {
                 total_pages: 0,
                 total_item: 0,
             },
+            
             valueUser: '',
             activityId: '',
+            lineItems: '',
+            inventory: '',
             showModalActivity: false,
             showModalDelete: false,
         }
@@ -102,7 +106,6 @@ export default {
     watch: {
         params: {
             handler(){
-                this.listData()
             },
             deep: true,
         }
@@ -161,8 +164,7 @@ export default {
         saveData(){            
             axios.post(process.env.VUE_APP_API_URL + '/v1/maintenance-programs', this.form).then(() => {
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                this.activity = {}
-                this.item = {}
+                
                 this.$router.push('/maintenance-programs')
             }).catch((error) => {
                 console.log(error);
@@ -215,8 +217,10 @@ export default {
         saveModalData(){
             
             this.showModalActivity = false
-            this.activity.items.push(this.item)
+            this.dataActivity.push(this.activity)
             this.form.activities.push(this.activity)
+            // this.activity = {}
+            // this.item = {}
             
 
         },
@@ -228,10 +232,11 @@ export default {
                 this.saveData()
             }
         },
-        selectItem(){
-            this.item.inventoryId = this.lineItems.id
-            this.item.type = this.lineItems.type
-            console.log(this.item.type)
+        selectItem(index){
+            this.activity.items[index].inventoryId = this.inventory.id
+            this.activity.items[index].type = this.inventory.type
+            
+
             
         },
 
@@ -244,34 +249,34 @@ export default {
                     this.form.type = response.data.data.type
                     this.form.parameterDuration = response.data.data.parameterDuration
                     this.form.parameterDurationNotification = response.data.data.parameterDurationNotification
+                    this.dataActivity = response.data.data.activities
                     response.data.data.users.forEach((item) => {
-                        this.form.users.push(item.id)
+                        this.form.users.push(item.userId)
                     })
-                    response.data.data.activities.forEach((item) => {
-                        const activityObj = {}
-                        activityObj.title = item.title  
-                        activityObj.note = item.note  
-                        activityObj.startDate = item.startDate  
-                        activityObj.dueDate = item.dueDate  
-                        activityObj.subtotal = item.subtotal  
-                        activityObj.actualFinishDate = item.actualFinishDate 
-                        item.items .forEach((item) => {
-                            const itemObj = {}
-                            itemObj.id = item.id
-                            itemObj.type = item.type
-                            itemObj.inventoryId = item.inventoryId
-                            itemObj.value = item.value
-                            itemObj.qty = item.qty
-                            itemObj.unit = item.unit
-                            itemObj.price = item.price
-                            itemObj.total = item.total
-                            activityObj.items.push(itemObj)
-                            
+                    
+                    this.activityItem = {}
+                    this.dataActivity.forEach((item) => {
+                        this.activityItem.title = item.title  
+                        this.activityItem.note = item.note  
+                        this.activityItem.startDate = item.startDate  
+                        this.activityItem.dueDate = item.dueDate  
+                        this.activityItem.subtotal = item.subtotal  
+                        this.activityItem.actualFinishDate = item.actualFinishDate
+                        item.items.forEach(item => {
+                            this.item = {}
+                            this.item.id = item.id
+                            this.item.type = item.type
+                            this.item.inventoryId = item.inventoryId
+                            this.item.value = item.value
+                            this.item.qty = item.qty
+                            this.item.unit = item.unit
+                            this.item.total = item.total
+                            this.item.price = item.price
+                            this.activityItem.items = []
+                            this.activityItem.items.push(this.item)
                         })
-                        
-                        this.form.activities.push(activityObj)
                     })
-                    this.data = response.data.data.activities
+                  
 
                 }).catch((error) => {
                     console.log(error);
@@ -279,17 +284,7 @@ export default {
             }
             this.params.maintenanceProgramId = this.$route.params.id
         },
-        listData() {
-            
-            if(!this.$route.params.id){
-                axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-program-activities').then((response) => {
-                    this.data = response.data.data.items
-                    
-                }).catch((error) => {
-                    console.log(error);
-                });
-            }
-        },
+        
         listDataUser() {
             axios.get(process.env.VUE_APP_API_URL + '/v1/users').then((response) => {
                 this.users = response.data.data.items
@@ -298,12 +293,17 @@ export default {
                 console.log(error);
             });
         },
+        copyItem(index){
+            this.activity.items.push(this.activity.items[index])
+        },
+        deleteItem(index){
+            this.activity.items.splice(index, 1)
+        }
 
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
         this.fetchData();
-        this.listData();
         this.listDataUser();
         this.listDataInventory();
     }
@@ -371,18 +371,18 @@ export default {
                         <input type="text" class="form-control" v-model="activity.note" placeholder="Masukkan note">
                     </div>
                 </BCol>
-                <BRow class="mb-3">
+                <BRow class="mb-3" v-for="item, index in activity.items" :key="index">
                     <label for="" class="form-label">Line Items <span class="text-danger">*</span></label>
                     <BCol md="2">
                         <div>
-                            <select id="type" v-model="lineItems" class="form-select" @change="selectItem" required>
+                            <select id="type" v-model="inventory" class="form-select" @change="selectItem(index)" required>
                                 <option v-for="inventory in inventories" :key="inventory.id" :value="inventory">{{ inventory.type}}</option>
                             </select>
                         </div>
                     </BCol>
                     <BCol md="2">
                         <div>
-                            <select id="" class="form-select" v-model="item.value" required>
+                            <select id="" class="form-select" v-model="activity.items[index].value" required>
                                 <option selected>Sparepart</option>
                             </select>
                         </div>
@@ -390,8 +390,8 @@ export default {
                     <BCol md="2" class="pe-0">
                         <div>
                             <div class="input-group">
-                                <input type="text" class="form-control" v-model="item.qty" id="quantity" width="80%" placeholder="Quantity" required>
-                                <select id="unit" class="form-select" v-model="item.unit" required>
+                                <input type="text" class="form-control" v-model="activity.items[index].qty" id="quantity" width="80%" placeholder="Quantity" required>
+                                <select id="unit" class="form-select" v-model="activity.items[index].unit" required>
                                     <option selected>Pcs</option>
                                 </select>
                             </div>
@@ -404,19 +404,19 @@ export default {
                                 <i class="bx bx-x fs-22"></i>
                             </div>
                             <div>
-                                <input type="text" class="form-control" v-model="item.price" placeholder="Rp0">
+                                <input type="text" class="form-control" v-model="activity.items[index].price" placeholder="Rp0">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <i class="las la-equals fs-22"></i>
                             </div>
                             <div>
-                                <input type="text" class="form-control" v-model="item.total" placeholder="Rp0">
+                                <input type="text" class="form-control" v-model="activity.items[index].total" placeholder="Rp0">
                             </div>
                             <div class="d-flex align-items-center mx-2">
-                                <BButton variant="link" class="p-1 rounded-circle"><i class="bx bxs-copy-alt fs-22"></i></BButton>
+                                <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i class="bx bxs-copy-alt fs-22"></i></BButton>
                             </div>
                             <div class="d-flex align-items-center mx-2">
-                                <BButton variant="link" class="p-1 rounded-circle d-flex align-items-center bg-light"><i class="bx bx-x fs-22"></i></BButton>
+                                <BButton variant="link" class="p-1 rounded-circle d-flex align-items-center bg-light" @click="deleteItem(index)" v-if="activity.items.length > 1"><i class="bx bx-x fs-22"></i></BButton>
                             </div>
                         </div>
                     </BCol>
@@ -514,7 +514,7 @@ export default {
                         </div>
                     </div>
                     <div class="live-preview">
-                        <table-component :headers="headers" :data="data" :action="action" v-if="data.length > 0" @sort="sort($event.sortBy)">
+                        <table-component :headers="headersActivity" :data="dataActivity" :action="action" v-if="dataActivity.length > 0" @sort="sort($event.sortBy)">
                             <!-- NO -->
                             <template #no="{ index }">
                                 {{ index + 1 }}
@@ -573,4 +573,10 @@ export default {
     </Layout>
 </template>
 
+<style scoped>
+.modal .modal-body{
+    overflow-y: auto;
+    height: 800px;
+}
+</style>
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
