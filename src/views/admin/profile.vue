@@ -129,7 +129,6 @@ export default {
                     text: 'Password berhasil diubah',
                 })
             }).catch((error) => {
-                // console.log()
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -166,7 +165,7 @@ export default {
                                 <img src="@/assets/images/users/avatar-1.jpg" alt="user-img"
                                     class="img-thumbnail rounded-circle" height="150" width="150" />
                             </BCol>
-                            <BCol xl="5" v-if="dataUser">
+                            <BCol xl="6" v-if="dataUser">
                                 <h3>{{ dataUser.fullName }}</h3>
                                 <h5 class="text-muted"><i class="ri-mail-line"></i> {{ dataUser.email }}</h5>
 
@@ -180,12 +179,24 @@ export default {
                                         aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                             </BCol>
+                            <BCol xl="4">   
+                                <BCard class="bg-light">
+
+                                    <BCardBody >
+                                        <h5 class="">My Subscription</h5>
+                                        <div class="d-flex justify-content-between">
+                                            <h6>Valid Sampai</h6>
+                                            <h6>2024-12-31</h6>
+                                        </div>
+                                    </BCardBody>
+                                </BCard>
+                            </BCol>
                         </BRow>
                     </BCardBody>
                     <BCardFooter>
                         <BButton variant="link" class="btn btn-link" @click="showTab = 'ringkasan'">Ringkasan</BButton>
-                        <BButton variant="link" class="btn btn-link" @click="showTab = 'pengaturan'">Pengaturan
-                        </BButton>
+                        <!-- <BButton variant="link" class="btn btn-link" @click="showTab = 'pengaturan'">Pengaturan
+                        </BButton> -->
                         <BButton variant="link" class="btn btn-link" @click="showTab = 'keamanan'">Keamanan</BButton>
                     </BCardFooter>
                 </BCard>

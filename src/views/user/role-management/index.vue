@@ -38,12 +38,6 @@ export default {
                     order:true
                 },
                 {
-                    title: 'Deskripsi',
-                    key: 'description',
-                    show: true,
-                    order:true
-                },
-                {
                     title: 'Action',
                     key: 'action',
                     show: true,

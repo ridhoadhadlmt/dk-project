@@ -137,11 +137,7 @@ export default {
         },
 
         getData() {
-            axios.get(process.env.VUE_APP_API_URL + "/v1/inventories/" + this.$route.params.id,{
-                headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                    },
-                }
+            axios.get(process.env.VUE_APP_API_URL + "/v1/inventories/" + this.$route.params.id
             )
                 .then(response => {
                     this.detail = response.data.data;
@@ -155,9 +151,7 @@ export default {
         listData(){
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventory-mutations",{
             params: this.params,
-            headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                },
+            
             })
             .then(response => {
                 this.data = response.data.data.items;
@@ -175,11 +169,7 @@ export default {
             this.showModalDelete = true;
         },
         deleteData() {
-            axios.delete(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.mutationId, {
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                },
-            }).then(() => {
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.mutationId).then(() => {
                 this.listData();
                 this.mutationId = null;
                 this.showModalDelete = false;
@@ -242,8 +232,8 @@ export default {
                 <div class="p-4 rounded-4 shadow-sm bg-white">
                     <BRow class="mb-3">
                         <BCol xl="2">
-                            <div class="">
-                                <img :src="detail.photo" class="rounded-4 img-fluid" alt="">
+                            <div class="w-100 h-50">
+                                <img :src="detail.photo" class="rounded-4 w-100 h-100 object-fit-cover" alt="">
                             </div>
                         </BCol>
                         <BCol xl="10">

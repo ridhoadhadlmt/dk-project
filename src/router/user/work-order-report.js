@@ -3,8 +3,8 @@ const FormWorkOrderReport = () => import("@/views/user/work-order-report/form.vu
 const ViewWorkOrderReport = () => import("@/views/user/work-order-report/view.vue")
 
 export default {
-    path: "/work-order-report",
-    name: "work-order-report",
+    path: "/work-order",
+    name: "work-order",
     meta: { title: "Work Order Report Management", authRequired: true },
     children: [
         {

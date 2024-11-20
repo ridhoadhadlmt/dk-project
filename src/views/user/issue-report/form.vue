@@ -5,24 +5,37 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
+import Multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
+import flatPickr from "vue-flatpickr-component";
+import "flatpickr/dist/flatpickr.css";
 
 export default {
     name: "program-maintenance-create",
     components: {
         Layout,
-        HeaderPage
+        HeaderPage,
+        Multiselect,
+        flatPickr,
     },
     data() {
         return {
             
             form: {
-                name: "",
-                type: "",
-                duration: "",
-                notification: "",
-                assignment: "",
-                isActive: true,
-                roleId: null
+                fleetId: null,
+                inspectionIds: [],
+                complaintParameter: null,
+                complaintTitle: null,
+                priority: null,
+                date: null,
+                time: null,
+                operatorId: null,
+                location: null,
+                description: null,
+                finishDate: null,
+                photo: null,
+                document: null,
+                tags: [],
             },
             options: [
                 {label: 'Teknis', value: 'teknis'},
@@ -48,6 +61,13 @@ export default {
                 total_pages: 0,
                 total_item: 0,
             },
+            preview: {
+                photo: null,
+                document: null,
+            },
+            fleets: [],
+            inspections: [],
+            tags: ['Teknis', 'Non Teknis'],
         }
     },
     watch: {
@@ -90,60 +110,103 @@ export default {
             }
         },
 
-        submit() {
+        async submit() {
             if(this.form.password !== this.form.confirmPassword) {
                 Swal.fire("Gagal!", "Password dan Konfirmasi Password tidak sama", "error");
                 return;
             }
 
             if(this.$route.params.id) {
-                axios.put(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.$route.params.id, this.form).then(() => {
+                axios.put(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id, this.form).then(() => {
                     Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
-                    this.$router.push('/program-maintenance');
+                    this.$router.push('/issue-report');
                 }).catch((error) => {
                     Swal.fire("Gagal!", "Gagal mengubah data", "error");
                     console.log(error);
                 });
             } else {
-                axios.post(process.env.VUE_APP_API_URL + '/cms/v1/admins', this.form).then(() => {
-                    Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                    this.$router.push('/program-maintenance');
-                }).catch((error) => {
-                    Swal.fire("Gagal!", "Gagal menambahkan data", "error");
-                    console.log(error);
-                });
-            }
-        },
 
-        fetchRoles() {
-            // axios.get(process.env.VUE_APP_API_URL + '/cms/v1/roles').then((response) => {
-            //     this.roles = response.data.data.items;
-            // }).catch((error) => {
-            //     console.log(error);
-            // });
-        },
+                //update file first 
+                const promises = [];
 
-        fetchData() {
-            if(this.$route.params.id) {
-                // axios.get(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.$route.params.id).then((response) => {
-                //     this.form.fullName = response.data.data.fullName;
-                //     this.form.email = response.data.data.email;
-                //     this.form.phoneNumber = response.data.data.phoneNumber;
-                //     this.form.whatsappNumber = response.data.data.whatsappNumber;
-                //     this.form.password = '';
-                //     this.form.confirmPassword = '';
-                //     this.form.roleId = response.data.data.roleId;
-                //     this.form.isActive = response.data.data.isActive;
+                if(this.form.photo) {
+                    promises.push(this.uploadFile(this.form.photo, 'photo'));
+                }
+
+                if(this.form.document) {
+                    promises.push(this.uploadFile(this.form.document, 'document'));
+                }
+
+                if(promises.length > 0) {
+                    await Promise.all(promises).then(() => {
+                        axios.post(process.env.VUE_APP_API_URL + '/v1/issues', this.form).then(() => {
+                            Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
+                            this.$router.push('/issue-report');
+                        }).catch((error) => {
+                            Swal.fire("Gagal!", "Gagal menambahkan data", "error");
+                            console.log(error);
+                        });
+                    });
+                }
+                
+                // axios.post(process.env.VUE_APP_API_URL + '/v1/issues', this.form).then(() => {
+                //     Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
+                //     this.$router.push('/issue-report');
                 // }).catch((error) => {
+                //     Swal.fire("Gagal!", "Gagal menambahkan data", "error");
                 //     console.log(error);
                 // });
             }
         },
 
+        async uploadFile(file,type) {
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await axios.post(process.env.VUE_APP_API_URL + '/misc/upload', formData).catch(() => {
+                Swal.fire("Gagal!", "Gagal mengupload file", "error");
+                return false;
+            });
+
+            this.form[type] = response.data.data.location;
+            return true;
+        },
+
+        fetchFleet() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/fleets').then((response) => {
+                this.fleets = response.data.data.items;
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        fetchInspection() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/users').then((response) => {
+                this.inspections = response.data.data.items;
+
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+
+        fetchData() {
+            if(this.$route.params.id) {
+                axios.get(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id).then((response) => {
+                    this.form = response.data.data;
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
+        },
+        handleFileChange(event,type) {
+            
+            this.form[type] = event.target.files[0];
+            this.preview[type] = URL.createObjectURL(event.target.files[0]);
+        }
+
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        this.fetchRoles();
+        this.fetchFleet();
+        this.fetchInspection();
         this.fetchData();
     }
 
@@ -167,53 +230,56 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="code-fleet" class="form-label">Kode Fleet<span class="text-danger">*</span></label>
-                                        <select id="code-fleet" class="form-select" required>
-                                            <option selected>Pilih kode fleet</option>
-                                            <!-- <option v-for=" in " :key="" :value="">{{  }}</option> -->
-                                        </select>
+                                        <multiselect v-model="form.fleetId" deselect-label="Can't remove this value"
+                                            value-prop="id" label="name" placeholder="Select one" :options="fleets"
+                                            :searchable="false" :allow-empty="false">
+                                            <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                        </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="referency" class="form-label">Referensi Form Inspeksi </label>
-                                        <select id="referency" class="form-select" required>
-                                            <option selected>Pilih refernsi form inspeksi</option>
-                                            <!-- <option v-for=" in " :key="" :value="">{{  }}</option> -->
-                                        </select>
+                                        <multiselect v-model="form.inspectionIds" deselect-label="Can't remove this value" mode="tags"
+                                            value-prop="id" label="fullName" placeholder="Select one" :options="inspections"
+                                            :searchable="false" :allow-empty="false">
+                                            <template #singleLabel="{ option }"><strong>{{ option.fullName }}</strong></template>
+                                        </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="parameter" class="form-label">Parameter Keluhan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="parameter" placeholder="Masukkan Parameter Keluhan" v-model="form.parameter" required>
+                                        <input type="text" class="form-control" id="parameter" placeholder="Masukkan Parameter Keluhan" v-model="form.complaintParameter" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="title" class="form-label">Judul Keluhan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="title" placeholder="Masukkan Parameter Keluhan" v-model="form.title" required>
+                                        <input type="text" class="form-control" id="title" placeholder="Masukkan Judul Keluhan" v-model="form.complaintTitle" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="priority" class="form-label">Prioritas <span class="text-danger">*</span></label>
-                                        <select id="priority" class="form-select" required>
-                                            <option selected>Pilih Prioritas</option>
-                                            <option v-for="priority in priorities" :key="priority.label" :value="priority.value">{{ priority.label }}</option>
-                                        </select>
+                                        <multiselect v-model="form.priority" deselect-label="Can't remove this value"
+                                            value-prop="value" label="label" placeholder="Select one" :options="priorities"
+                                            :searchable="false" :allow-empty="false">
+                                            <template #singleLabel="{ option }"><strong>{{ option.label }}</strong></template>
+                                        </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="date" class="form-label">Tanggal & Jam Keluhan <span class="text-danger">*</span></label>
                                     <BRow>
                                         <BCol md="6">
-                                            <input type="date" class="form-control">
+                                            <flat-pickr v-model="form.date" class="form-control" id="date" placeholder="Pilih Tanggal" required></flat-pickr>
                                         </BCol>
                                         <BCol md="6">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Jam" v-model="form.date" required>
-                                                <span class="input-group-text border-start-0 bg-transparent fs-22"><i class="bx bxs-time"></i></span>
-                                            </div>
+                                            <!-- <div class="input"> -->
+                                                <input type="time" class="form-control" id="date" placeholder="Pilih Jam" v-model="form.time" required>
+                                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><i class="bx bxs-time"></i></span> -->
+                                            <!-- </div> -->
                                         </BCol>
                                     </BRow>
                                     <div>
@@ -221,30 +287,32 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="priority" class="form-label">Operator Pelapor <span class="text-danger">*</span></label>
-                                        <select id="priority" class="form-select" required>
-                                            <option selected>Pilih operator pelapor</option>
-                                            <!-- <option v-for=" in " :key="" :value="">{{  }}</option> -->
-                                        </select>
+                                        <label for="operator" class="form-label">Operator Pelapor <span class="text-danger">*</span></label>
+                                        <multiselect v-model="form.operatorId" deselect-label="Can't remove this value"
+                                            value-prop="id" label="fullName" placeholder="Select one" :options="inspections"
+                                            :searchable="false" :allow-empty="false">
+                                            <template #singleLabel="{ option }"><strong>{{ option.fullName }}</strong></template>
+                                        </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="title" class="form-label">Lokasi Info Awal Keluhan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="title" placeholder="Masukkan info awal keluhan" v-model="form.title" required>
+                                        <input type="text" class="form-control" id="title" placeholder="Masukkan info awal keluhan" v-model="form.location" required>
                                     </div>
                                 </BCol>
                                 <BCol md="12">
                                     <div>
                                         <label for="description" class="form-label">Deskripsi <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="description" placeholder="Masukkan deskripsi" v-model="form.description" required>
+                                        <!-- <input type="text" class="form-control" id="description" placeholder="Masukkan deskripsi" v-model="form.description" required> -->
+                                        <textarea class="form-control" id="description" placeholder="Masukkan deskripsi" v-model="form.description" required></textarea>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="date" class="form-label">Tanggal Harus Ditanggapi <span class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="date" class="form-control" id="date" placeholder="Pilih tanggal" v-model="form.date" required>
+                                            <flat-pickr v-model="form.finishDate" class="form-control" id="date" placeholder="Pilih tanggal" required></flat-pickr>
                                             <!-- <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih tanggal" v-model="form.date" required>
                                             <span class="input-group-text border-start-0 bg-transparent" id="date"><i class="bx bxs-calendar fs-22"></i></span> -->
                                         </div>
@@ -252,27 +320,27 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="photo" class="form-label">Foto</label>
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" id="photo" placeholder="Upload foto" v-model="form.photo" required>
-                                            <span class="input-group-text bg-transparent" id="photo"><img src="@/assets/icons/image.svg" width="20"></span>
+                                        <label for="photo" class="form-label">Foto <span class="text-danger">*</span></label>
+                                         <div class="input-group">
+                                            <BFormFile v-model="form.photo" @change="handleFileChange($event,'photo')"></BFormFile>
+                                            <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="document" class="form-label">Dokumen <span class="text-danger">*</span></label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" id="date" placeholder="Upload Dokumen" v-model="form.date" required>
+                                        <BFormFile v-model="form.document" @change="handleFileChange($event,'document')"></BFormFile>
                                         <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="priority" class="form-label">Label Bebas <span class="text-danger">*</span></label>
+                                        <label for="tags" class="form-label">Label Bebas <span class="text-danger">*</span></label>
 
-                                        <select id="priority" class="form-select" required>
-                                            <option selected></option>
-                                        </select>
+                                        <Multiselect v-model="form.tags" mode="tags"
+                                            :close-on-select="false" :searchable="true" :create-option="true"
+                                            :options="tags"/>
                                     </div>
                                 </BCol>
                             </BRow>
