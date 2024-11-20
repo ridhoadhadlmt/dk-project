@@ -7,6 +7,7 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
+import store from "@/store";
 
 
 export default {
@@ -18,6 +19,7 @@ export default {
     },
     data() {
         return {
+            permissions: store.getters.permissions,
             headers: [
                 {
                     title: 'No',
@@ -27,19 +29,19 @@ export default {
                 },
                 {
                     title: 'Kode Issue',
-                    key: 'code_issue',
+                    key: 'issueCode',
                     show: true,
                     order:true
                 },
                 {
                     title: 'Kode Fleet',
-                    key: 'code_fleet',
+                    key: 'fleet.code',
                     show: true,
                     order:true
                 },
                 {
                     title: 'Judul',
-                    key: 'title',
+                    key: 'complaintTitle',
                     show: true,
                     order:true
                 },
@@ -55,54 +57,7 @@ export default {
                     show: true,
                     order:true
                 },
-                {
-                    title: 'Referensi Form Inspeksi',
-                    key: 'referency_form',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Parameter Keluhan',
-                    key: 'referency_form',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal & Jam Keluhan',
-                    key: 'referency_form',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Operator Pelapor',
-                    key: 'operator',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal Harus Diselesaikan',
-                    key: 'operator',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Status Keterlambatan',
-                    key: 'operator',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Status Issue',
-                    key: 'operator',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Label Bebas',
-                    key: 'operator',
-                    show: false,
-                    order:true
-                },
+
                 {
                     title: 'Action',
                     key: 'action',
@@ -147,17 +102,17 @@ export default {
     },
     methods: {
         getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins", {
-            //     params: this.params
-            // })
-            //     .then((response) => {
-            //         this.data = response.data.data.items;
-            //         this.config.total_pages = response.data.data.meta.totalPages;
-            //         this.config.total_items = response.data.data.meta.totalItems;
-            //     })
-            //     .catch((error) => {
-            //         console.log(error);
-            //     });
+            axios.get(process.env.VUE_APP_API_URL + "/v1/issues", {
+                params: this.params
+            })
+                .then((response) => {
+                    this.data = response.data.data.items;
+                    this.config.total_pages = response.data.data.meta.totalPages;
+                    this.config.total_items = response.data.data.meta.totalItems;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
 
         },
         rightcolumn() {
@@ -328,7 +283,7 @@ export default {
                                     Filter
                                 </BButton>
 
-                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportExcel">
+                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportExcel" v-if="permissions.includes('download')">
                                     Download Data
                                 </BButton>
 
@@ -338,7 +293,7 @@ export default {
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
 
-                                    <router-link :to="{ name: 'issue-report-create' }">
+                                    <router-link :to="{ name: 'issue-report-create' }" v-if="permissions.includes('create')">
                                         <BButton variant="primary" class="btn btn-md" style="white-space: nowrap;">
                                             Tambah Issue
                                         </BButton>
@@ -357,19 +312,19 @@ export default {
                                     <span :class="item.status == 'open' ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.status) ? 'Terbuka' : 'Tertutup' }}</span>
                                 </template>
                                 <template #action="{ item }">
-                                    <BButton variant="link" class="link-dark" size="sm" :to="`/issue-report/edit/${item.id}`">
+                                    <BButton variant="link" class="link-dark" size="sm" :to="`/issue-report/edit/${item.id}`" v-if="permissions.includes('update')">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
                                     </BButton>
-                                    <BButton variant="link" class="link-opacity-75" size="sm" @click="showModalDeleteMethod(item.id)">
+                                    <BButton variant="link" class="link-opacity-75" size="sm" @click="showModalDeleteMethod(item.id)" v-if="permissions.includes('delete')">
                                         <img src="@/assets/icons/delete.svg" alt="delete" />
                                     </BButton>
                                     <BButton variant="link" class="link-opacity-75" size="sm" :to="`/issue-report/view/${item.id}`">
                                         <img src="@/assets/icons/view.svg" alt="eye" />
                                     </BButton>  
-                                    <BButton variant="link" class="link-opacity-75 bg-success p-1 mx-1 rounded-2" size="sm" @click="showModalCheckMethod(item.id)">
+                                    <BButton variant="link" class="link-opacity-75 bg-success p-1 mx-1 rounded-2" size="sm" @click="showModalCheckMethod(item.id)" v-if="permissions.includes('approve')">
                                         <img src="@/assets/icons/check.svg" width="20" alt="check" />
                                     </BButton>
-                                    <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm" @click="showModalRejectMethod(item.id)">
+                                    <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm" @click="showModalRejectMethod(item.id)" v-if="permissions.includes('approve')">
                                         <img src="@/assets/icons/cancel.svg" width="16" alt="cancel" />
                                     </BButton>
                                 </template>
