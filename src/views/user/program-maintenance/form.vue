@@ -3,13 +3,13 @@
 import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
 import axios from "axios";
-// import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
 import TableComponent from "@/components/table.vue";
 import MultiSelect from "vue-multiselect";
 
 export default {
-    name: "program-maintenance-create",
+    name: "maintenance-programs-create",
     components: {
         Layout,
         HeaderPage,
@@ -56,8 +56,31 @@ export default {
                 {label: 'Teknis', value: 'teknis'},
                 {label: 'Non Teknis', value: 'nonteknis'},
             ],
-            users: [
+            itemTypes: [
+                {label: 'Part', value: 'part'},
+                {label: 'Tool', value: 'tool'},
             ],
+            activity: {
+                title: '',
+                note: '',
+                startDate: '',
+                dueDate: '',
+                actualFinishDate: '',
+                subtotal: 0,
+                items: [],
+            },
+            item: {
+                type: '',
+                inventoryId: '',
+                unit: '',
+                value: '',
+                qty: 0,
+                price: 0,
+                total: 0,
+            },
+            lineItems: '',
+            users: [],
+            inventories: [],
             data: [],
             params: {
                 page: 1,
@@ -71,7 +94,9 @@ export default {
                 total_item: 0,
             },
             valueUser: '',
+            activityId: '',
             showModalActivity: false,
+            showModalDelete: false,
         }
     },
     watch: {
@@ -123,18 +148,131 @@ export default {
             }
         },
 
-        
+        selectUser(){
+            const users = []
+            this.valueUser.forEach((item) => {
+                users.push(item.id)
+            })
+            this.form.users.push(users)
+            this.form.users = users
+            console.log(this.form.users)
 
-        
+        },
+        saveData(){            
+            axios.post(process.env.VUE_APP_API_URL + '/v1/maintenance-programs', this.form).then(() => {
+                Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                this.activity = {}
+                this.item = {}
+                this.$router.push('/maintenance-programs')
+            }).catch((error) => {
+                console.log(error);
+                Swal.fire("Gagal!", "Gagal menambah data", "error");
+            });
+        },
+        updateData(){ 
+            const form = {}
+            form.code = this.form.code
+            form.name = this.form.name
+            form.type = this.form.type
+            form.parameterDuration = this.form.parameterDuration           
+            form.parameterDurationNotification = this.form.parameterDurationNotification     
+            form.users = this.form.users
+            form.activities = this.form.activities
+            // console.log(form)
+            axios.put(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id, form).then(() => {
+                Swal.fire("Berhasil!", "Berhasil update data", "success");
+                this.activity = {}
+                this.item = {}
+                this.$router.push('/maintenance-programs')
+            }).catch((error) => {
+                console.log(error);
+                Swal.fire("Gagal!", "Gagal update data", "error");
+            });
+        },
+        showModalDeleteMethod(id) {
+            this.activityId = id;
+            this.showModalDelete = true;
+        },
+        deleteData() {
+            // this.showModalDelete = false
+            axios.update(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.activityId).then(() => {
+                this.listData();
+                this.activityId = null;
+                this.showModalDelete = false;
+
+                Swal.fire("Berhasil!", "Berhasil menghapus data", "success");
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataInventory(){            
+            axios.get(process.env.VUE_APP_API_URL + '/v1/inventories').then((response) => {
+                this.inventories = response.data.data.items
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        saveModalData(){
+            
+            this.showModalActivity = false
+            this.activity.items.push(this.item)
+            this.form.activities.push(this.activity)
+            
+
+        },
+        handleAction(){
+            if(this.$route.params.id){
+                this.updateData()
+            }
+            else{
+                this.saveData()
+            }
+        },
+        selectItem(){
+            this.item.inventoryId = this.lineItems.id
+            this.item.type = this.lineItems.type
+            console.log(this.item.type)
+            
+        },
 
         fetchData() {
             if(this.$route.params.id){
                 axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id,{
-                    headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                    },
+                    
                 }).then((response) => {
-                    this.form = response.data.data
+                    this.form.name = response.data.data.name
+                    this.form.type = response.data.data.type
+                    this.form.parameterDuration = response.data.data.parameterDuration
+                    this.form.parameterDurationNotification = response.data.data.parameterDurationNotification
+                    response.data.data.users.forEach((item) => {
+                        this.form.users.push(item.id)
+                    })
+                    response.data.data.activities.forEach((item) => {
+                        const activityObj = {}
+                        activityObj.title = item.title  
+                        activityObj.note = item.note  
+                        activityObj.startDate = item.startDate  
+                        activityObj.dueDate = item.dueDate  
+                        activityObj.subtotal = item.subtotal  
+                        activityObj.actualFinishDate = item.actualFinishDate 
+                        item.items .forEach((item) => {
+                            const itemObj = {}
+                            itemObj.id = item.id
+                            itemObj.type = item.type
+                            itemObj.inventoryId = item.inventoryId
+                            itemObj.value = item.value
+                            itemObj.qty = item.qty
+                            itemObj.unit = item.unit
+                            itemObj.price = item.price
+                            itemObj.total = item.total
+                            activityObj.items.push(itemObj)
+                            
+                        })
+                        
+                        this.form.activities.push(activityObj)
+                    })
+                    this.data = response.data.data.activities
+
                 }).catch((error) => {
                     console.log(error);
                 });
@@ -142,36 +280,18 @@ export default {
             this.params.maintenanceProgramId = this.$route.params.id
         },
         listData() {
-            if(this.$route.params.id){
-                axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-program-activities',{
-                    params: this.params,
-                    headers: {
-                        'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                    }, 
-                }).then((response) => {
+            
+            if(!this.$route.params.id){
+                axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-program-activities').then((response) => {
                     this.data = response.data.data.items
                     
                 }).catch((error) => {
                     console.log(error);
                 });
             }
-            axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-program-activities',{
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                },
-            }).then((response) => {
-                this.data = response.data.data.items
-                
-            }).catch((error) => {
-                console.log(error);
-            });
         },
         listDataUser() {
-            axios.get(process.env.VUE_APP_API_URL + '/v1/users',{
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                },
-            }).then((response) => {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/users').then((response) => {
                 this.users = response.data.data.items
                 
             }).catch((error) => {
@@ -185,6 +305,7 @@ export default {
         this.fetchData();
         this.listData();
         this.listDataUser();
+        this.listDataInventory();
     }
 
 };
@@ -193,62 +314,75 @@ export default {
 <template>
     <Layout>
         <HeaderPage title="Program Maintenance" pageTitle="Program Maintenance" />
+        <BModal v-model="showModalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="showModalDelete = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteData">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
         <BModal v-model="showModalActivity" hide-footer title="Tambah Aktifitas" centered  class="v-modal-custom" size="xl">
             <BForm>
                 <BRow>
                 <BCol md="12" class="mb-3">
                     <div>
                         <label for="">Judul <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" placeholder="Masukkan judul">
+                        <input type="text" class="form-control" v-model="activity.title" placeholder="Masukkan judul">
                     </div>
                 </BCol>
                 <BRow class="mb-3">
                     <BCol md="4">
                         <div>
                             <label for="" class="form-label">Start Date<span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.date" required>
+                            <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.startDate" required>
+                            <!-- <div class="input-group">
+                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.startDate" required>
                                 <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
-                            </div>
+                            </div> -->
                         </div>
                     </BCol>
                     <BCol md="4">
                         <div>
                             <label for="" class="form-label">Due Date<span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.date" required>
+                            <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.dueDate" required>
+                            <!-- <div class="input-group">
+                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.dueDate" required>
                                 <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
-                            </div>
+                            </div> -->
                         </div>
                     </BCol>
                     <BCol md="4">
                         <div>
                             <label for="" class="form-label">Actual Finish Date</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.date" required>
+                            <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.actualFinishDate" required>
+                            <!-- <div class="input-group">
+                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.actualFinishDate" required>
                                 <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
-                            </div>
+                            </div> -->
                         </div>
                     </BCol>
                 </BRow>
                 <BCol md="12" class="mb-3">
                     <div>
-                        <label for="">Note </label>
-                        <input type="text" class="form-control" placeholder="Masukkan note">
+                        <label for="">Note</label>
+                        <input type="text" class="form-control" v-model="activity.note" placeholder="Masukkan note">
                     </div>
                 </BCol>
                 <BRow class="mb-3">
                     <label for="" class="form-label">Line Items <span class="text-danger">*</span></label>
                     <BCol md="2">
                         <div>
-                            <select id="" class="form-select" required>
-                                <option selected>Part</option>
+                            <select id="type" v-model="lineItems" class="form-select" @change="selectItem" required>
+                                <option v-for="inventory in inventories" :key="inventory.id" :value="inventory">{{ inventory.type}}</option>
                             </select>
                         </div>
                     </BCol>
                     <BCol md="2">
                         <div>
-                            <select id="" class="form-select" required>
+                            <select id="" class="form-select" v-model="item.value" required>
                                 <option selected>Sparepart</option>
                             </select>
                         </div>
@@ -256,8 +390,8 @@ export default {
                     <BCol md="2" class="pe-0">
                         <div>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="quantity" width="80%" placeholder="Quantity" required>
-                                <select id="" class="form-select" required>
+                                <input type="text" class="form-control" v-model="item.qty" id="quantity" width="80%" placeholder="Quantity" required>
+                                <select id="unit" class="form-select" v-model="item.unit" required>
                                     <option selected>Pcs</option>
                                 </select>
                             </div>
@@ -270,13 +404,13 @@ export default {
                                 <i class="bx bx-x fs-22"></i>
                             </div>
                             <div>
-                                <input type="text" class="form-control" placeholder="Rp0">
+                                <input type="text" class="form-control" v-model="item.price" placeholder="Rp0">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <i class="las la-equals fs-22"></i>
                             </div>
                             <div>
-                                <input type="text" class="form-control" disabled placeholder="Rp0">
+                                <input type="text" class="form-control" v-model="item.total" placeholder="Rp0">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <BButton variant="link" class="p-1 rounded-circle"><i class="bx bxs-copy-alt fs-22"></i></BButton>
@@ -290,18 +424,18 @@ export default {
                 <BCol md="12">
                     <div>
                         <label for="">Subtotal </label>
-                        <input type="text" class="form-control" placeholder="Rp0" disabled>
+                        <input type="text" v-model="activity.subtotal" class="form-control" placeholder="Rp0">
                     </div>
                 </BCol>
             </BRow>
-            </BForm>
             <div class="cta">
                 
                 <div class="d-flex justify-content-end mt-4">
-                    <BButton variant="light" class="me-2">Kembali</BButton>
-                    <BButton variant="dark">Simpan</BButton>
+                    <BButton variant="light" @click="showModalActivity = false" class="me-2">Kembali</BButton>
+                    <BButton variant="dark" @click="saveModalData()">Simpan</BButton>
                 </div>
             </div>
+            </BForm>
         </BModal>
         <BRow>
             <BCol xl="12">
@@ -313,6 +447,12 @@ export default {
                     <BCardBody>
                         <BForm>
                             <BRow class="gy-4">
+                                <BCol md="6" v-if="this.$route.params.id">
+                                    <div>
+                                        <label for="code" class="form-label">Kode Program<span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="code" placeholder="Masukkan kode program" v-model="form.code" required>
+                                    </div>
+                                </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="name" class="form-label">Nama Program<span class="text-danger">*</span></label>
@@ -323,7 +463,7 @@ export default {
                                     <div>
                                         <label for="teknis" class="form-label">Teknis <span class="text-danger">*</span></label>
                                         <select id="teknis" class="form-select" v-model="form.type" required>
-                                            <option v-for="type in types" :key="type.label" :value="form.type">{{ type.label }}</option>
+                                            <option v-for="type in types" :key="type.label">{{ type.label }}</option>
                                         </select>
                                     </div>
                                 </BCol>
@@ -345,7 +485,7 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="assignment" class="form-label">Penugasan <span class="text-danger">*</span></label>
-                                        <MultiSelect v-model="valueUser" :options="users" label="fullName" track-by="fullName" placeholder="Pilih Penugasan" @select="selectOpt" :multiple="true"></MultiSelect>
+                                        <MultiSelect v-model="valueUser" :options="users" label="fullName" track-by="fullName" placeholder="Pilih Penugasan" @select="selectUser" :multiple="true"></MultiSelect>
                                     </div>
                                 </BCol>
                             </BRow>
@@ -359,11 +499,7 @@ export default {
                     <div class="d-flex flex-wrap justify-content-between p-lg-4">
                         <h4 class="card-title mb-0">Aktivitas</h4>
 
-                        <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
-                            
-                            
-                            
-
+                        <div v-if="!this.$route.params.id" class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
                                     <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
@@ -386,13 +522,13 @@ export default {
                             <!-- //Status -->
                             
                             <template #action="{ item }">
-                                <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/program-maintenance/edit/${item.id}`">
+                                <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/maintenance-programs/edit/${item.id}`">
                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                 </BButton>
                                 <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/program-maintenance/view/${item.id}`">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/maintenance-programs/view/${item.id}`">
                                     <img src="@/assets/icons/view.svg" alt="eye" />
                                 </BButton>
                             </template>
@@ -425,8 +561,10 @@ export default {
                     </div>
                     <div class="cta p-lg-4">
                         <div class="d-flex justify-content-end">
-                            <BButton variant="light" class="me-2">Kembali</BButton>
-                            <BButton variant="dark">Simpan</BButton>
+                            <BButton variant="light" class="me-2">
+                                <router-link to="/maintenance-programs">Kembali</router-link>
+                            </BButton>
+                            <BButton variant="dark" @click="handleAction()">Simpan</BButton>
                         </div>
                     </div>
                 </div>

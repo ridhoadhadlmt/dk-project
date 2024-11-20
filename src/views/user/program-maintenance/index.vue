@@ -87,9 +87,7 @@ export default {
         listData() {
             axios.get(process.env.VUE_APP_API_URL + "/v1/maintenance-programs", {
                 params: this.params,
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlODc5NzBjLTNjYTUtNDA3Mi04OWE3LWVhMmUyNGE0ZDg0ZCIsImVtYWlsIjoiMDEzaWNoc2FubUBnbWFpbC5jb20iLCJhdWRpZW5jZSI6ImFjY2VzcyIsInNpZCI6IiQyYSQxMCRFWEk1UmZ0U2FDOEFyZWN1NlE3ZXd1TG16c2lhUUdONmkyY0xaTFlTOVRTWGdtdHlNVld3NiIsImlhdCI6MTczMTQ2NjkyNiwiZXhwIjoxNzMxNjM5NzI2LCJhdWQiOiIzNDRiN2E5ZDRiZTI5YmY2ZDc1YzI0ZWVmODMzZWU1YyIsImlzcyI6IlBVQkxJQyJ9.Yuzcd1-YHSJVe2MXl5yGNnZGnzZ_aJEPg5-ptAZ_69mDdx_D-_uKk5ZLAK8e35rPQ8h2IFKCfbBwP4NecJjKRQ'
-                },
+                
             })
             .then((response) => {
                 this.data = response.data.data.items;
@@ -252,7 +250,7 @@ export default {
 
                                     <router-link :to="{ name: 'maintenance-programs-create' }">
                                         <BButton variant="primary" class="btn btn-md" style="white-space: nowrap;">
-                                            Tambah Progran
+                                            Tambah Program
                                         </BButton>
                                     </router-link>
                                 </div>
