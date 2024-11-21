@@ -117,9 +117,18 @@ export default {
       axios.post(process.env.VUE_APP_API_URL + "/v1/auth/valid-otp", {
         otp: this.otp.join(''),
         otpToken: localStorage.getItem('otpToken')
-      }).then(response => {
+      }).then(async response => {
         localStorage.setItem('jwt', response.data.data.accessToken);
         this.$router.push('/dashboard');
+
+        await axios.get(process.env.VUE_APP_API_URL + "/v1/me/menu", {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+            }
+        }).then(response => {
+            localStorage.setItem('menu', JSON.stringify(response.data.data));
+            this.$router.push('/dashboard');
+        });
       }).catch(() => {
         this.otpError = true;
       });
