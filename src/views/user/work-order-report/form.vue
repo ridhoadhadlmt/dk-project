@@ -274,7 +274,6 @@ export default {
                     this.form.code = data.code;
                     this.form.fleetId = data.fleetId;
                     this.form.title = data.title;
-                    this.form.issueIds = data.issueIds;
                     this.form.type = parseInt(data.type);
                     this.form.periodic = data.periodic;
                     this.form.category = data.category;
@@ -294,6 +293,8 @@ export default {
                     this.startedAtTime = moment(data.startedAt).format('HH:mm');
                     this.targetedAtDate = data.targetedAt.split(' ')[0];
                     this.targetedAtTime = moment(data.targetedAt).format('HH:mm');
+
+                    this.form.issueIds = data.issues.map(item => item.issue.id);
 
 
                     this.dataActivity = data.activities.map((activity) => {
@@ -470,7 +471,8 @@ export default {
                         <div>
                             <label for="" class="form-label">Start Date<span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.startDate" required>
+                                <flat-pickr v-model="formDataActivity.startDate" class="form-control" id="date" placeholder="Pilih Tanggal" required></flat-pickr>
+                                <!-- <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.startDate" required> -->
                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                             </div>
                         </div>
@@ -479,7 +481,8 @@ export default {
                         <div>
                             <label for="" class="form-label">Due Date<span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.endDate" required>
+                                <flat-pickr v-model="formDataActivity.endDate" class="form-control" id="date" placeholder="Pilih Tanggal" required></flat-pickr>
+                                <!-- <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.endDate" required> -->
                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                             </div>
                         </div>
@@ -488,7 +491,7 @@ export default {
                         <div>
                             <label for="" class="form-label">Actual Finish Date</label>
                             <div class="input-group">
-                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.actualFinishDate" required>
+                                <flat-pickr v-model="formDataActivity.actualFinishDate" class="form-control" id="date" placeholder="Pilih Tanggal" required></flat-pickr>
                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                             </div>
                         </div>
@@ -608,15 +611,6 @@ export default {
                                             :options="issues">
                                             <template #singleLabel="{ option }"><strong>{{ option.issueCode + ' - ' + option.complaintTitle }}</strong></template>
                                         </multiselect>
-                                    </div>
-                                </BCol>
-                                <BCol md="6">
-                                    <div>
-                                        <label for="notification" class="form-label">Referensi Reminder <span class="text-danger">*</span></label>
-                                        <select id="code-fleet" class="form-select" required>
-                                            <option selected></option>
-                                            <!-- <option v-for=" in " :key="" :value="">{{  }}</option> -->
-                                        </select>
                                     </div>
                                 </BCol>
                                 <BCol md="6">

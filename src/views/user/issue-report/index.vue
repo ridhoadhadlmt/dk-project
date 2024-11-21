@@ -24,6 +24,7 @@ export default {
     },
     data() {
         return {
+            tags: [],
             permissions: [],
             headers: [
                 {
@@ -79,8 +80,7 @@ export default {
                 search: '',
                 sortBy: 'id.desc',
                 priority: null,
-                startDate: null,
-                endDate: null,
+                dateTime: null,
                 finishDate: null,
                 tags: null,
                 status: null,
@@ -120,7 +120,13 @@ export default {
                 .catch((error) => {
                     console.log(error);
                 });
-
+        },
+        fetchTags() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/tags').then((response) => {
+                this.tags = response.data.data.items;
+            }).catch((error) => {
+                console.log(error);
+            });
         },
         rightcolumn() {
             if (document.querySelector('.layout-rightside-col').classList.contains('d-block')) {
@@ -253,6 +259,7 @@ export default {
     mounted() {
         this.permissions = store.getters["auth/permission"];
         this.getData();
+        this.fetchTags();
         window.addEventListener("resize", this.resizerightcolumn);
     }
 
@@ -304,23 +311,23 @@ export default {
         <BModal v-model="showModalFilter" hide-footer hide-header-close centered  class="v-modal-custom" size="md" title="Filter">
             <BForm @submit.prevent="filterData">
                 <BFormGroup label="Prioritas" class="mb-3">
-                    <Multiselect v-model="params.priority" :options="['critical', 'high', 'medium', 'low', 'none']" class="form-control" />
+                    <Multiselect v-model="params.priority" :options="['critical', 'high', 'medium', 'low', 'none']" class="form-control" placeholder="Pilih Prioritas" />
                 </BFormGroup>
 
                 <BFormGroup label="Tanggal Keluhan" class="mb-3">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="input-group">
-                                <flat-pickr v-model="params.startDate" :config="rangeDateconfig" class="form-control"
-                                    id="complaint-datepicker-start" alt-input="asd">
+                                <flat-pickr v-model="params.dateTime" :config="rangeDateconfig" class="form-control"
+                                    id="complaint-datepicker-start" alt-input="asd" placeholder="Dari">
                                 </flat-pickr>
                                 <span class="input-group-text"><i class="ri-calendar-event-line"></i></span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="input-group mt-2 mt-md-0">
-                                <flat-pickr v-model="params.endDate" :config="rangeDateconfig" class="form-control"
-                                    id="complaint-datepicker-end">
+                                <flat-pickr v-model="params.finishDate" :config="rangeDateconfig" class="form-control"
+                                    id="complaint-datepicker-end" placeholder="Sampai">
                                 </flat-pickr>
                                 <span class="input-group-text"><i class="ri-calendar-event-line"></i></span>
                             </div>
@@ -330,18 +337,18 @@ export default {
 
                 <BFormGroup label="Tanggal Harus Diselesaikan" class="mb-3">
                     <div class="input-group">
-                        <flat-pickr v-model="params.finishDate" class="form-control" id="due-datepicker">
+                        <flat-pickr v-model="params.finishDate" class="form-control" id="due-datepicker" placeholder="Pilih Tanggal">
                         </flat-pickr>
                         <span class="input-group-text"><i class="ri-calendar-event-line"></i></span>
                     </div>
                 </BFormGroup>
 
-                <BFormGroup label="Status Keterlambatan" class="mb-3">
-                    <Multiselect v-model="params.status" :options="['On Time', 'Delayed']" class="form-control" />
+                <BFormGroup label="Status" class="mb-3">
+                    <Multiselect v-model="params.status" :options="['open','approved','rejected']" class="form-control" placeholder="Pilih Status" />
                 </BFormGroup>
 
                 <BFormGroup label="Status Issue" class="mb-3">
-                    <Multiselect v-model="params.status" :options="['Open', 'Closed']" class="form-control" />
+                    <Multiselect v-model="params.tags" :options="tags" class="form-control" placeholder="Pilih Tag" value-prop="tag" label="tag" />
                 </BFormGroup>
 
                 <div class="d-flex justify-content-end">
@@ -402,7 +409,10 @@ export default {
                                 </template>
                                 <!-- //Status -->
                                 <template #status="{ item }">   
-                                    <span :class="item.status == 'open' ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.status) ? 'Terbuka' : 'Tertutup' }}</span>
+                                    <span v-if="item.status == 'open'" class="badge rounded-pill bg-success-subtle text-success fs-12">Terbuka</span>
+                                    <span v-else-if="item.status == 'approved'" class="badge rounded-pill bg-info-subtle text-info fs-12">Disetujui</span>
+                                    <span v-else-if="item.status == 'rejected'" class="badge rounded-pill bg-danger-subtle text-danger fs-12">Ditolak</span>
+                                    <span v-else class="badge rounded-pill bg-danger-subtle text-danger fs-12">Tertutup</span>
                                 </template>
                                 <template #action="{ item }">
                                     <BButton variant="link" class="link-dark" size="sm" :to="`/issue-report/edit/${item.id}`" v-if="permissions.includes('update')">
@@ -414,10 +424,10 @@ export default {
                                     <BButton variant="link" class="link-opacity-75" size="sm" :to="`/issue-report/view/${item.id}`">
                                         <img src="@/assets/icons/view.svg" alt="eye" />
                                     </BButton>  
-                                    <BButton variant="link" class="link-opacity-75 bg-success p-1 mx-1 rounded-2" size="sm" @click="showModalCheckMethod(item.id)" v-if="permissions.includes('approve')">
+                                    <BButton variant="link" class="link-opacity-75 bg-success p-1 mx-1 rounded-2" size="sm" @click="showModalCheckMethod(item.id)" v-if="permissions.includes('approve') && item.status == 'open'">
                                         <img src="@/assets/icons/check.svg" width="20" alt="check" />
                                     </BButton>
-                                    <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm" @click="showModalRejectMethod(item.id)" v-if="permissions.includes('approve')">
+                                    <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm" @click="showModalRejectMethod(item.id)" v-if="permissions.includes('approve') && item.status == 'open'">
                                         <img src="@/assets/icons/cancel.svg" width="16" alt="cancel" />
                                     </BButton>
                                 </template>
