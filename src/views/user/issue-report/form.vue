@@ -367,7 +367,7 @@ export default {
                                 </BCol>
                             </BRow>
                             <div class="d-flex justify-content-end mt-4">
-                                <router-link to="/program-maintenance">
+                                <router-link to="/issue-report">
                                     <BButton variant="light" class="me-2">Kembali</BButton>
                                 </router-link>
                                 <BButton type="submit" variant="primary">Simpan</BButton>

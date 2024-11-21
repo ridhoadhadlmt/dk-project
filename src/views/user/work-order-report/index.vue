@@ -33,7 +33,7 @@ export default {
                 },
                 {
                     title: 'Jumlah Backlog',
-                    key: 'qty',
+                    key: 'backlogCount',
                     show: true,
                     order:true
                 },
