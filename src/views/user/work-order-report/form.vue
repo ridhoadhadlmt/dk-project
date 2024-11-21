@@ -23,6 +23,7 @@ export default {
     },
     data() {
         return {
+            editActivityIndex: null,
             changeDocument: false,
             changePhoto: false,
             typeFleet : "",
@@ -171,6 +172,24 @@ export default {
     },
     methods: {
         showModalActivityMethod(){
+            this.formDataActivity = {
+                title: '',
+                startDate: '',
+                endDate: '',
+                actualFinishDate: '',
+                note: '',
+                items: [
+                    {
+                        type: '',
+                        inventoryId: '',
+                        value: '',
+                        qty: '',
+                        unit: '',
+                        price: 10,
+                        total: 10
+                    }
+                ]
+            }
             this.showModalActivity = true
         },
         rightcolumn() {
@@ -314,13 +333,20 @@ export default {
         },
 
         copyItem(index) {
-            this.formDataActivity.items.push(this.formDataActivity.items[index]);
+            // this.formDataActivity.items.push(this.formDataActivity.items[index]);
+            const item = this.formDataActivity.items[index];
+            this.formDataActivity.items.push({...item});
         },
         deleteItem(index) {
             this.formDataActivity.items.splice(index, 1);
         },
         submitActivity() {
-            this.dataActivity.push(this.formDataActivity);
+            if(this.activityIndex == null) {
+                this.dataActivity.push(this.formDataActivity);
+            } else {
+                this.dataActivity[this.activityIndex] = this.formDataActivity;
+            }
+
             this.showModalActivity = false;
             this.formDataActivity = {
                 title: '',
@@ -398,7 +424,20 @@ export default {
 
             return response.data.data.location;
         },
+        lineItemCalculate(index) {
+            this.formDataActivity.items[index].total = this.formDataActivity.items[index].qty * this.formDataActivity.items[index].price;
+            this.formDataActivity.total = this.formDataActivity.items.reduce((acc, item) => acc + item.total, 0);
+        },
 
+        deleteActivity(index) {
+            this.dataActivity.splice(index, 1);
+        },
+
+        editActivity(index) {
+            this.formDataActivity = this.dataActivity[index];
+            this.showModalActivity = true;
+            this.activityIndex = index;
+        },
 
     },
     mounted() {
@@ -487,7 +526,7 @@ export default {
                     <BCol md="2" class="pe-0">
                         <div>
                             <div class="input-group">
-                                <input type="number" class="form-control" id="quantity" width="80%" placeholder="Quantity" required v-model="formDataActivity.items[index].qty">
+                                <input type="number" class="form-control" id="quantity" width="80%" placeholder="Quantity" required v-model="formDataActivity.items[index].qty" @change="lineItemCalculate(index)">
                                 <select id="" class="form-select" required v-model="formDataActivity.items[index].unit">
                                     <option selected>Pilih Satuan</option>
                                     <option v-for="unit in units" :key="unit.id" :value="unit.value">{{ unit.name }}</option>
@@ -502,13 +541,13 @@ export default {
                                 <i class="bx bx-x fs-22"></i>
                             </div>
                             <div>
-                                <input type="number" class="form-control" placeholder="Rp 0">
+                                <input type="number" class="form-control" placeholder="Rp 0" v-model="formDataActivity.items[index].price" @change="lineItemCalculate(index)">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <i class="las la-equals fs-22"></i>
                             </div>
                             <div>
-                                <input type="number" class="form-control" disabled placeholder="Rp 0">
+                                <input type="number" class="form-control" disabled placeholder="Rp 0" v-model="formDataActivity.items[index].total">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i class="bx bxs-copy-alt fs-22"></i></BButton>
@@ -522,7 +561,7 @@ export default {
                 <BCol md="12">
                     <div>
                         <label for="">Subtotal </label>
-                        <input type="number" class="form-control" placeholder="Rp0" disabled>
+                        <input type="number" class="form-control" placeholder="Rp0" disabled v-model="formDataActivity.total">
                     </div>
                 </BCol>
             </BRow>
@@ -626,7 +665,6 @@ export default {
                                                     id="date" 
                                                     placeholder="Pilih Tanggal" 
                                                     required 
-                                                    :config="{enableTime: false, noCalendar: true}"
                                                 ></flat-pickr>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                                             </div>
@@ -761,11 +799,11 @@ export default {
                                 {{ index + 1 }}
                             </template>
 
-                            <template #action="{ item }">
-                                <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/program-maintenance/edit/${item.id}`">
+                            <template #action="{ item, index }">
+                                <BButton variant="link" class="link-dark fs-22" size="sm" @click="editActivity(index)">
                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="deleteActivity(index)">
                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                 </BButton>
                                 <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/program-maintenance/view/${item.id}`">
