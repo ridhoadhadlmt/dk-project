@@ -20,7 +20,8 @@ export default {
     },
     data() {
         return {
-            
+            changePhoto: false,
+            changeDocument: false,
             form: {
                 fleetId: null,
                 inspectionIds: [],
@@ -111,13 +112,41 @@ export default {
         },
 
         async submit() {
-            if(this.form.password !== this.form.confirmPassword) {
-                Swal.fire("Gagal!", "Password dan Konfirmasi Password tidak sama", "error");
-                return;
+            //update file first 
+            let photo = null;
+            let document = null;
+
+            if(this.changePhoto) {
+                photo = await this.uploadFile(this.form.photo, 'photo');
+            }
+
+            if(this.changeDocument) {
+                document = await this.uploadFile(this.form.document, 'document');
+            }
+
+            if (photo || document) {
+                this.form.photo = photo;
+                this.form.document = document;
             }
 
             if(this.$route.params.id) {
-                axios.put(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id, this.form).then(() => {
+                const body = {
+                    fleetId: this.form.fleetId,
+                    inspectionIds: this.form.inspectionIds,
+                    complaintParameter: this.form.complaintParameter,
+                    complaintTitle: this.form.complaintTitle,
+                    priority: this.form.priority,
+                    date: this.form.date,
+                    time: this.form.time,
+                    operatorId: this.form.operatorId,
+                    location: this.form.location,
+                    description: this.form.description,
+                    finishDate: this.form.finishDate,
+                    photo: this.form.photo,
+                    document: this.form.document,
+                    tags: this.form.tags,
+                }
+                axios.put(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id, body).then(() => {
                     Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
                     this.$router.push('/issue-report');
                 }).catch((error) => {
@@ -126,40 +155,20 @@ export default {
                 });
             } else {
 
-                //update file first 
-                const promises = [];
-
-                if(this.form.photo) {
-                    promises.push(this.uploadFile(this.form.photo, 'photo'));
-                }
-
-                if(this.form.document) {
-                    promises.push(this.uploadFile(this.form.document, 'document'));
-                }
-
-                if(promises.length > 0) {
-                    await Promise.all(promises).then(() => {
-                        axios.post(process.env.VUE_APP_API_URL + '/v1/issues', this.form).then(() => {
-                            Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                            this.$router.push('/issue-report');
-                        }).catch((error) => {
-                            Swal.fire("Gagal!", "Gagal menambahkan data", "error");
-                            console.log(error);
-                        });
-                    });
-                }
                 
-                // axios.post(process.env.VUE_APP_API_URL + '/v1/issues', this.form).then(() => {
-                //     Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                //     this.$router.push('/issue-report');
-                // }).catch((error) => {
-                //     Swal.fire("Gagal!", "Gagal menambahkan data", "error");
-                //     console.log(error);
-                // });
+
+                axios.post(process.env.VUE_APP_API_URL + '/v1/issues', this.form).then(() => {
+                    Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
+                    this.$router.push('/issue-report');
+                }).catch((error) => {
+                    Swal.fire("Gagal!", "Gagal menambahkan data", "error");
+                    console.log(error);
+                });
+            
             }
         },
 
-        async uploadFile(file,type) {
+        async uploadFile(file) {
             const formData = new FormData();
             formData.append('file', file);
             const response = await axios.post(process.env.VUE_APP_API_URL + '/misc/upload', formData).catch(() => {
@@ -167,8 +176,7 @@ export default {
                 return false;
             });
 
-            this.form[type] = response.data.data.location;
-            return true;
+            return  response.data.data.location;
         },
 
         fetchFleet() {
@@ -191,12 +199,25 @@ export default {
             if(this.$route.params.id) {
                 axios.get(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id).then((response) => {
                     this.form = response.data.data;
+                    this.preview.photo = response.data.data.photo;
+                    this.preview.document = response.data.data.document;
                 }).catch((error) => {
                     console.log(error);
                 });
             }
         },
+        fetchTags() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/tags').then((response) => {
+                this.tags = response.data.data.items;
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
         handleFileChange(event,type) {
+            if(type == 'photo')
+                this.changePhoto = true;
+            else if(type == 'document')
+                this.changeDocument = true;
             
             this.form[type] = event.target.files[0];
             this.preview[type] = URL.createObjectURL(event.target.files[0]);
@@ -208,6 +229,7 @@ export default {
         this.fetchFleet();
         this.fetchInspection();
         this.fetchData();
+        this.fetchTags();
     }
 
 };
@@ -339,13 +361,13 @@ export default {
                                         <label for="tags" class="form-label">Label Bebas <span class="text-danger">*</span></label>
 
                                         <Multiselect v-model="form.tags" mode="tags"
-                                            :close-on-select="false" :searchable="true" :create-option="true"
-                                            :options="tags"/>
+                                            :close-on-select="false" :searchable="true" :create-option="true" 
+                                            :options="tags" value-prop="tag" label="tag"/>
                                     </div>
                                 </BCol>
                             </BRow>
                             <div class="d-flex justify-content-end mt-4">
-                                <router-link to="/program-maintenance">
+                                <router-link to="/issue-report">
                                     <BButton variant="light" class="me-2">Kembali</BButton>
                                 </router-link>
                                 <BButton type="submit" variant="primary">Simpan</BButton>

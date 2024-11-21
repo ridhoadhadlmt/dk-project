@@ -33,7 +33,7 @@ export default {
                 },
                 {
                     title: 'Jumlah Backlog',
-                    key: 'qty',
+                    key: 'backlogCount',
                     show: true,
                     order:true
                 },
@@ -283,7 +283,9 @@ export default {
                                 </template>
 
                                 <template #status="{ item }">   
-                                    <span :class="item.status === 'completed' ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.status) ? 'Completed' : 'Pending' }}</span>
+                                    <!-- <span :class="item.status === 'completed' ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.status) ? 'Completed' : 'Pending' }}</span> -->
+                                     <span v-if="item.status === 'completed'" class="badge rounded-pill bg-success-subtle text-success fs-12">Completed</span>
+                                     <span v-else class="badge rounded-pill bg-danger-subtle text-danger fs-12">Pending</span>
                                 </template>
                                 <template #action="{ item }">
                                     <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/work-order/edit/${item.id}`">

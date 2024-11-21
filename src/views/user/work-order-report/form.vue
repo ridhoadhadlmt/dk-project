@@ -8,6 +8,9 @@ import HeaderPage from "@/components/header-page.vue";
 import TableComponent from "@/components/table.vue";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
+import flatPickr from "vue-flatpickr-component";
+import "flatpickr/dist/flatpickr.css";
+import moment from "moment";
 
 export default {
     name: "work-order-report-create",
@@ -16,9 +19,13 @@ export default {
         HeaderPage,
         TableComponent,
         Multiselect,
+        flatPickr,
     },
     data() {
         return {
+            editActivityIndex: null,
+            changeDocument: false,
+            changePhoto: false,
             typeFleet : "",
             startedAtDate: "",
             startedAtTime: "",
@@ -165,6 +172,24 @@ export default {
     },
     methods: {
         showModalActivityMethod(){
+            this.formDataActivity = {
+                title: '',
+                startDate: '',
+                endDate: '',
+                actualFinishDate: '',
+                note: '',
+                items: [
+                    {
+                        type: '',
+                        inventoryId: '',
+                        value: '',
+                        qty: '',
+                        unit: '',
+                        price: 10,
+                        total: 10
+                    }
+                ]
+            }
             this.showModalActivity = true
         },
         rightcolumn() {
@@ -227,11 +252,11 @@ export default {
             });
         },
         fetchTags() {
-            // axios.get(process.env.VUE_APP_API_URL + '/v1/tags').then((response) => {
-            //     this.tags = response.data.data.items;
-            // }).catch((error) => {
-            //     console.log(error);
-            // });
+            axios.get(process.env.VUE_APP_API_URL + '/v1/tags').then((response) => {
+                this.tags = response.data.data.items;
+            }).catch((error) => {
+                console.log(error);
+            });
         },
         fetchInventories() {
             axios.get(process.env.VUE_APP_API_URL + '/v1/inventories').then((response) => {
@@ -243,18 +268,59 @@ export default {
 
         fetchData() {
             if(this.$route.params.id) {
-                // axios.get(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.$route.params.id).then((response) => {
-                //     this.form.fullName = response.data.data.fullName;
-                //     this.form.email = response.data.data.email;
-                //     this.form.phoneNumber = response.data.data.phoneNumber;
-                //     this.form.whatsappNumber = response.data.data.whatsappNumber;
-                //     this.form.password = '';
-                //     this.form.confirmPassword = '';
-                //     this.form.roleId = response.data.data.roleId;
-                //     this.form.isActive = response.data.data.isActive;
-                // }).catch((error) => {
-                //     console.log(error);
-                // });
+                axios.get(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.$route.params.id).then((response) => {
+                    const data = response.data.data;
+
+                    this.form.code = data.code;
+                    this.form.fleetId = data.fleetId;
+                    this.form.title = data.title;
+                    this.form.issueIds = data.issueIds;
+                    this.form.type = parseInt(data.type);
+                    this.form.periodic = data.periodic;
+                    this.form.category = data.category;
+                    this.form.priority = data.priority;
+                    this.form.startedAt = data.startedAt;
+                    this.form.targetedAt = data.targetedAt;
+                    this.form.picId = data.picId;
+                    this.form.photo = data.photo;
+                    this.form.document = data.document;
+                    this.form.comment = data.comment;
+                    this.form.startParameter = data.startParameter;
+                    this.form.workOrderEstimation = data.workOrderEstimation;
+                    this.form.tags = data.tags;
+                    this.form.activities = data.activities;
+
+                    this.startedAtDate = data.startedAt.split(' ')[0];
+                    this.startedAtTime = moment(data.startedAt).format('HH:mm');
+                    this.targetedAtDate = data.targetedAt.split(' ')[0];
+                    this.targetedAtTime = moment(data.targetedAt).format('HH:mm');
+
+
+                    this.dataActivity = data.activities.map((activity) => {
+                        const items = activity.items.map((item) => {
+                            return {
+                                type: item.type,
+                                inventoryId: item.inventoryId,
+                                value: item.value,
+                                qty: item.qty,
+                                unit: item.unit,
+                                price: item.price,
+                                total: item.total
+                            }
+                        })
+                        return {
+                            title: activity.title,
+                            startDate: activity.startDate,
+                            endDate: activity.endDate,
+                            total: activity.total,
+                            actualFinishDate: activity.actualFinishDate,
+                            note: activity.note,
+                            items: items
+                        }
+                    });
+                }).catch((error) => {
+                    console.log(error);
+                });
             }
         },
 
@@ -267,13 +333,20 @@ export default {
         },
 
         copyItem(index) {
-            this.formDataActivity.items.push(this.formDataActivity.items[index]);
+            // this.formDataActivity.items.push(this.formDataActivity.items[index]);
+            const item = this.formDataActivity.items[index];
+            this.formDataActivity.items.push({...item});
         },
         deleteItem(index) {
             this.formDataActivity.items.splice(index, 1);
         },
         submitActivity() {
-            this.dataActivity.push(this.formDataActivity);
+            if(this.activityIndex == null) {
+                this.dataActivity.push(this.formDataActivity);
+            } else {
+                this.dataActivity[this.activityIndex] = this.formDataActivity;
+            }
+
             this.showModalActivity = false;
             this.formDataActivity = {
                 title: '',
@@ -281,23 +354,40 @@ export default {
                 endDate: '',
                 actualFinishDate: '',
                 note: '',
-                items: []
+                items: [
+                    {
+                        type: '',
+                        inventoryId: '',
+                        value: '',
+                        qty: '',
+                        unit: '',
+                        price: 10,
+                        total: 10
+                    }
+                ]
             }
         },
         handleFileChange(event,type) {
+            if(type === 'photo') {
+                this.changePhoto = true;
+            } else {
+                this.changeDocument = true;
+            }
+
             this.form[type] = event.target.files[0];
             this.preview[type] = URL.createObjectURL(event.target.files[0]);
         },
         async submit() {
             
-            let photo = '';
-            let document = '';
-            const promises = [
-                photo = await this.uploadFile(this.form.photo,'photo'),
-                document = await this.uploadFile(this.form.document,'document')
-            ]
+            let photo = this.form.photo;
+            let document = this.form.document;
 
-            await Promise.all(promises);
+            if(this.changePhoto) {
+                photo = await this.uploadFile(this.form.photo,'photo')
+            }
+            if(this.changeDocument) {
+                document = await this.uploadFile(this.form.document,'document')
+            }
 
             const body = {
                 ...this.form,
@@ -308,14 +398,21 @@ export default {
                 document: document
             }
 
-            axios.post(process.env.VUE_APP_API_URL + '/v1/work-orders', body).then(() => {
-                Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                this.$router.push('/work-order-report');
-            }).catch((error) => {
-                console.log(error);
-            });
-
-
+            if(this.$route.params.id) {
+                axios.put(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.$route.params.id, body).then(() => {
+                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                    this.$router.push('/work-order');
+                }).catch((error) => {
+                    console.log(error);
+                });
+            } else{
+                axios.post(process.env.VUE_APP_API_URL + '/v1/work-orders', body).then(() => {
+                    Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
+                    this.$router.push('/work-order');
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
         },
         async uploadFile(file) {
             const formData = new FormData();
@@ -327,7 +424,20 @@ export default {
 
             return response.data.data.location;
         },
+        lineItemCalculate(index) {
+            this.formDataActivity.items[index].total = this.formDataActivity.items[index].qty * this.formDataActivity.items[index].price;
+            this.formDataActivity.total = this.formDataActivity.items.reduce((acc, item) => acc + item.total, 0);
+        },
 
+        deleteActivity(index) {
+            this.dataActivity.splice(index, 1);
+        },
+
+        editActivity(index) {
+            this.formDataActivity = this.dataActivity[index];
+            this.showModalActivity = true;
+            this.activityIndex = index;
+        },
 
     },
     mounted() {
@@ -393,7 +503,7 @@ export default {
 
                 <label for="" class="form-label">Line Items <span class="text-danger">*</span></label>
                 <BRow class="mb-3" v-for="(item, index) in formDataActivity.items" :key="index">
-                    
+
                     <BCol md="2">
                         <div>
                             <multiselect v-model="formDataActivity.items[index].inventoryId" 
@@ -416,7 +526,7 @@ export default {
                     <BCol md="2" class="pe-0">
                         <div>
                             <div class="input-group">
-                                <input type="number" class="form-control" id="quantity" width="80%" placeholder="Quantity" required v-model="formDataActivity.items[index].qty">
+                                <input type="number" class="form-control" id="quantity" width="80%" placeholder="Quantity" required v-model="formDataActivity.items[index].qty" @change="lineItemCalculate(index)">
                                 <select id="" class="form-select" required v-model="formDataActivity.items[index].unit">
                                     <option selected>Pilih Satuan</option>
                                     <option v-for="unit in units" :key="unit.id" :value="unit.value">{{ unit.name }}</option>
@@ -431,13 +541,13 @@ export default {
                                 <i class="bx bx-x fs-22"></i>
                             </div>
                             <div>
-                                <input type="number" class="form-control" placeholder="Rp 0">
+                                <input type="number" class="form-control" placeholder="Rp 0" v-model="formDataActivity.items[index].price" @change="lineItemCalculate(index)">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <i class="las la-equals fs-22"></i>
                             </div>
                             <div>
-                                <input type="number" class="form-control" disabled placeholder="Rp 0">
+                                <input type="number" class="form-control" disabled placeholder="Rp 0" v-model="formDataActivity.items[index].total">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i class="bx bxs-copy-alt fs-22"></i></BButton>
@@ -451,7 +561,7 @@ export default {
                 <BCol md="12">
                     <div>
                         <label for="">Subtotal </label>
-                        <input type="number" class="form-control" placeholder="Rp0" disabled>
+                        <input type="number" class="form-control" placeholder="Rp0" disabled v-model="formDataActivity.total">
                     </div>
                 </BCol>
             </BRow>
@@ -549,13 +659,27 @@ export default {
                                     <BRow>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="startedAtDate" required>
+                                                <flat-pickr 
+                                                    v-model="startedAtDate" 
+                                                    class="form-control" 
+                                                    id="date" 
+                                                    placeholder="Pilih Tanggal" 
+                                                    required 
+                                                ></flat-pickr>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                                             </div>
                                         </BCol>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <input type="time" class="form-control" id="date" placeholder="Masukkan Jam" v-model="startedAtTime" required>
+                                                <flat-pickr 
+                                                    v-model="startedAtTime" 
+                                                    class="form-control" 
+                                                    id="date" 
+                                                    placeholder="Pilih Jam" 
+                                                    required 
+                                                    :config="{enableTime: true, noCalendar: true}"
+                                                ></flat-pickr>
+                                                <!-- <input type="time" class="form-control" id="date" placeholder="Masukkan Jam" v-model="startedAtTime" required> -->
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/clock.svg" width="20"></span> -->
                                             </div>
                                         </BCol>
@@ -566,13 +690,20 @@ export default {
                                     <BRow>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="targetedAtDate" required>
+                                                <flat-pickr v-model="targetedAtDate" class="form-control" id="date" placeholder="Pilih Tanggal" required></flat-pickr>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                                             </div>
                                         </BCol>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <input type="time" class="form-control" id="date" placeholder="Pilih Jam" v-model="targetedAtTime" required>
+                                                <flat-pickr 
+                                                    v-model="targetedAtTime" 
+                                                    class="form-control" 
+                                                    id="date" 
+                                                    placeholder="Pilih Jam" 
+                                                    required 
+                                                    :config="{enableTime: true, noCalendar: true}"
+                                                ></flat-pickr>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/clock.svg" width="20"></span> -->
                                             </div>
                                         </BCol>
@@ -633,8 +764,8 @@ export default {
                                             :close-on-select="false" 
                                             :create-option="true" 
                                             :allow-empty="false" 
-                                            value-prop="id" 
-                                            label="name">
+                                            value-prop="tag" 
+                                            label="tag">
                                             <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
                                         </multiselect>
                                     </div>
@@ -668,11 +799,11 @@ export default {
                                 {{ index + 1 }}
                             </template>
 
-                            <template #action="{ item }">
-                                <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/program-maintenance/edit/${item.id}`">
+                            <template #action="{ item, index }">
+                                <BButton variant="link" class="link-dark fs-22" size="sm" @click="editActivity(index)">
                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="deleteActivity(index)">
                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                 </BButton>
                                 <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/program-maintenance/view/${item.id}`">
