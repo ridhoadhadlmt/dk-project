@@ -7,6 +7,7 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
+import FilterCard from "./filter-card.vue"; 
 
 
 export default {
@@ -14,7 +15,8 @@ export default {
         Layout,
         TableComponent,
         SelectHeader,
-        HeaderPage
+        HeaderPage,
+        FilterCard
     },
     data() {
         return {
@@ -83,7 +85,8 @@ export default {
             
             deleteId: null,
             showSelectHeader: false,
-            showModalDelete: false
+            showModalDelete: false,
+            showModalFilter: false
         };
     },
     watch: {
@@ -197,6 +200,26 @@ export default {
 
 				});
 		},
+
+        setFilterData(params) {
+            this.params = {
+                ...this.params,
+                ...params
+            };
+            this.getData();
+        },
+        hideModalFilter(newVal) {
+            this.showModalFilter = newVal;
+        },
+        resetFilter() {
+            this.params = {
+                page: 1,
+                limit: 10,
+                search: '',
+                sortBy: 'id.desc',
+            };
+            this.getData();
+        }
     },
     mounted() {
         this.getData();
@@ -227,6 +250,14 @@ export default {
 
         <HeaderPage title="Backlog Report" pageTitle="Backlog Report" />
 
+
+        <FilterCard 
+            :showModal="showModalFilter" 
+            @hideModalFilter="hideModalFilter" 
+            @setFilterData="setFilterData"
+            @resetFilter="resetFilter"
+        />
+
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -243,7 +274,7 @@ export default {
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </BButton>
                                
-                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;">
+                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
                                     <img src="@/assets/icons/filter.svg" alt="filter" />
                                     Filter
                                 </BButton>
