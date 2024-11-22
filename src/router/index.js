@@ -35,9 +35,9 @@ router.beforeEach(async (routeTo, routeFrom, next) => {
   await axios
     .get(process.env.VUE_APP_API_URL + "/v1/me")
     .then((data) => {
-      localStorage.setItem("userdata", JSON.stringify(data.data));
-      localStorage.setItem("userid", data.data.id);
-      localStorage.setItem("user", JSON.stringify(data.data));
+      localStorage.setItem("userdata", JSON.stringify(data.data.data));
+      localStorage.setItem("userid", data.data.data.id);
+      localStorage.setItem("user", JSON.stringify(data.data.data));
       next();
     })
     .catch(() => {
@@ -94,7 +94,28 @@ router.beforeEach((routeTo, routeFrom, next) => {
   }
 });
 
+//set permission
+router.beforeEach((routeTo, routeFrom, next) => {
+  
+  //find menu
+  const menu = JSON.parse(localStorage.getItem("menu"));
+
+  if(menu){
+    //find permission
+    const permission = menu.find((item) => item.link === routeTo.path);
+    
+    if(permission){
+      store.dispatch("auth/setPermission", permission.permissions);
+    } else {
+      store.dispatch("auth/setPermission", []);
+    }
+  }
+
+  next();
+});
+
 router.beforeResolve(async (routeTo, routeFrom, next) => {
+  console.log(store.getters["auth/permission"]);
   // Create a `beforeResolve` hook, which fires whenever
   // `beforeRouteEnter` and `beforeRouteUpdate` would. This
   // allows us to ensure data is fetched even when params change,
@@ -131,6 +152,12 @@ router.beforeResolve(async (routeTo, routeFrom, next) => {
   }
   document.title = routeTo.meta.title + " | " + appConfig.title;
   // If we reach this point, continue resolving the route.
+  next();
+});
+
+//before resolve
+router.beforeResolve((routeTo, routeFrom, next) => {
+  axios.defaults.headers.common["authorization"] = "Bearer " + localStorage.getItem("jwt"); // for all requests
   next();
 });
 

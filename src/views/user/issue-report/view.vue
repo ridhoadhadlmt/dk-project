@@ -2,20 +2,23 @@
 
 import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
-// import axios from "axios";
+import HeaderPage from "@/components/header-page.vue";
+import axios from "axios";
+import Multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
 
 export default {
     name: "program-maintenance-create",
     components: {
         Layout,
+        HeaderPage,
+        Multiselect
     },
     data() {
         return {
-            // datas: null,
-            datas: [
-                {id: 1, name: 'Program 1', type: 'Teknis', assignment: 'Ahmad Wicaksono', },
-                {id: 2, name: 'Program 2', type: 'Non Teknis', assignment: '3 User',},
-            ]
+            id: this.$route.params.id,
+            datas: null,
+            showModalPhoto: false,
         };
     },
     watch: {
@@ -59,15 +62,18 @@ export default {
         },
 
         getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins/" + this.$route.params.id)
-            //     .then(response => {
-            //         this.datas = response.data.data;
-            //         // console.log(response.data);
-            //     })
-            //     .catch(error => {
-            //         console.log(error);
-            //     });
+            axios.get(process.env.VUE_APP_API_URL + "/v1/issues/" + this.$route.params.id)
+                .then(response => {
+                    this.datas = response.data.data;
+                })
+                .catch(error => {
+                    console.log(error);
+                });
         },
+
+        downloadDocument() {
+            window.open(this.datas.document, '_blank');
+        }
     },
     mounted() {
         this.getData();
@@ -79,61 +85,95 @@ export default {
 
 <template>
     <Layout>
-        <BRow>
-            <BCol>
-                <div class="h-100">
-                    <BRow class="mb-3 pb-1">
-                        <BCol cols="12">
-                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                                <div class="flex-grow-1">
-                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
-                                    <p class="text-muted mb-0">
-                                        {{$route.meta.description}}
-                                    </p>
-                                </div>
+        <HeaderPage title="Issue Report" pageTitle="Issue Report" />    
 
-                            </div>
-                        </BCol>
-                    </BRow>
-
-                </div>
-            </BCol>
-        </BRow>
+        <!-- Show Photo -->
+        <BModal v-model="showModalPhoto" hide-footer hide-header-close centered  class="v-modal-custom" size="sm" no-body>
+            <div class="text-center">
+                <img :src="datas.photo" alt="photo" class="img-fluid" v-if="datas">
+            </div>
+        </BModal>
 
         <BRow v-if="datas">
             <BCol xl="12">
                 <BCard>
                     <BCardBody>
-                        <div class="">
-                            <h3 class="mr-3">{{ datas.name }} </h3>
-                        </div>
+                        <BRow>
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2">Kode Issue</h5>
+                                <input type="text" class="form-control" :value="datas.issueCode" disabled />
+                            </BCol>
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2">Kode Fleet</h5>
+                                <input type="text" class="form-control" :value="datas.fleet.code" disabled />
+                            </BCol>
+                            <BCol md="6" class="mb-4">
+                                <h5>Referensi Form Inspeksi</h5>
+                                <!-- <Multiselect :options="datas.inspection" :label="inspection"></Multiselect> -->
+                            </BCol>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Parameter Keluhan</h5>
+                                <input type="text" class="form-control" :value="datas.complaintParameter" disabled />
+                            </BCol>
 
-                        <div class="mt-3 d-flex gap-2">
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-phone fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.type || "-" }}</p>
-                            </div>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Judul Keluhan</h5>
+                                <input type="text" class="form-control" :value="datas.complaintTitle" disabled />
+                            </BCol>
 
-                            
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-whatsapp fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.assignment || "-" }}</p>
-                            </div>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Prioritas</h5>
+                                <input type="text" class="form-control" :value="datas.priority" disabled />
+                            </BCol>
 
-                            
-                        </div>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Tanggal & Jam keluhan</h5>
+                                <input type="text" class="form-control" :value="datas.date + ' ' + datas.time" disabled />
+                            </BCol>
+
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Operator Pelapor</h5>
+                                <!-- <input type="text" class="form-control" :value="datas.operator.name" disabled /> -->
+                            </BCol>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Lokasi Info Awal Keluhan</h5>
+                                <input type="text" class="form-control" :value="datas.location" disabled />
+                            </BCol>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Deskripsi</h5>
+                                <input type="text" class="form-control" :value="datas.location" disabled />
+                            </BCol>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Tanggal Harus Diselesaikan</h5>
+                                <input type="text" class="form-control" :value="datas.finishDate" disabled />
+                            </BCol>
+
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Foto</h5>
+                                <button class="btn btn-primary btn-sm" @click="showModalPhoto = true">Lihat Foto</button>
+                            </BCol>
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Dokumen</h5>
+                                <button class="btn btn-primary btn-sm" @click="downloadDocument">Download Dokumen</button>
+                            </BCol>
+
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Alasan Bebas</h5>
+                                <Multiselect :options="datas.tags" :label="tags" v-model="datas.tags" multiple mode="tags" :disabled="true"></Multiselect>
+                            </BCol>
+
+                            <BCol md="6" class="mb-4">  
+                                <h5 class="text-muted mb-2">Alasan Reject</h5>
+                                <input type="text" class="form-control" :value="datas.rejectReason" disabled />
+                            </BCol>
+                        </BRow>
                     </BCardBody>
 
-                    <!-- <BCardFooter>   
-                        <div class="d-flex gap-4">
-                            <div>
-                               <h5> <span class="text-muted">Role</span> : {{ datas.role.name }}</h5>
-                            </div>
-                            <div>
-                                <h5> <span class="text-muted">Status</span> : {{ datas.isActive ? 'Active' : 'Inactive' }}</h5>
-                            </div>
+                    <BCardFooter>   
+                        <div class="d-flex justify-content-end">
+                            <a :href="`/issue-report/edit/${id}`" class="btn btn-light">Edit</a>
                         </div>
-                    </BCardFooter> -->
+                    </BCardFooter>
                 </BCard>
             </BCol>
         </BRow>

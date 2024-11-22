@@ -1,8 +1,8 @@
 form .form-select{
-    padding: 1.0rem 2.7rem 1.0rem 0.9rem;
+    /* padding: 1.0rem 2.7rem 1.0rem 0.9rem; */
 }
 form .form-control{
-    padding: 1.0rem 0.9rem;
+    /* padding: 1.0rem 0.9rem; */
 }
 form .form-select,form .form-control,form label{
     font-size: 1rem;
