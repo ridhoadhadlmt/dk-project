@@ -5,8 +5,10 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
+import "@vueform/multiselect/themes/default.css";
 import TableComponent from "@/components/table.vue";
 import MultiSelect from "vue-multiselect";
+// import SelectOption from "@vueform/multiselect";
 
 export default {
     name: "maintenance-programs-create",
@@ -15,6 +17,7 @@ export default {
         HeaderPage,
         TableComponent,
         MultiSelect,
+        // SelectOption,
     },
     data() {
         return {
@@ -83,6 +86,8 @@ export default {
             users: [],
             inventories: [],
             dataActivity: [],
+            dataUser: [],
+            items: [],
             params: {
                 page: 1,
                 limit: 10,
@@ -94,11 +99,12 @@ export default {
                 total_pages: 0,
                 total_item: 0,
             },
-            
+            item: {},
+            activityItem: {},
             valueUser: '',
             activityId: '',
-            lineItems: '',
-            inventory: '',
+            inventoryId: '',
+            inventoryType: '',
             showModalActivity: false,
             showModalDelete: false,
         }
@@ -112,6 +118,26 @@ export default {
     },
     methods: {
         showModalActivityMethod(){
+            this.activity = {
+                title: '',
+                note: '',
+                startDate: '',
+                dueDate: '',
+                actualFinishDate: '',
+                subtotal: 0,
+                items: [
+                    {
+                        type: '',
+                        inventoryId: '',
+                        unit: '',
+                        value: '',
+                        qty: 0,
+                        price: 0,
+                        total: 0,
+                    },
+
+                ],
+            }
             this.showModalActivity = true
         },
         rightcolumn() {
@@ -152,16 +178,17 @@ export default {
         },
 
         selectUser(){
+            
             const users = []
             this.valueUser.forEach((item) => {
                 users.push(item.id)
             })
-            this.form.users.push(users)
-            this.form.users = users
-            console.log(this.form.users)
+            this.dataUser = users
 
         },
-        saveData(){            
+        saveData(){
+            this.form.activities = this.dataActivity
+            this.form.users = this.dataUser   
             axios.post(process.env.VUE_APP_API_URL + '/v1/maintenance-programs', this.form).then(() => {
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                 
@@ -172,16 +199,16 @@ export default {
             });
         },
         updateData(){ 
-            const form = {}
-            form.code = this.form.code
-            form.name = this.form.name
-            form.type = this.form.type
-            form.parameterDuration = this.form.parameterDuration           
-            form.parameterDurationNotification = this.form.parameterDurationNotification     
-            form.users = this.form.users
-            form.activities = this.form.activities
+            // const form = {}
+            // form.code = this.form.code
+            // form.name = this.form.name
+            // form.type = this.form.type
+            // form.parameterDuration = this.form.parameterDuration           
+            // form.parameterDurationNotification = this.form.parameterDurationNotification     
+            // form.users = this.form.users
+            // form.activities = this.form.activities
             // console.log(form)
-            axios.put(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id, form).then(() => {
+            axios.put(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id, this.form).then(() => {
                 Swal.fire("Berhasil!", "Berhasil update data", "success");
                 this.activity = {}
                 this.item = {}
@@ -191,22 +218,15 @@ export default {
                 Swal.fire("Gagal!", "Gagal update data", "error");
             });
         },
-        showModalDeleteMethod(id) {
-            this.activityId = id;
-            this.showModalDelete = true;
+        showModalDeleteActivity(index){
+            console.log(index)
+            this.showModalDelete = true
         },
-        deleteData() {
-            // this.showModalDelete = false
-            axios.update(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.activityId).then(() => {
-                this.listData();
-                this.activityId = null;
-                this.showModalDelete = false;
-
-                Swal.fire("Berhasil!", "Berhasil menghapus data", "success");
-            }).catch((error) => {
-                console.log(error);
-            });
+        deleteActivity(index){           
+            this.dataActivity.splice(index, 1)
+            this.showModalDelete = false
         },
+      
         listDataInventory(){            
             axios.get(process.env.VUE_APP_API_URL + '/v1/inventories').then((response) => {
                 this.inventories = response.data.data.items
@@ -216,13 +236,44 @@ export default {
         },
         saveModalData(){
             
+            if(this.activityIndex == null){
+                this.dataActivity.push(this.activity)
+            }
+            else{
+                this.dataActivity[this.activityIndex] = this.activity
+            }
             this.showModalActivity = false
-            this.dataActivity.push(this.activity)
-            this.form.activities.push(this.activity)
-            // this.activity = {}
-            // this.item = {}
+            this.activity = {
+                title: '',
+                note: '',
+                startDate: '',
+                dueDate: '',
+                actualFinishDate: '',
+                items: [
+                    {
+                        type: '',
+                        inventoryId: '',
+                        unit: '',
+                        value: '',
+                        qty: 0,
+                        price: 0,
+                        total: 0,
+                    },
+
+                ],
+            }
             
 
+        },
+        lineItemCalculate(index) {
+            this.activity.items[index].total = this.activity.items[index].qty * this.activity.items[index].price;
+            this.activity.subtotal = this.activity.items.reduce((acc, item) => acc + item.total, 0);
+        },
+
+        editActivity(index) {
+            this.activity = this.dataActivity[index];
+            this.showModalActivity = true;
+            this.activityIndex = index;
         },
         handleAction(){
             if(this.$route.params.id){
@@ -232,13 +283,19 @@ export default {
                 this.saveData()
             }
         },
-        selectItem(index){
-            this.activity.items[index].inventoryId = this.inventory.id
-            this.activity.items[index].type = this.inventory.type
+        selectTypeActivity(event, index) {
+            this.activity.items[index].inventoryId = this.items[index].id
+            this.activity.items[index].type = this.items[index].type
             
-
-            
+            // console.log(this.activity.items[index].type == this.inventories.find(inventory => inventory.id === event).type)
         },
+        // selectTypeActivity(value, index) {
+        //     console.log(value)
+        //     console.log(index)
+        //     // this.activity.items[index].type == this.inventories.find(inventory => inventory.id === event).type;
+        //     console.log(this.inventories.find(inventory => inventory.id === event))
+        // },
+        
 
         fetchData() {
             if(this.$route.params.id){
@@ -254,7 +311,6 @@ export default {
                         this.form.users.push(item.userId)
                     })
                     
-                    this.activityItem = {}
                     this.dataActivity.forEach((item) => {
                         this.activityItem.title = item.title  
                         this.activityItem.note = item.note  
@@ -262,8 +318,8 @@ export default {
                         this.activityItem.dueDate = item.dueDate  
                         this.activityItem.subtotal = item.subtotal  
                         this.activityItem.actualFinishDate = item.actualFinishDate
+                        this.activityItem.items = []
                         item.items.forEach(item => {
-                            this.item = {}
                             this.item.id = item.id
                             this.item.type = item.type
                             this.item.inventoryId = item.inventoryId
@@ -272,11 +328,12 @@ export default {
                             this.item.unit = item.unit
                             this.item.total = item.total
                             this.item.price = item.price
-                            this.activityItem.items = []
                             this.activityItem.items.push(this.item)
+                            console.log(this.activityItem)
                         })
+                        this.form.activities.push(this.activityItem)
+                        console.log(this.form.activities)
                     })
-                  
 
                 }).catch((error) => {
                     console.log(error);
@@ -294,7 +351,9 @@ export default {
             });
         },
         copyItem(index){
-            this.activity.items.push(this.activity.items[index])
+            const item = this.activity.items[index]
+            // console.log(item)
+            this.activity.items.push({...item})
         },
         deleteItem(index){
             this.activity.items.splice(index, 1)
@@ -320,7 +379,7 @@ export default {
                 <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
                 <div class="d-flex justify-content-center mt-4">
                     <BButton variant="dark" class="me-2" @click="showModalDelete = false">Tidak</BButton>
-                    <BButton variant="light" @click="deleteData">Ya</BButton>
+                    <BButton variant="light" @click="deleteActivity(index)">Ya</BButton>
                 </div>
             </div>
         </BModal>
@@ -371,17 +430,29 @@ export default {
                         <input type="text" class="form-control" v-model="activity.note" placeholder="Masukkan note">
                     </div>
                 </BCol>
-                <BRow class="mb-3" v-for="item, index in activity.items" :key="index">
+                <BRow class="mb-3" v-for="(item, index) in activity.items" :key="index">
                     <label for="" class="form-label">Line Items <span class="text-danger">*</span></label>
                     <BCol md="2">
                         <div>
-                            <select id="type" v-model="inventory" class="form-select" @change="selectItem(index)" required>
+                            <!-- <SelectOption v-model="activity.items[index].inventoryId" 
+                                :options="inventories" 
+                                :searchable="false" 
+                                placeholder="Pilih Inventory" 
+                                :allow-empty="false" 
+                                value-prop="id" 
+                                label="name" 
+                                @select="(value) => selectTypeActivity(value, index)">
+                                <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                            </SelectOption> -->
+                            <select id="type" v-model="items[index]" class="form-select" @change="selectTypeActivity($event.target.value, index)" required>
                                 <option v-for="inventory in inventories" :key="inventory.id" :value="inventory">{{ inventory.type}}</option>
                             </select>
+
                         </div>
                     </BCol>
                     <BCol md="2">
                         <div>
+                            <!-- <input type="text" class="form-control" placeholder="Masukkan Nama" v-model="activity.items[index].type" disabled> -->
                             <select id="" class="form-select" v-model="activity.items[index].value" required>
                                 <option selected>Sparepart</option>
                             </select>
@@ -390,7 +461,7 @@ export default {
                     <BCol md="2" class="pe-0">
                         <div>
                             <div class="input-group">
-                                <input type="text" class="form-control" v-model="activity.items[index].qty" id="quantity" width="80%" placeholder="Quantity" required>
+                                <input type="text" class="form-control" v-model="activity.items[index].qty" id="quantity" width="80%" placeholder="Quantity" required @change="lineItemCalculate(index)">
                                 <select id="unit" class="form-select" v-model="activity.items[index].unit" required>
                                     <option selected>Pcs</option>
                                 </select>
@@ -404,13 +475,13 @@ export default {
                                 <i class="bx bx-x fs-22"></i>
                             </div>
                             <div>
-                                <input type="text" class="form-control" v-model="activity.items[index].price" placeholder="Rp0">
+                                <input type="number" class="form-control" v-model="activity.items[index].price" placeholder="Rp0" @change="lineItemCalculate(index)">
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <i class="las la-equals fs-22"></i>
                             </div>
                             <div>
-                                <input type="text" class="form-control" v-model="activity.items[index].total" placeholder="Rp0">
+                                <input type="number" class="form-control" v-model="activity.items[index].total" placeholder="Rp0" disabled>
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i class="bx bxs-copy-alt fs-22"></i></BButton>
@@ -424,7 +495,7 @@ export default {
                 <BCol md="12">
                     <div>
                         <label for="">Subtotal </label>
-                        <input type="text" v-model="activity.subtotal" class="form-control" placeholder="Rp0">
+                        <input type="text" v-model="activity.subtotal" class="form-control" placeholder="Rp0" disabled>
                     </div>
                 </BCol>
             </BRow>
@@ -450,7 +521,7 @@ export default {
                                 <BCol md="6" v-if="this.$route.params.id">
                                     <div>
                                         <label for="code" class="form-label">Kode Program<span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="code" placeholder="Masukkan kode program" v-model="form.code" required>
+                                        <input type="text" class="form-control" id="code" placeholder="Masukkan kode program" v-model="form.code" disabled required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -521,11 +592,11 @@ export default {
                             </template>
                             <!-- //Status -->
                             
-                            <template #action="{ item }">
-                                <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/maintenance-programs/edit/${item.id}`">
+                            <template #action="{ item, index }">
+                                <BButton variant="link" class="link-dark fs-22" size="sm" @click="editActivity(index)">
                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteActivity(index)">
                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                 </BButton>
                                 <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/maintenance-programs/view/${item.id}`">

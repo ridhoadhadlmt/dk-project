@@ -1,6 +1,7 @@
 const ProgramMaintenance = () => import("@/views/user/program-maintenance/index.vue")
 const FormProgramMaintenance = () => import("@/views/user/program-maintenance/form.vue")
 const ViewProgramMaintenance = () => import("@/views/user/program-maintenance/view.vue")
+const ViewProgramMaintenanceActivity = () => import("@/views/user/program-maintenance/activity/view.vue")
 
 export default {
     path: "/maintenance-programs",
@@ -30,6 +31,12 @@ export default {
             name: "maintenance-programs-view",
             component: ViewProgramMaintenance,
             meta: { title: "Detail Program Maintenance", description: "Program Maintenance - Detail Program Maintenance",authRequired: false },
+        },
+        {
+            path: "activity/view/:id",
+            name: "maintenance-programs-activity-view",
+            component: ViewProgramMaintenanceActivity,
+            meta: { title: "Aktifitas Servis", description: "Program Maintenance - Detail Program Maintenance -",authRequired: false },
         },
     ]
 }
