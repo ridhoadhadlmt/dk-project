@@ -273,10 +273,11 @@ export default {
         },
         fetchData() {
             if(this.$route.params.id) {
-                axios.get(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.$route.params.id).then((response) => {
+                axios.get(process.env.VUE_APP_API_URL + '/v1/backlogs/' + this.$route.params.id).then((response) => {
                     const data = response.data.data;
+                    console.log(data);
 
-                    this.form.code = data.code;
+                    this.form.workOrderId = data.workOrderId;
                     this.form.fleetId = data.fleetId;
                     this.form.title = data.title;
                     this.form.type = parseInt(data.type);
@@ -291,16 +292,12 @@ export default {
                     this.form.comment = data.comment;
                     this.form.startParameter = data.startParameter;
                     this.form.workOrderEstimation = data.workOrderEstimation;
-                    this.form.tags = data.tags;
-                    this.form.activities = data.activities;
+
 
                     this.startedAtDate = data.startedAt.split(' ')[0];
                     this.startedAtTime = moment(data.startedAt).format('HH:mm');
                     this.targetedAtDate = data.targetedAt.split(' ')[0];
                     this.targetedAtTime = moment(data.targetedAt).format('HH:mm');
-
-                    this.form.issueIds = data.issues.map(item => item.issue.id);
-
 
                     this.dataActivity = data.activities.map((activity) => {
                         const items = activity.items.map((item) => {
@@ -311,17 +308,20 @@ export default {
                                 qty: item.qty,
                                 unit: item.unit,
                                 price: item.price,
-                                total: item.total
+                                total: item.total,
+                                isDelete: false
                             }
                         })
                         return {
+                            id: activity.id,
                             title: activity.title,
                             startDate: activity.startDate,
                             endDate: activity.endDate,
                             total: activity.total,
                             actualFinishDate: activity.actualFinishDate,
                             note: activity.note,
-                            items: items
+                            items: items,
+                            isDelete: false
                         }
                     });
                 }).catch((error) => {
@@ -407,16 +407,16 @@ export default {
             if(this.$route.params.id) {
                 axios.put(process.env.VUE_APP_API_URL + '/v1/backlogs/' + this.$route.params.id, body).then(() => {
                     Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
-                    this.$router.push('/backlog');
-                }).catch((error) => {
-                    console.log(error);
+                    this.$router.push('/backlog-report');
+                }).catch(() => {
+                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
                 });
             } else{
                 axios.post(process.env.VUE_APP_API_URL + '/v1/backlogs', body).then(() => {
                     Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                    this.$router.push('/backlog');
-                }).catch((error) => {
-                    console.log(error);
+                    this.$router.push('/backlog-report');
+                }).catch(() => {
+                    Swal.fire("Gagal!", "Gagal menambahkan data", "error");
                 });
             }
         },
@@ -436,7 +436,11 @@ export default {
         },
 
         deleteActivity(index) {
-            this.dataActivity.splice(index, 1);
+            // this.dataActivity.splice(index, 1);
+            this.dataActivity[index].isDelete = true;
+            this.dataActivity[index].items.forEach(item => {
+                item.isDelete = true;
+            });
         },
 
         editActivity(index) {
@@ -454,6 +458,11 @@ export default {
         this.fetchTags();
         this.fetchWO();
         this.fetchInventories();
+    },
+    computed: {
+        filteredDataActivity() {
+            return this.dataActivity.filter(item => !item.isDelete);
+        }
     }
 
 };
@@ -809,11 +818,26 @@ export default {
                         </div>
                     </div>
                     <div class="live-preview">
-                        <table-component :headers="headersActivity" :data="dataActivity" :action="action" v-if="dataActivity.length > 0" @sort="sort($event.sortBy)">
+                        <table-component :headers="headersActivity" :data="filteredDataActivity" :action="action" v-if="filteredDataActivity.length > 0" @sort="sort($event.sortBy)">
                             <!-- NO -->
                             <template #no="{ index }">
                                 {{ index + 1 }}
                             </template>
+                            <template #startDate="{ item }">
+                                {{ $filters.formatDate(item.startDate) }}
+                            </template>
+                            <template #endDate="{ item }">
+                                {{ $filters.formatDate(item.endDate) }}
+                            </template>
+                            <template #actualFinishDate="{ item }">
+                                {{ $filters.formatDate(item.actualFinishDate) }}
+                            </template>
+
+                            <!-- subtotal -->
+                            <template #total="{ item }">
+                                {{ $filters.formatRupiah(item.total) }}
+                            </template>
+
 
                             <template #action="{ item, index }">
                                 <BButton variant="link" class="link-dark fs-22" size="sm" @click="editActivity(index)">

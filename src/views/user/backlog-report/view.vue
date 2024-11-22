@@ -4,7 +4,7 @@ import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
 import HeaderPage from "@/components/header-page.vue";
 import axios from "axios";
-import Multiselect from "@vueform/multiselect";
+
 import "@vueform/multiselect/themes/default.css";
 import TableComponent from "@/components/table.vue";
 
@@ -13,7 +13,6 @@ export default {
     components: {
         Layout,
         HeaderPage,
-        Multiselect,
         TableComponent,
     },
     data() {

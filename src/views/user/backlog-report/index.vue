@@ -184,7 +184,7 @@ export default {
 			axios.defaults.responseType = 'blob';
 			axios.get(process.env.VUE_APP_API_URL+'/v1/backlogs/export', {
                 params:{
-					sortBy:"fullName.asc",
+					sortBy:"code.asc",
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
@@ -283,7 +283,7 @@ export default {
                                     <span v-else class="badge rounded-pill bg-danger-subtle text-danger fs-12">Pending</span>
                                 </template>
                                 <template #action="{ item }">
-                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/administrator-management/edit/${item.id}`">
+                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/backlog-report/edit/${item.id}`">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
                                     </BButton>
                                     <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
