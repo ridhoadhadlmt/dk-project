@@ -11,6 +11,7 @@ import "@vueform/multiselect/themes/default.css";
 import flatPickr from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 import moment from "moment";
+import ShowModalActivity from "@/components/ShowModalActivity.vue";
 
 export default {
     name: "work-order-report-create",
@@ -20,9 +21,12 @@ export default {
         TableComponent,
         Multiselect,
         flatPickr,
+        ShowModalActivity
     },
     data() {
         return {
+            selectedViewActivity: null,
+            showModalViewActivity: false,
             editActivityIndex: null,
             changeDocument: false,
             changePhoto: false,
@@ -591,6 +595,17 @@ export default {
                 </div>
             </div>
         </BModal>
+
+        <ShowModalActivity 
+            :data="dataActivity[selectedViewActivity]" 
+            :showModal="showModalViewActivity" 
+            :inventories="inventories"
+            @hideModalActivity="() => {
+                showModalViewActivity = false
+            }" 
+            v-if="selectedViewActivity !== null"
+        />
+
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -839,14 +854,14 @@ export default {
                             </template>
 
 
-                            <template #action="{ item, index }">
+                            <template #action="{ index }">
                                 <BButton variant="link" class="link-dark fs-22" size="sm" @click="editActivity(index)">
                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                 </BButton>
                                 <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="deleteActivity(index)">
                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/program-maintenance/view/${item.id}`">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalViewActivity = true; selectedViewActivity = index">
                                     <img src="@/assets/icons/view.svg" alt="eye" />
                                 </BButton>
                             </template>

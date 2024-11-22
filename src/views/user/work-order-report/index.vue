@@ -211,7 +211,12 @@ export default {
     <Layout>
 
         
-        <SelectHeader :showModal="showSelectHeader" :headers="headers" @hideModal="hideSelectHeaderMethod" @selectHeader="selectHeaderMethod" />
+        <SelectHeader 
+            :showModal="showSelectHeader" 
+            :headers="headers" 
+            @hideModal="hideSelectHeaderMethod" 
+            @selectHeader="selectHeaderMethod" 
+        />
         
         <!-- Modal Delete -->
         <BModal v-model="showModalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
