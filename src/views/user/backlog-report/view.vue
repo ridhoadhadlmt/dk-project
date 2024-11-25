@@ -7,6 +7,8 @@ import axios from "axios";
 
 import "@vueform/multiselect/themes/default.css";
 import TableComponent from "@/components/table.vue";
+import Multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
 
 export default {
     name: "program-maintenance-create",
@@ -14,6 +16,7 @@ export default {
         Layout,
         HeaderPage,
         TableComponent,
+        Multiselect
     },
     data() {
         return {
@@ -26,7 +29,7 @@ export default {
                 limit: 10,
                 search: '',
                 sortBy: 'id.desc',
-                workOrderId: this.$route.params.id
+                backlog_id: this.$route.params.id
             },
             config:{
                 total_pages: 0,
@@ -128,7 +131,7 @@ export default {
                 });
         },
         fetchActivities() {
-            axios.get(process.env.VUE_APP_API_URL + "/v1/work-order-activities/", {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/backlog_activities/", {
                 params: this.params
             })
                 .then(response => {
@@ -200,19 +203,19 @@ export default {
 
                             <BCol md="6" class="mb-4">
                                 <p class="text-muted mb-2 fs-14">Referensi WO</p>
-                                <!-- <input type="text" class="form-control" :value="datas.reference" disabled /> -->
+                                <input type="text" class="form-control" :value="datas.workOrder?.code" disabled />
                             </BCol>
 
                             <!-- Tipe Fleet -->
                             <BCol md="6" class="mb-4">
                                 <p class="text-muted mb-2 fs-14">Tipe Fleet</p>
-                                <!-- <input type="text" class="form-control" :value="datas.reference" disabled /> -->
+                                <!-- <input type="text" class="form-control" :value="datas.fleet?.fleetType.name" disabled /> -->
                             </BCol>
 
                             <!-- Kode Fleet -->
                             <BCol md="6" class="mb-4">
                                 <p class="text-muted mb-2 fs-14">Kode Fleet</p>
-                                <!-- <input type="text" class="form-control" :value="datas.reference" disabled /> -->
+                                <input type="text" class="form-control" :value="datas.fleet?.code" disabled />
                             </BCol>
 
                             <!-- Judul -->
@@ -239,11 +242,16 @@ export default {
                                 <input type="text" class="form-control" :value="datas.category" disabled />
                             </BCol>
 
-                            <!-- <BCol md="6" class="mb-4">
+                            <BCol md="6" class="mb-4">
                                 <h5 class="text-muted mb-2 fs-14">Alasan Bebas</h5>
-                                <Multiselect :options="datas.tags" :label="tags" v-model="datas.tags" multiple
-                                    mode="tags" :disabled="true"></Multiselect>
-                            </BCol> -->
+                                <Multiselect 
+                                    :options="datas.tags"  
+                                    v-model="datas.tags" 
+                                    multiple
+                                    mode="tags" 
+                                    :disabled="true"
+                                ></Multiselect>
+                            </BCol>
 
                             <!-- Priority -->
                             <BCol md="6" class="mb-4">

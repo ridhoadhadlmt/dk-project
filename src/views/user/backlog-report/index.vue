@@ -186,14 +186,12 @@ export default {
         exportExcel() {
 			axios.defaults.responseType = 'blob';
 			axios.get(process.env.VUE_APP_API_URL+'/v1/backlogs/export', {
-                params:{
-					sortBy:"code.asc",
-				}
+                params: this.params
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
 					const link = document.createElement('a');
 					link.href = url;
-					link.setAttribute('download', `Program Maintenance.xlsx`);
+					link.setAttribute('download', `Backlog Report.xlsx`);
 					document.body.appendChild(link);
 					link.click();
 					axios.defaults.responseType = 'json'

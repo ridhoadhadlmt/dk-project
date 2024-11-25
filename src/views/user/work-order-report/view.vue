@@ -18,9 +18,11 @@ export default {
     },
     data() {
         return {
+            selectedIssues: [],
             id: this.$route.params.id,
             datas: null,
             showModalPhoto: false,
+            issues: [],
             activities: [],
             params: {
                 page: 1,
@@ -123,6 +125,19 @@ export default {
             axios.get(process.env.VUE_APP_API_URL + "/v1/work-orders/" + this.$route.params.id)
                 .then(response => {
                     this.datas = response.data.data;
+
+                    this.issues = response.data.data.issues.map((item) => {
+                        return {
+                            id: item.issue.id,
+                            title: item.issue.complaintTitle,
+                        }
+                    });
+
+                    this.datas.issues = this.datas.issues.map((item) => {
+                        return item.issueId;
+                    });
+
+                    // console.log("Issue",this.issues);
                 })
                 .catch(error => {
                     console.log(error);
@@ -201,19 +216,27 @@ export default {
 
                             <BCol md="6" class="mb-4">
                                 <p class="text-muted mb-2 fs-14">Referensi Issues</p>
-                                <!-- <input type="text" class="form-control" :value="datas.reference" disabled /> -->
+                                <multiselect 
+                                    v-model="datas.issues" 
+                                    :options="issues"
+                                    value-prop="id" 
+                                    label="title" 
+                                    mode="tags"
+                                    disabled>
+                                    <template #singleLabel="{ option }"><strong>{{ option.title }}</strong></template>
+                                </multiselect>
                             </BCol>
 
                             <!-- Tipe Fleet -->
                             <BCol md="6" class="mb-4">
                                 <p class="text-muted mb-2 fs-14">Tipe Fleet</p>
-                                <!-- <input type="text" class="form-control" :value="datas.reference" disabled /> -->
+                                <input type="text" class="form-control" :value="datas.fleet?.fleetType?.name" disabled />
                             </BCol>
 
                             <!-- Kode Fleet -->
                             <BCol md="6" class="mb-4">
                                 <p class="text-muted mb-2 fs-14">Kode Fleet</p>
-                                <!-- <input type="text" class="form-control" :value="datas.reference" disabled /> -->
+                                <input type="text" class="form-control" :value="datas.fleet?.code" disabled />
                             </BCol>
 
                             <!-- Judul -->
@@ -295,7 +318,7 @@ export default {
                             <!-- Biaya WO -->
                             <BCol md="6" class="mb-4">
                                 <h5 class="text-muted mb-2 fs-14">Biaya WO</h5>
-                                <!-- <input type="text" class="form-control" :value="datas.workOrderCost" disabled /> -->
+                                <input type="text" class="form-control" :value="datas.price" disabled />
                             </BCol>
                         </BRow>
                     </BCardBody>

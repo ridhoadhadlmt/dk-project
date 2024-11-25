@@ -70,7 +70,6 @@ export default {
 
                     this.datas.inspectionIds = response.data.data.inspections.map(item => item.inspection.id);
 
-                    console.log("ASD", this.datas.inspectionIds);
                 })
                 .catch(error => {
                     console.log(error);
@@ -111,7 +110,7 @@ export default {
                             </BCol>
                             <BCol md="6" class="mb-4">
                                 <h5 class="text-muted mb-2">Kode Fleet</h5>
-                                <input type="text" class="form-control" :value="datas.fleet.code" disabled />
+                                <input type="text" class="form-control" :value="datas.fleet?.code" disabled />
                             </BCol>
                             <BCol md="6" class="mb-4">
                                 <h5>Referensi Form Inspeksi</h5>

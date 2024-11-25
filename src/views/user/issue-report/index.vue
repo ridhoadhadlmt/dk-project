@@ -209,15 +209,13 @@ export default {
         },
         exportExcel() {
 			axios.defaults.responseType = 'blob';
-			axios.get(process.env.VUE_APP_API_URL+'/cms/v1/admins/export', {
-                params:{
-					sortBy:"fullName.asc",
-				}
+			axios.get(process.env.VUE_APP_API_URL+'/v1/issues/export', {
+                params: this.params
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
 					const link = document.createElement('a');
 					link.href = url;
-					link.setAttribute('download', `Program Maintenance.xlsx`);
+					link.setAttribute('download', `Issue Report.xlsx`);
 					document.body.appendChild(link);
 					link.click();
 					axios.defaults.responseType = 'json'

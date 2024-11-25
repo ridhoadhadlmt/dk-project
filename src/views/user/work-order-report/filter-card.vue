@@ -61,7 +61,7 @@
                     <!-- Dibagi dua input -->
                     <div class="d-flex gap-3">
                         <flat-pickr 
-                            v-model="startDate.start" 
+                            v-model="startedAt.start" 
                             class="form-control" 
                             id="date"
                             placeholder="Pilih Tanggal" 
@@ -71,7 +71,7 @@
                             -
                         </div>
                         <flat-pickr 
-                            v-model="startDate.end" 
+                            v-model="startedAt.end" 
                             class="form-control" 
                             id="date"
                             placeholder="Pilih Tanggal" 
@@ -166,7 +166,7 @@ export default {
         return {
             show: this.showModal,
             fleets: [],
-            startDate:{
+            startedAt:{
                 start: null,
                 end: null
             },
@@ -183,7 +183,7 @@ export default {
                 wo_type: null,
                 periodic: null,
                 category: null,
-                startDate: null,
+                startedAt: null,
                 targetedAt: null,
                 date: null
             },
@@ -218,6 +218,12 @@ export default {
         show(newVal) {
             console.log("show", newVal);
             this.$emit('hideModalFilter', newVal);
+        },
+        startedAt: {
+            handler() {
+                this.params.startedAt = `between:${this.startedAt.start},${this.startedAt.end}`;
+            },
+            deep: true
         },
         targetDate: {
             handler() {
