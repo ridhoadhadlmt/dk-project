@@ -209,7 +209,7 @@ export default {
                             <!-- Tipe Fleet -->
                             <BCol md="6" class="mb-4">
                                 <p class="text-muted mb-2 fs-14">Tipe Fleet</p>
-                                <!-- <input type="text" class="form-control" :value="datas.fleet?.fleetType.name" disabled /> -->
+                                <input type="text" class="form-control" :value="datas.fleet?.fleetType?.name" disabled />
                             </BCol>
 
                             <!-- Kode Fleet -->
