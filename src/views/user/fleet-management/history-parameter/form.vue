@@ -57,16 +57,19 @@ export default {
             })
         },
         handleAction(){
-            if(this.$route.params.id){
-                this.updateData()
+            if(this.$route.name == 'fleet-management-parameter-history-create' && this.$route.params.id){
+                this.saveData()
             }
             else{
-                this.saveData()
-                
+                this.updateData()
+
             }
+
         },
         fetchData(){
-            axios.get(process.env.VUE_APP_API_URL + '/v1/fleet-parameters/' + this.$route.params.id).then((response) => {
+            console.log(this.$route)
+            if(this.$route.name == 'fleet-management-parameter-history-edit'){
+                axios.get(process.env.VUE_APP_API_URL + '/v1/fleet-parameters/' + this.$route.params.id).then((response) => {
                 this.form.fleetId = response.data.data.fleetId
                 this.form.date = response.data.data.date.slice(0, 10)
                 this.form.isVoid = response.data.data.isVoid
@@ -79,6 +82,7 @@ export default {
                 Swal.fire("Gagal!", "Gagal mengubah data", "error");
                 console.log((err));
             })
+            }
         }
     },
     mounted(){
@@ -90,6 +94,27 @@ export default {
 </script>
 <template>
     <Layout>
+        <!-- <HeaderPage title="Histori Parameter" pageTitle="Fleet Management" /> -->
+        <BRow>
+            <BCol>
+                <div class="h-100">
+                    <BRow class="mb-3 pb-1">
+                        <BCol cols="12">
+                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                                <div class="flex-grow-1">
+                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
+                                    <p class="text-muted mb-0">
+                                        {{$route.meta.description}}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </BCol>
+                    </BRow>
+
+                </div>
+            </BCol>
+        </BRow>
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -99,7 +124,7 @@ export default {
 
                     <BCardBody>
                         <BForm>
-                            <BRow>
+                            <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
                                         <label for="date" class="form-label">Hari <span class="text-danger">*</span></label>
@@ -109,7 +134,10 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="parameter" class="form-label">Parameter <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" v-model="form.parameterValue" id="parameter" placeholder="-" required>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control border-end-0" v-model="form.parameterValue" id="parameter" placeholder="-" required>
+                                            <span class="input-group-text bg-transparent border-start-0">km/ltr</span>
+                                        </div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -177,7 +205,7 @@ export default {
                                 <router-link to="/fleet-management/view/">
                                     <BButton variant="light" class="me-2">Kembali</BButton>
                                 </router-link>
-                                <BButton type="submit" variant="primary" @click="updateData()">Simpan</BButton>
+                                <BButton type="submit" variant="primary" @click="handleAction()">Simpan</BButton>
                             </div>
                         </BForm>
                     </BCardBody>

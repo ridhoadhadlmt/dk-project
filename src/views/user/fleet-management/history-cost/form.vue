@@ -11,13 +11,13 @@ export default {
     data() {
         return {
             form: {
-                fleetId: '',
+                fleetId: this.$route.params.id,
                 date: '',
                 amount: 0,
                 note: '',
                 type: '',
                 source: '',
-                woId: '',
+                woId: null,
             },
             types: [
                 {name: 'Teknis', value: 'teknis'},
@@ -60,20 +60,60 @@ export default {
             })
         },
         handleAction(){
-            if(this.$route.params.id){
-                this.updateData()
+            if(this.$route.name == 'fleet-management-cost-history-create' && this.$route.params.id){
+                this.saveData()
             } 
             else{
-                this.saveData()
+                this.updateData()
+            }
+        },
+        fetchData(){
+            console.log(this.$route)
+            if(this.$route.name == 'fleet-management-cost-history-edit'){
+                axios.get(process.env.VUE_APP_API_URL + '/v1/fleet-costs/' + this.$route.params.id).then((response) => {
+                this.form.fleetId = response.data.data.fleetId
+                this.form.date = response.data.data.date.slice(0, 10)
+                this.form.amount = response.data.data.amount
+                this.form.note = response.data.data.note
+                this.form.type = response.data.data.type
+                this.form.source = response.data.data.source
+                this.form.woId = response.data.data.woId
+            }).catch((err) => {
+                Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                console.log((err));
+            })
             }
         }
-    }   
+    },
+    mounted(){
+        this.fetchData();
+    }
 }
 
 
 </script>
 <template>
     <Layout>
+        <BRow>
+            <BCol>
+                <div class="h-100">
+                    <BRow class="mb-3 pb-1">
+                        <BCol cols="12">
+                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                                <div class="flex-grow-1">
+                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
+                                    <p class="text-muted mb-0">
+                                        {{$route.meta.description}}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </BCol>
+                    </BRow>
+
+                </div>
+            </BCol>
+        </BRow>
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -83,11 +123,11 @@ export default {
 
                     <BCardBody>
                         <BForm>
-                            <BRow>
+                            <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
-                                        <label for="day" class="form-label">Tanggal <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" v-model="form.day" id="day" placeholder="-" required>
+                                        <label for="date" class="form-label">Tanggal <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" v-model="form.date" id="date" placeholder="-" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -108,14 +148,14 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="notes" class="form-label">Keterangan </label>
-                                        <input type="text" class="form-control" v-model="form.notes" id="notes" placeholder="-" required >
+                                        <label for="note" class="form-label">Keterangan </label>
+                                        <input type="text" class="form-control" v-model="form.note" id="note" placeholder="-" required >
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="unit" class="form-label">Tipe</label>
-                                        <BFormSelect v-model="form.type" :options="types" label-field="name">
+                                        <BFormSelect v-model="form.type" :options="types" text-field="name" value-field="value">
 
                                         </BFormSelect>
                                     </div>
@@ -123,7 +163,7 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="source" class="form-label">Source</label>
-                                        <BFormSelect v-model="form.source" :options="sources" label-field="name">
+                                        <BFormSelect v-model="form.source" :options="sources" text-field="name" value-field="value">
 
                                         </BFormSelect>
                                     </div>

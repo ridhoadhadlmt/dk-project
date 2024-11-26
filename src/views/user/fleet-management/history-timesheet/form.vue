@@ -11,7 +11,7 @@ export default {
     data() {
         return {
             form: {
-                fleetId: '',
+                fleetId: this.$route.params.id,
                 date: '',
                 workHour: 0,
                 unit: 'wo',
@@ -23,6 +23,7 @@ export default {
                 {name: 'Ya', value: 'yes'},
                 {name: 'Tidak', value: 'no'},
             ],
+            operators: [],
             photo: null,
         }
     },
@@ -39,7 +40,7 @@ export default {
             })
         },
         saveData(){
-            axios.post(process.env.VUE_APP_API_URL + '/v1/fleet-timesheet', this.form).then(() => {
+            axios.post(process.env.VUE_APP_API_URL + '/v1/fleet-timesheets', this.form).then(() => {
                 this.$router.push('/fleet-management/view/' + this.$route.params.id)               
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
             }).catch((err) => {
@@ -48,7 +49,7 @@ export default {
             })
         },
         updateData(){
-            axios.put(process.env.VUE_APP_API_URL + '/v1/fleet-timesheet/' + this.$route.params.id, this.form).then(() => {
+            axios.put(process.env.VUE_APP_API_URL + '/v1/fleet-timesheets/' + this.$route.params.id, this.form).then(() => {
                 this.$router.push('/fleet-management/view/' + this.$route.params.id)
                 Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
             }).catch((err) => {
@@ -56,15 +57,44 @@ export default {
                 console.log((err));
             })
         },
+        listDataOperator(){
+            axios.get(process.env.VUE_APP_API_URL + '/v1/users').then((response) => {
+                this.operators = response.data.data.items
+            }).catch((err) => {
+                console.log((err));
+            })
+        },
         handleAction(){
-            if(this.$route.params.id){
-                this.updateData()
+            if(this.$route.name == 'fleet-management-timesheet-history-create' && this.$route.params.id){
+                this.saveData()
             } 
             else{
-                this.saveData()
+                this.updateData()
+            }
+        },
+        fetchData(){
+            console.log(this.$route)
+            if(this.$route.name == 'fleet-management-timesheet-history-edit'){
+                axios.get(process.env.VUE_APP_API_URL + '/v1/fleet-timesheets/' + this.$route.params.id).then((response) => {
+                this.form.fleetId = response.data.data.fleetId
+                this.form.date =  response.data.data.date.slice(0, 10)
+                this.form.workHour =  response.data.data.workHour
+                this.form.unit =  response.data.data.unit
+                this.form.note =  response.data.data.note
+                this.form.operatorId =  response.data.data.operatorId
+                this.form.photo =  response.data.data.photo
+            }).catch((err) => {
+                Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                console.log((err));
+            })
             }
         }
-    }   
+        
+    },
+    mounted(){
+        this.fetchData();
+        this.listDataOperator();
+    }
 }
 
 
@@ -80,11 +110,11 @@ export default {
 
                     <BCardBody>
                         <BForm>
-                            <BRow>
+                            <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
                                         <label for="day" class="form-label">Nama Operator <span class="text-danger">*</span></label>
-                                        <BFormSelect v-model="form.operatorId" :options="operators"></BFormSelect>
+                                        <BFormSelect v-model="form.operatorId" value-field="id" text-field="fullName" :options="operators" @change="selectOperator"></BFormSelect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -96,7 +126,7 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="unit" class="form-label">Jam Kerja</label>
-                                        <input type="number" class="form-control" v-model="form.workHour" id="unit" placeholder="Jam Kerja" required disabled>
+                                        <input type="number" class="form-control" v-model="form.workHour" id="unit" placeholder="Jam Kerja" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -110,30 +140,11 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="notes" class="form-label">Keterangan </label>
-                                        <input type="text" class="form-control" v-model="form.notes" id="notes" placeholder="-" required >
+                                        <label for="note" class="form-label">Keterangan </label>
+                                        <input type="text" class="form-control" v-model="form.note" id="note" placeholder="-" required >
                                     </div>
                                 </BCol>
-                                <BCol md="6">
-                                    <div>
-                                        <label for="void" class="form-label">Void <span class="text-danger">*</span></label>
-                                        <BFormRadioGroup
-                                        v-model="form.isVoid"
-                                        :options="voids"
-                                        value-field="value"
-                                        text-field="name"
-                                        />
-                                    </div>
-                                </BCol>
-                                <BCol md="6">
-                                    <div>
-                                        <label for="source" class="form-label">Posisi Terakhir Parameter </label>
-                                        <div class="input-group">
-                                            <input type="number" class="form-control border-end-0" v-model="form.lastParameterValue" id="source" placeholder="-" required disabled>
-                                            <span class="input-group-text border-start-0">km/ltr</span>
-                                        </div>
-                                    </div>
-                                </BCol>
+                                
                             </BRow>
                             <div class="d-flex justify-content-end mt-4">
                                 <router-link to="/fleet-management/view/">

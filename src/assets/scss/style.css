@@ -19,7 +19,11 @@ form .form-select,form .form-control,form label{
     top: 50%;
     transform: translateY(-50%);
  }
- 
- .nav-link.active{
+ .nav-link{
+    color: #A1A5B7;
+}
+.nav-link.active{
+    color: #000;
+    font-weight: 500;
     border-bottom: 1px solid #000;
  }

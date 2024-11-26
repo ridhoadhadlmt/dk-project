@@ -94,6 +94,7 @@ export default {
             programs: [],
             photo: null,
             document: [],
+            dataMaintenanceProgram: [],
             valueTag: '',
         };
     },
@@ -218,6 +219,7 @@ export default {
         saveData(){
             this.form.finance.lastPayment = this.form.finance.endPaymentAt
             this.form.usedAt = "2024-10-11"
+            this.form.maintenancePrograms.push(this.dataMaintenanceProgram)
             axios.post(process.env.VUE_APP_API_URL + '/v1/fleets', this.form).then(() => {
                 Swal.fire("Berhasil", "Berhasil tambah data", "success");
                 this.$router.push('/fleet-management')
@@ -280,16 +282,18 @@ export default {
                     data.tags.forEach((item) => {
                         this.form.tags.push(item)
                     })
-                    if(data.maintenancePrograms.length < 1){
-                        this.form.maintenancePrograms = []
-                    }
-                    else{
-                        data.maintenancePrograms.forEach((item, index) => {
-                            
-                            const itemProgram = item[index]
-                            console.log(itemProgram)
-                        })
-                    }
+                    this.dataMaintenanceProgram = data.maintenancePrograms.map((maintenanceProgram, index) => {
+                        console.log(index)
+                        return {
+                            id: maintenanceProgram.id,
+                            maintenanceProgramId: maintenanceProgram.maintenanceProgramId,
+                            lastMaintenancePoint: maintenanceProgram.lastMaintenancePoint,
+                            isDelete: false
+                        }
+                    })
+                    
+                    
+                
                     data.attachments.forEach((item, index) => {
                         this.form.attachments[index] = item
                     })
@@ -508,12 +512,12 @@ export default {
                                 
 
                                 <BCol md="12" v-for="(maintenanceProgram, index) in form.maintenancePrograms" :key="index">
-                                    <BRow >
+                                    <BRow v-for="(maintenanceProgram, index) in dataMaintenanceProgram" :key="index">
                                         <BCol md="6">
                                             <div>
                                                 <label for="program-management" class="form-label">Program Maintenance <span class="text-danger">*</span></label>
                                                 <div >
-                                                    <select  id="program-management" v-model="form.maintenancePrograms[index].maintenanceProgramId" class="form-select" required @change="selectMaintenanceProgram($event.target.value, index)">
+                                                    <select  id="program-management" v-model="dataMaintenanceProgram[index].maintenanceProgramId" class="form-select" required @change="selectMaintenanceProgram($event.target.value, index)">
                                                         <option v-for="(maintenanceProgram, index) in  maintenancePrograms" :key="index" :value="maintenanceProgram.id">{{  maintenanceProgram.name }}</option>
                                                     </select>
                                                 </div>
@@ -524,7 +528,7 @@ export default {
                                             <div>
                                                 <label for="starting-point" class="form-label">Starting Point <span class="text-danger">*</span></label>
                                                 <div class="d-flex justify-content-between">
-                                                    <input type="number" class="form-control" v-model="form.maintenancePrograms[index].lastMaintenancePoint" placeholder="0 km" aria-label="starting-point" aria-describedby="starting-point">
+                                                    <input type="number" class="form-control" v-model="dataMaintenanceProgram[index].lastMaintenancePoint" placeholder="0 km" aria-label="starting-point" aria-describedby="starting-point">
                                                     <div class="d-flex align-items-center">
                                                         <BButton variant="link" @click="copyProgram(index)"><i class="bx bxs-copy fs-22"></i></BButton>
                                                     </div>
