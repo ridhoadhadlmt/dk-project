@@ -1,5 +1,9 @@
 const FleetManagement = () => import("@/views/user/fleet-management/index.vue")
 const FormFleetManagement = () => import("@/views/user/fleet-management/form.vue")
+const FormParameterHistory = () => import("@/views/user/fleet-management/history-parameter/form.vue")
+const FormCostHistory = () => import("@/views/user/fleet-management/history-cost/form.vue")
+const FormTimesheetHistory = () => import("@/views/user/fleet-management/history-timesheet/form.vue")
+const FormFuelHistory = () => import("@/views/user/fleet-management/history-fuel/form.vue")
 const ViewFleetManagement = () => import("@/views/user/fleet-management/view.vue")
 
 export default {
@@ -29,7 +33,55 @@ export default {
             path: "view/:id",
             name: "fleet-management-view",
             component: ViewFleetManagement,
-            meta: { title: "View Fleet Management", description: "Fleet Management - View Fleet Management",authRequired: true },
+            meta: { title: "Detail Fleet", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: "view/:id/parameter-history/create",
+            name: "fleet-management-parameter-history-create",
+            component: FormParameterHistory,
+            meta: { title: "History Parameter", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: "parameter-history/edit/:id",
+            name: "fleet-management-parameter-history-edit",
+            component: FormParameterHistory,
+            meta: { title: "History Parameter", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: ":id/cost-history/create",
+            name: "fleet-management-cost-history-create",
+            component: FormCostHistory,
+            meta: { title: "History Biaya", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: "cost-history/view/:id",
+            name: "fleet-management-cost-history-view",
+            component: FormCostHistory,
+            meta: { title: "History Biaya", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: "timesheet-history/create",
+            name: "fleet-management-timesheet-history-create",
+            component: FormTimesheetHistory,
+            meta: { title: "History Timesheet", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: "cost-history/view/:id",
+            name: "fleet-management-cost-history-view",
+            component: FormCostHistory,
+            meta: { title: "History Biaya", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: "fuel-history/create",
+            name: "fleet-management-fuel-history-create",
+            component: FormFuelHistory,
+            meta: { title: "History BBM", description: "Fleet Management - Detail Fleet",authRequired: true },
+        },
+        {
+            path: "fuel-history/view/:id",
+            name: "fleet-management-fuel-history-view",
+            component: FormFuelHistory,
+            meta: { title: "History BBM", description: "Fleet Management - Detail Fleet",authRequired: true },
         },
     ]
 }
