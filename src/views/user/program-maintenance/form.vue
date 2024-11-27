@@ -114,6 +114,17 @@ export default {
             handler(){
             },
             deep: true,
+        }, 
+        search: {
+            handler(){
+                if(this.search.length === 0 || this.search.length > 1){
+                    this.params.search = this.search
+                    if(this.timeout) clearTimeout(this.timeout)
+                    this.timeout = setTimeout(() => {
+                        this.listData()
+                    }, 500)
+                }
+            }
         }
     },
     methods: {
@@ -573,7 +584,7 @@ export default {
                         <div v-if="!this.$route.params.id" class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                     <i class="ri-search-line search-icon"></i>
                                 </div>
 
