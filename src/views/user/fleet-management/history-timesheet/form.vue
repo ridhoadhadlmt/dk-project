@@ -41,8 +41,8 @@ export default {
         },
         saveData(){
             axios.post(process.env.VUE_APP_API_URL + '/v1/fleet-timesheets', this.form).then(() => {
-                this.$router.push('/fleet-management/view/' + this.$route.params.id)               
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                this.$router.back()
             }).catch((err) => {
                 Swal.fire("Gagal!", "Gagal menambah data", "error");
                 console.log((err));
@@ -50,8 +50,8 @@ export default {
         },
         updateData(){
             axios.put(process.env.VUE_APP_API_URL + '/v1/fleet-timesheets/' + this.$route.params.id, this.form).then(() => {
-                this.$router.push('/fleet-management/view/' + this.$route.params.id)
                 Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                this.$router.back()
             }).catch((err) => {
                 Swal.fire("Gagal!", "Gagal mengubah data", "error");
                 console.log((err));
@@ -101,6 +101,26 @@ export default {
 </script>
 <template>
     <Layout>
+        <BRow>
+            <BCol>
+                <div class="h-100">
+                    <BRow class="mb-3 pb-1">
+                        <BCol cols="12">
+                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                                <div class="flex-grow-1">
+                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
+                                    <p class="text-muted mb-0">
+                                        {{$route.meta.description}}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </BCol>
+                    </BRow>
+
+                </div>
+            </BCol>
+        </BRow>
         <BRow>
             <BCol xl="12">
                 <BCard no-body>

@@ -97,7 +97,7 @@ export default {
                 },
                 {
                     title: 'Keterangan Biaya',
-                    key: 'notes',
+                    key: 'note',
                     show: true,
                     order:true
                 },
@@ -136,7 +136,7 @@ export default {
                 },
                 {
                     title: 'Nama Operator',
-                    key: 'operator.name',
+                    key: 'operator.fullName',
                     show: true,
                     order:true
                 },
@@ -389,6 +389,57 @@ export default {
                 },
                 
             ],
+            kuesionerHeaders: [
+                {
+                    title: 'No',
+                    key: 'no',
+                    show: true,
+                    order:false
+                },
+                {
+                    title: 'Kode Kuesioner',
+                    key: 'code',
+                    show: true,
+                    order:false
+                },
+                {
+                    title: 'Judul Inspeksi',
+                    key: 'title',
+                    show: true,
+                    order:false
+                },
+                {
+                    title: 'Periode',
+                    key: 'period',
+                    show: true,
+                    order:true
+                },
+                {
+                    title: 'Tanggal Penugasan',
+                    key: 'dateWork',
+                    show: true,
+                    order:true
+                },
+                {
+                    title: 'Tanggal Pengisian',
+                    key: 'dateFill',
+                    show: true,
+                    order:true
+                },
+                {
+                    title: 'Status',
+                    key: 'status',
+                    show: true,
+                    order:true
+                },
+                {
+                    title: 'Action',
+                    key: 'action',
+                    show: true,
+                    order:true
+                },
+                
+            ],
             data: {
                 attachments: [],
                 maintenancePrograms: [
@@ -419,7 +470,9 @@ export default {
             timesheetHistories: [],
             fuelHistories: [],
             reminders: [
-                {code: 'XXXPMR1', date: '19 Sep 2024', parameter: 'Due 500 Km | Current 450 Km', description: 'overdue', action: 'action'}
+                {code: 'XXXPMR1', date: '19 Sep 2024', parameter: 'Due 500 Km | Current 450 Km', description: 'overdue', action: 'action'},
+                {code: 'XXXPMR2', date: '20 Sep 2024', parameter: 'Due 500 Km | Current 450 Km', description: 'duenow', action: 'action'},
+                {code: 'XXXPMR3', date: '21 Sep 2024', parameter: 'Due 500 Km | Executed 450 Km', description: 'completed', action: 'action'}
             ],
             issues: [
                 {codeIssue: 'IS/01/2024', codeFleet: '001', title: 'Keluhan A', priority: 'High', status: 'Lorem Ipsum', 
@@ -448,23 +501,64 @@ export default {
                 },
                 
             ],
+            kuesioners: [
+                {code: 'K001', title: 'Lorem Ipsum', period: 'Harian', dateWork: '01 Juni 2024' , dateFill: '-', status: 'waiting', 
+            
+                },
+                {code: 'K002', title: 'Lorem Ipsum', period: 'Mingguan', dateWork: '01 Juni 2024' , dateFill: '12 Juni 2024', status: 'done', 
+            
+                },
+                {code: 'K003', title: 'Lorem Ipsum', period: 'Bulanan', dateWork: '01 Juni 2024' , dateFill: '-', status: 'late', 
+            
+                },
+                {code: 'K004', title: 'Lorem Ipsum', period: 'Tahunan', dateWork: '01 Juni 2024' , dateFill: '-', status: 'nodone', 
+            
+                },
+                
+            ],
             dataMaintenanceProgram: [],
             dataAttachment: [],
             dataTag: [],
-            showSelectHeader: false,
+            modalHeaderParameter: false,
+            modalHeaderCost: false,
+            modalHeaderTimesheet: false,
+            modalHeaderFuel: false,
+            modalDelete: false,
             modalApproveParameter: false,
             modalApproveCost: false,
             modalApproveTimesheet: false,
             modalApproveFuel: false,
             modalSettingTolerance: false,
+            fleetId: this.$route.params.id,
             fleetParameterId: '',
             fleetCostId: '',
             fleetTimesheetId: '',
             fleetFuelId: '',
-            type: 'add',
+            search: '',
         }
     },
     watch: {
+        headers: {
+            handler(newVal) {
+                this.headers = newVal;
+            },
+            deep: true
+        },
+        search: {
+            handler(){
+                if(this.search.length > 1 || this.search.length === 0){
+                    this.params.search = this.search
+                    if(this.timeout) clearTimeout(this.timeout)
+                        this.timeout = setTimeout(() => {
+                        if(this.tabItem == 'parameter') this.listDataHistoryParameter()
+                        if(this.tabItem == 'cost') this.listDataHistoryCost()
+                        if(this.tabItem == 'timesheet') this.listDataHistoryTimesheet()
+                        if(this.tabItem == 'fuel') this.listDataHistoryFuel()
+                    }, 500)
+                }
+                
+            }
+        }
     },
     methods: {
         rightcolumn() {
@@ -503,11 +597,29 @@ export default {
                 element.classList.add("d-none");
             }
         },
-        hideSelectHeaderMethod() {
-            this.showSelectHeader = false;
+        hideHeaderParameter() {
+            this.modalHeaderParameter = false;
         },
-        showSelectHeaderMethod() {
-            this.showSelectHeader = true;
+        showHeaderParameter() {
+            this.modalHeaderParameter = true;
+        },
+        hideHeaderCost() {
+            this.modalHeaderCost = false;
+        },
+        showHeaderCost() {
+            this.modalHeaderCost = true;
+        },
+        hideHeaderTimesheet() {
+            this.modalHeaderTimesheet = false;
+        },
+        showHeaderTimesheet() {
+            this.modalHeaderTimesheet = true;
+        },
+        hideHeaderFuel() {
+            this.modalHeaderFuel = false;
+        },
+        showHeaderFuel() {
+            this.modalHeaderFuel = true;
         },
         showModalSettingTolerance(){
             this.modalSettingTolerance = true
@@ -516,9 +628,46 @@ export default {
             this.fleetParameterId = id;
             this.modalApproveParameter = true;
         },
-        showModalDeleteParameter(id){
-            this.showModalDelete = true
-            this.fleetParameterId = id;
+        deleteData(){
+       
+            axios.delete(process.env.VUE_APP_API_URL + this.url + this.deleteId).then(() => {
+                if(this.url == '/v1/fleet-parameters/'){
+                    this.listDataHistoryParameter();
+                }
+                if(this.url == '/v1/fleet-costs/'){
+                    this.listDataHistoryCost();
+                }
+                if(this.url == '/v1/fleet-timesheets/'){
+                    this.listDataHistoryTimesheet();
+                }
+                if(this.url == '/v1/fleet-fuels/'){
+                    this.listDataHistoryFuel();
+                }
+                this.modalDelete = false;
+                Swal.fire("Berhasil!", "Berhasil menghapus data", "success");
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        showModalDelete(id, url){
+            
+            this.modalDelete = true
+            if(url == 'parameter') {
+                this.deleteId = id
+                this.url = '/v1/fleet-parameters/'
+            }
+            if(url == 'cost') {
+                this.deleteId = id
+                this.url = '/v1/fleet-costs/'
+            }
+            if(url == 'timesheet') {
+                this.deleteId = id
+                this.url = '/v1/fleet-timesheets/'
+            }
+            if(url == 'fuel') {
+                this.deleteId = id
+                this.url = '/v1/fleet-fuels/'
+            }
         },
         showModalApproveCost(id) {
             this.fleetCostId = id;
@@ -534,7 +683,6 @@ export default {
         },
         
         approveParameter(){
-
             axios.put(process.env.VUE_APP_API_URL + `/v1/fleet-parameters/${this.fleetParameterId}/approve`).then(() => {
                 Swal.fire("Berhasil!", "Berhasil approve data", "success");
                 this.modalApproveParameter = false
@@ -664,6 +812,7 @@ export default {
                 params: this.params,
             }).then((response) => {
                 this.timesheetHistories = response.data.data.items
+                this.operatorName = this.timesheetHistories.operator.fullName
                 console.log(this.timesheetHistories)
                 this.config.total_items = response.data.data.meta.totalItems
                 this.config.total_pages = response.data.data.meta.totalPages
@@ -696,7 +845,7 @@ export default {
                 params:{
 					sortBy:"createdAt.asc",
 					search:"",
-					fleetId:"",
+					fleetId: this.fleetId,
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
@@ -715,7 +864,7 @@ export default {
                 params:{
 					sortBy:"createdAt.asc",
 					search:"",
-					fleetId:"",
+					fleetId: this.fleetId,
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
@@ -734,7 +883,7 @@ export default {
                 params:{
 					sortBy:"createdAt.asc",
 					search:"",
-					fleetId:"",
+					fleetId: this.fleetId,
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
@@ -752,8 +901,8 @@ export default {
 			axios.get(process.env.VUE_APP_API_URL+'/v1/fleet-fuels/export', {
                 params:{
 					sortBy:"createdAt.asc",
-					search:"",
-					fleetId:"",
+					search: "",
+					fleetId: this.fleetId,
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
@@ -766,6 +915,10 @@ export default {
 
 				});
 		},
+        searchHandler(event, tabItem){
+            this.search = event.target.value
+            this.tabItem = tabItem
+        },
     },
     mounted() {
         
@@ -785,8 +938,21 @@ export default {
 
 <template>
     <Layout>
-        <SelectHeader :showModal="showSelectHeader" :headers="parameterHistoryHeaders" @hideModal="hideSelectHeaderMethod" @selectHeader="selectHeaderMethod" />
-        <!-- <HeaderPage title="Fleet Management" pageTitle="Fleet Management" /> -->
+        <SelectHeader :showModal="modalHeaderParameter" :headers="parameterHistoryHeaders" @hideModal="hideHeaderParameter" @selectHeader="showHeaderParameter" />
+        <SelectHeader :showModal="modalHeaderCost" :headers="costHistoryHeaders" @hideModal="hideHeaderCost" @selectHeader="showHeaderCost" />
+        <SelectHeader :showModal="modalHeaderTimesheet" :headers="timesheetHistoryHeaders" @hideModal="hideHeaderTimesheet" @selectHeader="hideHeaderTimesheet" />
+        <SelectHeader :showModal="modalHeaderFuel" :headers="fuelHistoryHeaders" @hideModal="hideHeaderFuel" @selectHeader="hideHeaderFuel" />
+        
+        <BModal v-model="modalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDelete = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteData">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
         <BModal v-model="modalApproveParameter" hide-footer centered  class="v-modal-custom">
             <div class="d-flex">
                 <div class="img w-50">
@@ -833,7 +999,7 @@ export default {
             </div>
             <div class="d-flex justify-content-center mt-4">
                 <BButton variant="dark" class="me-2" @click="modalApproveTimesheet = false">Tidak</BButton>
-                <BButton variant="light" @click="approveCost()">Ya</BButton>
+                <BButton variant="light" @click="approveTimesheet()">Ya</BButton>
             </div>
         </BModal>
         <BModal v-model="modalApproveFuel" hide-footer centered  class="v-modal-custom">
@@ -1234,12 +1400,12 @@ export default {
                                         <h4 class="card-title mb-0">Histori Parameter</h4>
 
                                         <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
-                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
+                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showHeaderParameter">
                                                 <i class="bx bx-dots-vertical-rounded"></i>
                                             </BButton>
                                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search" @input="searchHandler($event, 'parameter')">
                                                     <i class="ri-search-line search-icon"></i>
                                                 </div>
                                                 <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportParameter">
@@ -1265,11 +1431,11 @@ export default {
                                                 <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/fleet-management/parameter-history/edit/${item.id}`">
                                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                 </BButton>
-                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteParameter(item.id)">
+                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDelete(item.id, 'parameter')">
                                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                                 </BButton>
                                                 <BButton variant="link" class="link-opacity-75 bg-success rounded-2" size="sm" @click="showModalApproveParameter(item.id)">
-                                                    <img src="@/assets/icons/check.svg" width="12" height="12" alt="check" />
+                                                    <img src="@/assets/icons/check.svg" width="12" alt="check" />
                                                 </BButton>
                                             </template>
                                             <!-- <template #pagination>  
@@ -1303,12 +1469,12 @@ export default {
                                         <h4 class="card-title mb-0">Histori Biaya</h4>
 
                                         <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
-                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
+                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showHeaderCost">
                                                 <i class="bx bx-dots-vertical-rounded"></i>
                                             </BButton>
                                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search" @input="searchHandler($event, 'cost')">
                                                     <i class="ri-search-line search-icon"></i>
                                                 </div>
                                                 <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportCost">
@@ -1336,11 +1502,11 @@ export default {
                                                 <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/fleet-management/cost-history/edit/${item.id}`">
                                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                 </BButton>
-                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteCost(item.id)">
+                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDelete(item.id, 'cost')">
                                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                                 </BButton>
                                                 <BButton variant="link" class="link-opacity-75 bg-success rounded-2" size="sm" @click="showModalApproveCost(item.id)">
-                                                    <img src="@/assets/icons/check.svg" width="12" height="12" alt="check" />
+                                                    <img src="@/assets/icons/check.svg" width="12" alt="check" />
                                                 </BButton>
                                             </template>
                                             <template #pagination>  
@@ -1373,12 +1539,12 @@ export default {
                                         <h4 class="card-title mb-0">Histori Timesheet</h4>
 
                                         <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
-                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
+                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showHeaderTimesheet">
                                                 <i class="bx bx-dots-vertical-rounded"></i>
                                             </BButton>
                                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search" @input="searchHandler($event, 'timesheet')">
                                                     <i class="ri-search-line search-icon"></i>
                                                 </div>
                                                 <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportTimesheet">
@@ -1405,11 +1571,11 @@ export default {
                                                 <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/fleet-management/timesheet-history/edit/${item.id}`">
                                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                 </BButton>
-                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteTimesheet(item.id)">
+                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDelete(item.id, 'timesheet')">
                                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                                 </BButton>
                                                 <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm" @click="showModalApproveTimesheet(item.id)">
-                                                    <img src="@/assets/icons/check.svg" width="12" height="12" alt="check" />
+                                                    <img src="@/assets/icons/check.svg" width="12" alt="check" />
                                                 </BButton>
 
                                             </template>
@@ -1443,12 +1609,12 @@ export default {
                                 <div class="tab-pane fade" id="nav-history-bbm" role="tabpanel" aria-labelledby="nav-history-bbm-tab" tabindex="0">
                                     <div class="d-flex flex-wrap justify-content-between py-lg-4">
                                         <div>
-                                            <h4 class="card-title mb-0">Histori BBM</h4>
+                                            <h4 class="card-title mb-3">Histori BBM</h4>
                                             <h5 class="card-subtitle mb-0">Rata-Rata Efisiensi BBM: </h5>
                                         </div>
 
                                         <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
-                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
+                                            <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showHeaderFuel">
                                                 <i class="bx bx-dots-vertical-rounded"></i>
                                             </BButton>
                                         
@@ -1456,7 +1622,7 @@ export default {
 
                                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search" @input="searchHandler($event, 'fuel')">
                                                     <i class="ri-search-line search-icon"></i>
                                                 </div>
                                                 <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportFuel">
@@ -1486,11 +1652,11 @@ export default {
                                                 <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/fleet-management/fuel-history/edit/${item.id}`">
                                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                 </BButton>
-                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteFuel(item.id)">
+                                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDelete(item.id, 'fuel')">
                                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                                 </BButton>
                                                 <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm" @click="showModalApproveFuel(item.id)">
-                                                    <img src="@/assets/icons/check.svg" width="12" height="12" alt="check" />
+                                                    <img src="@/assets/icons/check.svg" width="12" alt="check" />
                                                 </BButton>
                                             </template>
 
@@ -1540,8 +1706,8 @@ export default {
                                                     </template>
 
                                                     <template #description="{ item }">
-                                                        <BButton variant="danger" size="sm">
-                                                            {{ item.description == 'overdue' ? 'Over Due' : 'Due Now'}}
+                                                        <BButton :variant="item.description === 'overdue' ? 'danger' : item.description === 'duenow' ? 'warning' : 'success' " size="sm">
+                                                            {{ item.description == 'overdue' ? 'overdue' : item.description == 'duenow' ? 'duenow' : 'completed' }}
                                                         </BButton>
                                                         
                                                     </template>
@@ -1553,6 +1719,9 @@ export default {
                                                     </template>
 
                                                 </table-component>
+                                                <div class="d-flex py-5 px-3">
+
+                                                </div>
                                             </div>
                                         </BCol>
                                         <BCol lg="12">
@@ -1602,10 +1771,10 @@ export default {
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
                                                             </BButton> 
                                                             <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm">
-                                                                <img src="@/assets/icons/check.svg" width="12" height="12" alt="check" />
+                                                                <img src="@/assets/icons/check.svg" width="12" alt="check" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm">
-                                                                <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
+                                                            <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle" size="sm">
+                                                                <img src="@/assets/icons/cancel.svg" width="14" alt="cancel" />
                                                             </BButton>
                                                         </template>
     
@@ -1762,10 +1931,10 @@ export default {
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
                                                             </BButton> 
                                                             <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm">
-                                                                <img src="@/assets/icons/check.svg" width="12" height="12" alt="check" />
+                                                                <img src="@/assets/icons/check.svg" width="12" alt="check" />
                                                             </BButton>
                                                             <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm">
-                                                                <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
+                                                                <img src="@/assets/icons/cancel.svg" width="14" alt="cancel" />
                                                             </BButton>
                                                         </template>
     
@@ -1800,7 +1969,7 @@ export default {
                                             <div class="issues border shadow-sm rounded-4">
                                                 <div class="d-flex justify-content-between align-items-center border-bottom">
                                                     <div class="p-4 d-flex align-items-center">
-                                                        <h4>Issue </h4><BBadge class="fs-16 d-flex align-items-center justify-content-center rounded-circle ms-2" variant="danger">2</BBadge> <i class="bx bxs-info-circle fs-22 ms-2"></i>
+                                                        <h4>Kuesioner </h4>
                                                     </div>
                                                     <div>
                                                         <BButton variant="link">
@@ -1808,17 +1977,7 @@ export default {
                                                         </BButton>
                                                     </div>
                                                 </div>
-                                                <div class="d-flex flex-wrap justify-content-between p-lg-4">
-                                                    <div>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
-                                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                                        </BButton>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
-                                                            <img src="@/assets/icons/filter.svg" alt="filter" />
-                                                            Filter
-                                                        </BButton>
-                                                    </div>
-    
+                                                <div class="d-flex flex-wrap justify-content-end p-lg-4">
                                                     <div>
                                                         <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
                                                             <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
@@ -1828,26 +1987,26 @@ export default {
                                                     </div>
                                                 </div>
                                                 <div class="live-preview">
-                                                    <table-component :headers="issueHeaders" :data="issues" :action="action" v-if="issues.length > 0" @sort="sort($event.sortBy)">
+                                                    <table-component :headers="kuesionerHeaders" :data="kuesioners" :action="action" v-if="kuesioners.length > 0" @sort="sort($event.sortBy)">
                                                         <template #no="{ index }">
                                                             {{ index + 1 }}
                                                         </template>
-                                                        <template #action="{  }">
-                                                            <BButton variant="link" class="link-dark fs-22" size="sm" >
-                                                                <img src="@/assets/icons/edit.svg" alt="pencil" />
+                                                        <template #status="{ item }">
+                                                            <BButton :variant="item.status === 'waiting' ? 'info' : item.status === 'done' ? 'success' : item.status === 'late' ? 'warning' : 'danger' " size="sm">
+                                                                {{ item.status == 'waiting' ? 'Menunggu Dikerjakan' : item.status == 'done' ? 'Sudah Dikerjakan' : item.status === 'late' ? 'Sudah Terlewat'  : 'Tidak Dikerjakan' }}
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 fs-22" size="sm" >
-                                                                <img src="@/assets/icons/delete.svg" alt="delete" />
+                                                            
+                                                        </template>
+                                                        <template #action="{ item }">
+                                                            <BButton v-if="item.status === 'waiting'" variant="link" class="link-dark fs-22" size="sm" >
+                                                                <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                             </BButton>
                                                             <BButton variant="link" class="link-opacity-75" size="sm">
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
                                                             </BButton> 
-                                                            <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm">
-                                                                <img src="@/assets/icons/check.svg" width="12" height="12" alt="check" />
-                                                            </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm">
-                                                                <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
-                                                            </BButton>
+                                                            <!-- <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm">
+                                                                <img src="@/assets/icons/check.svg" width="12" alt="check" />
+                                                            </BButton> -->
                                                         </template>
     
                                                         <template #pagination>  

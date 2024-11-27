@@ -79,7 +79,7 @@ export default {
             meta: { title: "History BBM", description: "Fleet Management - Detail Fleet",authRequired: true },
         },
         {
-            path: "fuel-history/view/:id",
+            path: "fuel-history/edit/:id",
             name: "fleet-management-fuel-history-edit",
             component: FormFuelHistory,
             meta: { title: "History BBM", description: "Fleet Management - Detail Fleet",authRequired: true },

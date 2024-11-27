@@ -24,14 +24,14 @@ export default {
                 photo: null,
             },
             fills: [
-                {name: '0 (Kosong)', value: ''},
-                {name: '1/8', value: ''},
-                {name: '1/4', value: ''},
-                {name: '3/4', value: ''},
-                {name: '1/2 (Setengah)', value: ''},
-                {name: '5/8', value: ''},
-                {name: '3/4 (Tiga per empat)', value: ''},
-                {name: '7/8', value: ''},
+                {name: '0 (Kosong)', value: 'empty'},
+                {name: '1/8', value: '1/8'},
+                {name: '1/4', value: '1/4'},
+                {name: '3/4', value: '3/4'},
+                {name: '1/2 (Setengah)', value: '1/2'},
+                {name: '5/8', value: '5/8'},
+                {name: '3/4 (Tiga per empat)', value: '3/4'},
+                {name: '7/8', value: '7/8'},
                 {name: '1 (Full)', value: 'full'},
             ],
             photo: null,
@@ -51,8 +51,8 @@ export default {
         },
         saveData(){
             axios.post(process.env.VUE_APP_API_URL + '/v1/fleet-fuels', this.form).then(() => {
-                this.$router.push('/fleet-management/view/' + this.$route.params.id)               
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                this.$router.back()
             }).catch((err) => {
                 Swal.fire("Gagal!", "Gagal menambah data", "error");
                 console.log((err));
@@ -60,8 +60,8 @@ export default {
         },
         updateData(){
             axios.put(process.env.VUE_APP_API_URL + '/v1/fleet-fuels/' + this.$route.params.id, this.form).then(() => {
-                this.$router.push('/fleet-management/view/' + this.$route.params.id)
                 Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                this.$router.back()
             }).catch((err) => {
                 Swal.fire("Gagal!", "Gagal mengubah data", "error");
                 console.log((err));
@@ -114,6 +114,26 @@ export default {
 </script>
 <template>
     <Layout>
+        <BRow>
+            <BCol>
+                <div class="h-100">
+                    <BRow class="mb-3 pb-1">
+                        <BCol cols="12">
+                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                                <div class="flex-grow-1">
+                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
+                                    <p class="text-muted mb-0">
+                                        {{$route.meta.description}}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </BCol>
+                    </BRow>
+
+                </div>
+            </BCol>
+        </BRow>
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -179,26 +199,32 @@ export default {
                                     </div>
                                 </BCol>
                                 <BCol md="6">
-                                    <div>
-                                        <label for="void" class="form-label">Mengisi Sampai <span class="text-danger">*</span></label>
-                                        <BFormSelect v-model="form.fillTo" :options="fills" text-field="name" value-field="value"></BFormSelect>
-                                    </div>
+                                    <BRow class="gy-4">
+                                        <BCol md="12">
+                                            <div>
+                                                <label for="void" class="form-label">Mengisi Sampai <span class="text-danger">*</span></label>
+                                                <BFormSelect v-model="form.fillTo" :options="fills" text-field="name" value-field="value"></BFormSelect>
+                                            </div>
+                                        </BCol>
+                                        <BCol md="12">
+                                            <div>
+                                                <label for="source" class="form-label">Liter/Odometer Terakhir</label>
+                                                <div class="input-group">
+                                                    <input type="number" v-model="form.literPerParameter" class="form-control border-end-0" id="source" placeholder="0" required >
+                                                    <span class="input-group-text border-start-0">ltr/hour</span>
+                                                </div>
+                                            </div>
+                                        </BCol>
+                                    </BRow>
                                 </BCol>
                                 <BCol md="6">
-                                    <div>
-                                        <label for="source" class="form-label">Liter/Odometer Terakhir</label>
-                                        <div class="input-group">
-                                            <input type="number" v-model="form.literPerParameter" class="form-control border-end-0" id="source" placeholder="0" required >
-                                            <span class="input-group-text border-start-0">ltr/hour</span>
-                                        </div>
-                                    </div>
                                 </BCol>
                             </BRow>
                             <div class="d-flex justify-content-end mt-4">
-                                <router-link to="/fleet-management/view/">
+                                <router-link :to="`/fleet-management/view/${this.$route.params.id}`">
                                     <BButton variant="light" class="me-2">Kembali</BButton>
                                 </router-link>
-                                <BButton type="submit" variant="primary" @click="saveData()">Simpan</BButton>
+                                <BButton type="submit" variant="primary" @click="handleAction()">Simpan</BButton>
                             </div>
                         </BForm>
                     </BCardBody>

@@ -43,8 +43,8 @@ export default {
         },
         saveData(){
             axios.post(process.env.VUE_APP_API_URL + '/v1/fleet-costs', this.form).then(() => {      
-                this.$router.push('/fleet-management/view/' + this.$route.params.id)         
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                this.$router.back()
             }).catch((err) => {
                 Swal.fire("Gagal!", "Gagal menambah data", "error");
                 console.log((err));
@@ -52,8 +52,8 @@ export default {
         },
         updateData(){
             axios.put(process.env.VUE_APP_API_URL + '/v1/fleet-costs/' + this.$route.params.id, this.form).then(() => {
-                this.$router.push('/fleet-management/view/' + this.$route.params.id)
                 Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                this.$router.back()
             }).catch((err) => {
                 Swal.fire("Gagal!", "Gagal mengubah data", "error");
                 console.log((err));
