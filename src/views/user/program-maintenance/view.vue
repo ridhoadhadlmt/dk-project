@@ -52,13 +52,15 @@ export default {
                 activities: [],
             },
             users: [],
-            activities: [],
+            dataActivity: [],
             params: {
                 page: 1,
                 limit: 10,
                 search: '',
                 sortBy: 'id.desc',
+                maintenanceProgramId: '',
             },
+            search: '',
             config:{
                 total_pages: 0,
                 total_item: 0,
@@ -66,6 +68,13 @@ export default {
         }
     },
     watch: {
+        search: {
+            handler(){
+                if(this.search.length === 0 || this.search.length > 5){
+                    this.listDataActivity({params: this.search})
+                }
+            }
+        }
     },
     methods: {
         
@@ -108,16 +117,31 @@ export default {
 
 
         fetchData() {
-            axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id).then((response) => {
-                this.form = response.data.data
-                this.activities = response.data.data.activities
-            }).catch((error) => {
-                console.log(error);
-            });
+            if(this.$route.params.id){
+                this.params.maintenanceProgramId = this.$route.params.id
+
+                axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id).then((response) => {
+                    this.form = response.data.data
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
         },
         listDataUser() {
             axios.get(process.env.VUE_APP_API_URL + '/v1/users').then((response) => {
                 this.users = response.data.data.items
+                
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataActivity() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-program-activities' ,{
+                params: this.params
+            }).then((response) => {
+                this.dataActivity = response.data.data.items
+                this.config.total_item = response.data.data.meta.totalItems
+                this.config.total_pages = response.data.data.meta.totalPages
                 
             }).catch((error) => {
                 console.log(error);
@@ -129,6 +153,7 @@ export default {
         window.addEventListener("resize", this.resizerightcolumn);
         this.fetchData();
         this.listDataUser();
+        this.listDataActivity()
     }
 
 };
@@ -206,7 +231,7 @@ export default {
 
                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                    <input type="text" class="form-control" placeholder="Search..." v-model="search" style="width: 100%;">
                                     <i class="ri-search-line search-icon"></i>
                                 </div>
 
@@ -216,7 +241,7 @@ export default {
                         </div>
                     </div>
                     <div class="live-preview">
-                        <table-component :headers="headers" :data="activities" :action="action" v-if="activities.length > 0" @sort="sort($event.sortBy)">
+                        <table-component :headers="headers" :data="dataActivity" :action="action" v-if="dataActivity.length > 0" @sort="sort($event.sortBy)">
                             <!-- NO -->
                             <template #no="{ index }">
                                 {{ index + 1 }}
@@ -230,12 +255,12 @@ export default {
                                 <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/maintenance-programs/view/${item.id}`">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/maintenance-programs/activity/view/${item.id}`">
                                     <img src="@/assets/icons/view.svg" alt="eye" />
                                 </BButton>
                             </template>
 
-                            <!-- <template #pagination>  
+                            <template #pagination>  
 
                                 <div class="d-flex justify-content-between mt-3" v-if="config.total_items >= 1">
                                     <div class="d-flex align-items-center">
@@ -257,7 +282,7 @@ export default {
                                         </BButton>
                                     </div>
                                 </div>
-                            </template> -->
+                            </template>
                         </table-component>
                     </div>
                     <div class="cta p-lg-4">
