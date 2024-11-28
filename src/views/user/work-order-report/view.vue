@@ -71,12 +71,6 @@ export default {
                     key: 'total',
                     show: true,
                     order: true
-                },
-                {
-                    title: 'Action',
-                    key: 'action',
-                    show: true,
-                    order: false
                 }
             ],
         };
