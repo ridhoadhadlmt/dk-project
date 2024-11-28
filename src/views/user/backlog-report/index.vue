@@ -29,7 +29,7 @@ export default {
                 },
                 {
                     title: 'Kode',
-                    key: 'backlogCode',
+                    key: 'workOrder.code',
                     show: true,
                     order:true
                 },
