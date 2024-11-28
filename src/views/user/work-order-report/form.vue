@@ -884,7 +884,7 @@ export default {
                             <template #pagination>
 
                                 <div class="d-flex justify-content-end mt-3">
-                                    <button class="btn btn-light me-2">Kembali</button>
+                                    <a href="/work-order" class="btn btn-light me-2">Kembali</a>
                                     <button class="btn btn-light me-2">Simpan sebagai Draft</button>
                                     <button class="btn btn-primary" @click="submit">Publish</button>
                                 </div>
