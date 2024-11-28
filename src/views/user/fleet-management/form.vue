@@ -96,6 +96,7 @@ export default {
             document: [],
             dataMaintenanceProgram: [],
             valueTag: '',
+            maintenanceProgramIndex: '',
         };
     },
     watch: {
@@ -146,7 +147,12 @@ export default {
             })
         },
         selectMaintenanceProgram(event, index){
-            this.form.maintenancePrograms[index].maintenanceProgramId = event
+            if(!this.$route.params.id){
+                this.form.maintenancePrograms[index].maintenanceProgramId = event
+            } else{
+                this.dataMaintenanceProgram[index].maintenanceProgramId = event
+
+            }
 
         },
         listDataFleetType() {
@@ -199,11 +205,25 @@ export default {
             this.form.attachments.push({...attachments})
         },
         copyProgram(index){
-            const programs = this.form.maintenancePrograms[index]
-            this.form.maintenancePrograms.push({...programs})
+            if(!this.$route.params.id){
+                const programs = this.form.maintenancePrograms[index]
+                this.form.maintenancePrograms.push({...programs})
+            }
+            else{
+                const programs = this.dataMaintenanceProgram[index]
+                this.dataMaintenanceProgram.push({...programs})
+
+            }
         },
         deleteProgram(index){
-            this.form.maintenancePrograms.splice(index, 1)
+            if(!this.$route.params.id){
+
+                this.form.maintenancePrograms.splice(index, 1)
+            }
+            else{
+                this.dataMaintenanceProgram.splice(index, 1)
+
+            }
         },
         deleteAttachment(index){
             this.form.attachments.splice(index, 1)
@@ -219,7 +239,8 @@ export default {
         saveData(){
             this.form.finance.lastPayment = this.form.finance.endPaymentAt
             this.form.usedAt = "2024-10-11"
-            this.form.maintenancePrograms.push(this.dataMaintenanceProgram)
+            
+            console.log(this.form)
             axios.post(process.env.VUE_APP_API_URL + '/v1/fleets', this.form).then(() => {
                 Swal.fire("Berhasil", "Berhasil tambah data", "success");
                 this.$router.push('/fleet-management')
@@ -229,7 +250,7 @@ export default {
             })
         },
         updateData(){
-            
+            this.form.maintenancePrograms = this.dataMaintenanceProgram
             axios.put(process.env.VUE_APP_API_URL + '/v1/fleets/' + this.$route.params.id , this.form).then(() => {
                 Swal.fire("Berhasil", "Berhasil update data", "success");
                 this.$router.push('/fleet-management')
@@ -282,15 +303,28 @@ export default {
                     data.tags.forEach((item) => {
                         this.form.tags.push(item)
                     })
-                    this.dataMaintenanceProgram = data.maintenancePrograms.map((maintenanceProgram, index) => {
-                        console.log(index)
-                        return {
-                            id: maintenanceProgram.id,
-                            maintenanceProgramId: maintenanceProgram.maintenanceProgramId,
-                            lastMaintenancePoint: maintenanceProgram.lastMaintenancePoint,
-                            isDelete: false
+                    if(data.maintenancePrograms.length > 0){
+
+                        this.dataMaintenanceProgram = data.maintenancePrograms.map((maintenanceProgram) => {
+                            
+                            return {
+                                id: maintenanceProgram.id,
+                                maintenanceProgramId: maintenanceProgram.maintenanceProgramId,
+                                lastMaintenancePoint: maintenanceProgram.lastMaintenancePoint,
+                                isDelete: false,
+                            }
+                            
+                        })
+                    } 
+                    if(!this.dataMaintenanceProgram.length){
+                        const data = {
+                            maintenanceProgramId: '',
+                            lastMaintenancePoint: 0,
                         }
-                    })
+                        this.dataMaintenanceProgram.push(data)
+                        console.log(this.dataMaintenanceProgram)
+                    }
+                    
                     
                     
                 
@@ -511,7 +545,37 @@ export default {
                                 </BCol>
                                 
 
-                                <BCol md="12" v-for="(maintenanceProgram, index) in form.maintenancePrograms" :key="index">
+                                <BCol v-if="!this.$route.params.id" md="12">
+                                    <BRow  v-for="(maintenanceProgram, index) in form.maintenancePrograms" :key="index">
+                                        <BCol md="6">
+                                            <div>
+                                                <label for="program-management" class="form-label">Program Maintenance <span class="text-danger">*</span></label>
+                                                <div >
+                                                    <select  id="program-management" v-model="form.maintenancePrograms[index].maintenanceProgramId" class="form-select" required @change="selectMaintenanceProgram($event.target.value, index)">
+                                                        <option v-for="(maintenanceProgram, index) in  maintenancePrograms" :key="index" :value="maintenanceProgram.id">{{  maintenanceProgram.name }}</option>
+                                                    </select>
+                                                </div>
+                                                
+                                            </div>
+                                        </BCol>
+                                        <BCol md="6">
+                                            <div>
+                                                <label for="starting-point" class="form-label">Starting Point <span class="text-danger">*</span></label>
+                                                <div class="d-flex justify-content-between">
+                                                    <input type="number" class="form-control" v-model="form.maintenancePrograms[index].lastMaintenancePoint" placeholder="0 km" aria-label="starting-point" aria-describedby="starting-point">
+                                                    <div class="d-flex align-items-center">
+                                                        <BButton variant="link" @click="copyProgram(index)"><i class="bx bxs-copy fs-22"></i></BButton>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <BButton variant="link" @click="deleteProgram(index)" class="p-1 d-flex align-items-center rounded-circle bg-light" v-if="form.maintenancePrograms.length > 1"><i class="bx bx-x fs-22"></i></BButton>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </BCol>
+                                    </BRow>
+                                </BCol>
+                                <BCol md="12" v-if="this.$route.params.id">
                                     <BRow v-for="(maintenanceProgram, index) in dataMaintenanceProgram" :key="index">
                                         <BCol md="6">
                                             <div>
@@ -533,7 +597,7 @@ export default {
                                                         <BButton variant="link" @click="copyProgram(index)"><i class="bx bxs-copy fs-22"></i></BButton>
                                                     </div>
                                                     <div class="d-flex align-items-center">
-                                                        <BButton variant="link" @click="deleteProgram(index)" class="p-1 d-flex align-items-center rounded-circle bg-light" v-if="form.maintenancePrograms.length > 1"><i class="bx bx-x fs-22"></i></BButton>
+                                                        <BButton variant="link" @click="deleteProgram(index)" class="p-1 d-flex align-items-center rounded-circle bg-light" v-if="dataMaintenanceProgram.length > 1"><i class="bx bx-x fs-22"></i></BButton>
                                                     </div>
                                                 </div>
                                                 
