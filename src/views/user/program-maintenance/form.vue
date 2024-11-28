@@ -83,7 +83,7 @@ export default {
 
                 ],
             },
-            users: [],
+            activityItem: [],
             inventories: [],
             dataActivity: [],
             dataUser: [],
@@ -100,7 +100,6 @@ export default {
                 total_item: 0,
             },
             item: {},
-            activityItem: {},
             valueUser: '',
             activityId: '',
             inventoryId: '',
@@ -282,7 +281,11 @@ export default {
         },
 
         editActivity(index) {
-            this.activity = this.dataActivity[index];
+            // this.activity = this.dataActivity[index];
+            // this.activity.startDate = this.dataActivity[index].startDate.slice(0, 10);
+            // this.activity.dueDate = this.dataActivity[index].dueDate.slice(0, 10);
+            // this.activity.actualFinishDate = this.dataActivity[index].actualFinishDate.slice(0, 10);
+            console.log(this.activity)
             this.showModalActivity = true;
             this.activityIndex = index;
         },
@@ -361,10 +364,20 @@ export default {
                 console.log(error);
             });
         },
-        copyItem(index){
-            const item = this.activity.items[index]
-            // console.log(item)
-            this.activity.items.push({...item})
+        copyItem(){
+            this.activityItem = [
+                ...this.activityItem,{
+                    
+                    unit: '',
+                    value: '',
+                    qty: 0,
+                    price: 0,
+                    total: 0,
+                }
+            ]
+            
+            this.activity.items.push(this.activityItem)
+
         },
         deleteItem(index){
             this.activity.items.splice(index, 1)
@@ -495,7 +508,7 @@ export default {
                                 <input type="number" class="form-control" v-model="activity.items[index].total" placeholder="Rp0" disabled>
                             </div>
                             <div class="d-flex align-items-center mx-2">
-                                <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i class="bx bxs-copy-alt fs-22"></i></BButton>
+                                <BButton variant="link" class="p-1 rounded-circle" @click="copyItem()"><i class="bx bxs-copy-alt fs-22"></i></BButton>
                             </div>
                             <div class="d-flex align-items-center mx-2">
                                 <BButton variant="link" class="p-1 rounded-circle d-flex align-items-center bg-light" @click="deleteItem(index)" v-if="activity.items.length > 1"><i class="bx bx-x fs-22"></i></BButton>
