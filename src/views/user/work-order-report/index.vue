@@ -7,6 +7,7 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
+import FilterCard from "./filter-card.vue";
 
 
 export default {
@@ -14,7 +15,8 @@ export default {
         Layout,
         TableComponent,
         SelectHeader,
-        HeaderPage
+        HeaderPage,
+        FilterCard
     },
     data() {
         return {
@@ -84,7 +86,8 @@ export default {
             
             deleteId: null,
             showSelectHeader: false,
-            showModalDelete: false
+            showModalDelete: false,
+            showModalFilter: false
         };
     },
     watch: {
@@ -198,6 +201,25 @@ export default {
 
 				});
 		},
+        setFilterData(params) {
+            this.params = {
+                ...this.params,
+                ...params
+            };
+            this.getData();
+        },
+        hideModalFilter(newVal) {
+            this.showModalFilter = newVal;
+        },
+        resetFilter() {
+            this.params = {
+                page: 1,
+                limit: 10,
+                search: '',
+                sortBy: 'id.desc',
+            };
+            this.getData();
+        }
     },
     mounted() {
         this.getData();
@@ -209,9 +231,20 @@ export default {
 
 <template>
     <Layout>
-
         
-        <SelectHeader :showModal="showSelectHeader" :headers="headers" @hideModal="hideSelectHeaderMethod" @selectHeader="selectHeaderMethod" />
+        <FilterCard 
+            :showModal="showModalFilter" 
+            @hideModalFilter="hideModalFilter" 
+            @setFilterData="setFilterData"
+            @resetFilter="resetFilter"
+        />
+        
+        <SelectHeader 
+            :showModal="showSelectHeader" 
+            :headers="headers" 
+            @hideModal="hideSelectHeaderMethod" 
+            @selectHeader="selectHeaderMethod" 
+        />
         
         <!-- Modal Delete -->
         <BModal v-model="showModalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
@@ -244,7 +277,7 @@ export default {
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </BButton>
                                
-                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;">
+                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
                                     <img src="@/assets/icons/filter.svg" alt="filter" />
                                     Filter
                                 </BButton>
@@ -282,10 +315,11 @@ export default {
                                     <div class="p-2 d-flex align-items-center justify-content-center rounded-pill bg-warning text-white fs-22'" style="width: 30px;height:30px;">{{ item.qty }}</div>
                                 </template>
 
-                                <template #status="{ item }">   
-                                    <!-- <span :class="item.status === 'completed' ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.status) ? 'Completed' : 'Pending' }}</span> -->
+                                <template #status="{ item }"> 
                                      <span v-if="item.status === 'completed'" class="badge rounded-pill bg-success-subtle text-success fs-12">Completed</span>
-                                     <span v-else class="badge rounded-pill bg-danger-subtle text-danger fs-12">Pending</span>
+                                     <span v-if="item.status === 'draft'" class="badge rounded-pill bg-secondary-subtle text-secondary fs-12">Draft</span>
+                                     <span v-if="item.status === 'pending'" class="badge rounded-pill bg-warning-subtle text-warning fs-12">Pending</span>
+                                     <span v-if="item.status === 'in_progress'" class="badge rounded-pill bg-info-subtle text-info fs-12">In Progress</span>
                                 </template>
                                 <template #action="{ item }">
                                     <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/work-order/edit/${item.id}`">

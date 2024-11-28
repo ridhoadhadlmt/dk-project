@@ -17,6 +17,7 @@ export default {
     data() {
         return {
             id: this.$route.params.id,
+            inspections: [],
             datas: null,
             showModalPhoto: false,
         };
@@ -65,6 +66,10 @@ export default {
             axios.get(process.env.VUE_APP_API_URL + "/v1/issues/" + this.$route.params.id)
                 .then(response => {
                     this.datas = response.data.data;
+                    this.inspections = response.data.data.inspections.map(item => item.inspection);
+
+                    this.datas.inspectionIds = response.data.data.inspections.map(item => item.inspection.id);
+
                 })
                 .catch(error => {
                     console.log(error);
@@ -105,11 +110,12 @@ export default {
                             </BCol>
                             <BCol md="6" class="mb-4">
                                 <h5 class="text-muted mb-2">Kode Fleet</h5>
-                                <input type="text" class="form-control" :value="datas.fleet.code" disabled />
+                                <input type="text" class="form-control" :value="datas.fleet?.code" disabled />
                             </BCol>
                             <BCol md="6" class="mb-4">
                                 <h5>Referensi Form Inspeksi</h5>
-                                <!-- <Multiselect :options="datas.inspection" :label="inspection"></Multiselect> -->
+                                <Multiselect 
+                                    :options="inspections" value-prop="id" label="fullName" v-model="datas.inspectionIds" mode="tags" :disabled="true"></Multiselect>
                             </BCol>
                             <BCol md="6" class="mb-4">  
                                 <h5 class="text-muted mb-2">Parameter Keluhan</h5>
@@ -133,7 +139,7 @@ export default {
 
                             <BCol md="6" class="mb-4">  
                                 <h5 class="text-muted mb-2">Operator Pelapor</h5>
-                                <!-- <input type="text" class="form-control" :value="datas.operator.name" disabled /> -->
+                                <input type="text" class="form-control" :value="datas.operator.fullName" disabled />
                             </BCol>
                             <BCol md="6" class="mb-4">  
                                 <h5 class="text-muted mb-2">Lokasi Info Awal Keluhan</h5>
