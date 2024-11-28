@@ -7,6 +7,7 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
+import FilterCard from "./filter-card.vue"; 
 
 
 export default {
@@ -14,7 +15,8 @@ export default {
         Layout,
         TableComponent,
         SelectHeader,
-        HeaderPage
+        HeaderPage,
+        FilterCard
     },
     data() {
         return {
@@ -27,7 +29,7 @@ export default {
                 },
                 {
                     title: 'Kode',
-                    key: 'code',
+                    key: 'backlogCode',
                     show: true,
                     order:true
                 },
@@ -51,7 +53,7 @@ export default {
                 },
                 {
                     title: 'Tanggal',
-                    key: 'date',
+                    key: 'startedAt',
                     show: true,
                     order:true
                 },
@@ -62,96 +64,6 @@ export default {
                     order:true
                 },
                 {
-                    title: 'No.Work Order',
-                    key: 'no_work_order',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Referensi Issue',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Kode Fleet',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tipe Fleet',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Judul WO',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Jenis WO',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Periodic WO',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Kategori Kerusakan',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal & Jam WO',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal Dimulai',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Target',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'PIC Mekanik',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal Aktual Selesai',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Estimasi Biaya WO',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Biaya WO',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
                     title: 'Action',
                     key: 'action',
                     show: true,
@@ -159,7 +71,6 @@ export default {
                 }
             ],
             data: [
-                {id: 1, code: 'WO/01/2024', no_referency: 'WO/01/2024', title: 'Lorem Ipsum', priority: 'Critical', date: '11 Des 2024', status: 'completed'}
             ],
             params: {
                 page: 1,
@@ -174,7 +85,8 @@ export default {
             
             deleteId: null,
             showSelectHeader: false,
-            showModalDelete: false
+            showModalDelete: false,
+            showModalFilter: false
         };
     },
     watch: {
@@ -184,26 +96,20 @@ export default {
             },
             deep: true
         },
-        params: {
-            handler() {
-                this.getData();
-            },
-            deep: true
-        }
     },
     methods: {
         getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins", {
-            //     params: this.params
-            // })
-            //     .then((response) => {
-            //         this.data = response.data.data.items;
-            //         this.config.total_pages = response.data.data.meta.totalPages;
-            //         this.config.total_items = response.data.data.meta.totalItems;
-            //     })
-            //     .catch((error) => {
-            //         console.log(error);
-            //     });
+            axios.get(process.env.VUE_APP_API_URL + "/v1/backlogs", {
+                params: this.params
+            })
+                .then((response) => {
+                    this.data = response.data.data.items;
+                    this.config.total_pages = response.data.data.meta.totalPages;
+                    this.config.total_items = response.data.data.meta.totalItems;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
 
         },
         rightcolumn() {
@@ -258,7 +164,7 @@ export default {
 
         deleteDataMethod() {
             // this.showModalDelete = false
-            axios.delete(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.deleteId).then(() => {
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/backlogs/' + this.deleteId).then(() => {
                 this.getData();
                 this.deleteId = null;
                 this.showModalDelete = false;
@@ -279,21 +185,39 @@ export default {
         },
         exportExcel() {
 			axios.defaults.responseType = 'blob';
-			axios.get(process.env.VUE_APP_API_URL+'/cms/v1/admins/export', {
-                params:{
-					sortBy:"fullName.asc",
-				}
+			axios.get(process.env.VUE_APP_API_URL+'/v1/backlogs/export', {
+                params: this.params
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
 					const link = document.createElement('a');
 					link.href = url;
-					link.setAttribute('download', `Program Maintenance.xlsx`);
+					link.setAttribute('download', `Backlog Report.xlsx`);
 					document.body.appendChild(link);
 					link.click();
 					axios.defaults.responseType = 'json'
 
 				});
 		},
+
+        setFilterData(params) {
+            this.params = {
+                ...this.params,
+                ...params
+            };
+            this.getData();
+        },
+        hideModalFilter(newVal) {
+            this.showModalFilter = newVal;
+        },
+        resetFilter() {
+            this.params = {
+                page: 1,
+                limit: 10,
+                search: '',
+                sortBy: 'id.desc',
+            };
+            this.getData();
+        }
     },
     mounted() {
         this.getData();
@@ -324,6 +248,14 @@ export default {
 
         <HeaderPage title="Backlog Report" pageTitle="Backlog Report" />
 
+
+        <FilterCard 
+            :showModal="showModalFilter" 
+            @hideModalFilter="hideModalFilter" 
+            @setFilterData="setFilterData"
+            @resetFilter="resetFilter"
+        />
+
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -340,7 +272,7 @@ export default {
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </BButton>
                                
-                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;">
+                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
                                     <img src="@/assets/icons/filter.svg" alt="filter" />
                                     Filter
                                 </BButton>
@@ -352,7 +284,7 @@ export default {
 
                                 <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                     <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search" @input="getData">
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
 
@@ -370,18 +302,23 @@ export default {
                                 <template #no="{ index }">
                                     {{ index + 1 }}
                                 </template>
+                                <!-- startedAt -->
+                                 <template #startedAt="{ item }">
+                                    {{ $filters.formatDate(item.startedAt) }}
+                                 </template>
                                 <!-- //Status -->
                                 <template #status="{ item }">   
-                                    <span :class="item.status == 'completed' ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.status) ? 'Completed' : 'Pending' }}</span>
+                                    <span v-if="item.status == 'completed'" class="badge rounded-pill bg-success-subtle text-success fs-12">Completed</span>
+                                    <span v-else class="badge rounded-pill bg-danger-subtle text-danger fs-12">Pending</span>
                                 </template>
                                 <template #action="{ item }">
-                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/administrator-management/edit/${item.id}`">
+                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/backlog-report/edit/${item.id}`">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
                                     </BButton>
                                     <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
                                         <img src="@/assets/icons/delete.svg" alt="delete" />
                                     </BButton>
-                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/administrator-management/view/${item.id}`">
+                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/backlog-report/view/${item.id}`">
                                         <img src="@/assets/icons/view.svg" alt="eye" />
                                     </BButton>
                                 </template>
