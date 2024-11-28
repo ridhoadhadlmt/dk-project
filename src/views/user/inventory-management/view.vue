@@ -85,17 +85,23 @@ export default {
             showModalDelete: false,
             mutationId: '',
             inventoryId: '',
+            search: '',
             
             
         };
     },
     watch: {
-        params: {
-            handler() {
-                this.listData({inventoryId: this.$route.params.id});
-            },
-            deep: true
-        },
+        search: {
+            handler(){
+                if(this.search.length === 0 || this.search.length > 1){
+                    this.params.search = this.search
+                    if(this.timeout) clearTimeout(this.timeout)
+                    this.timeout = setTimeout(() => {
+                        this.listData()
+                    }, 500)
+                }
+            }
+        }
         
     },
     methods: {
@@ -136,7 +142,7 @@ export default {
             }
         },
 
-        getData() {
+        listData() {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventories/" + this.$route.params.id
             )
                 .then(response => {
@@ -148,7 +154,7 @@ export default {
                 });
         },
         
-        listData(){
+        listDataMutation(){
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventory-mutations",{
             params: this.params,
             
@@ -170,7 +176,7 @@ export default {
         },
         deleteData() {
             axios.delete(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.mutationId).then(() => {
-                this.listData();
+                this.listDataMutation();
                 this.mutationId = null;
                 this.showModalDelete = false;
 
@@ -186,8 +192,8 @@ export default {
     },
 
     mounted() {
-        this.getData();
         this.listData();
+        this.listDataMutation();
         window.addEventListener("resize", this.resizerightcolumn);
     }
 
@@ -232,8 +238,8 @@ export default {
                 <div class="p-4 rounded-4 shadow-sm bg-white">
                     <BRow class="mb-3">
                         <BCol xl="2">
-                            <div class="w-100 h-50">
-                                <img :src="detail.photo" class="rounded-4 w-100 h-100 object-fit-cover" alt="">
+                            <div class="h-25">
+                                <img :src="detail.photo" class="rounded-4 img-fluid object-fit-cover" alt="">
                             </div>
                         </BCol>
                         <BCol xl="10">
@@ -277,7 +283,7 @@ export default {
 
                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                     <i class="ri-search-line search-icon"></i>
                                 </div>
 
@@ -308,7 +314,7 @@ export default {
                             </template>
                             <!-- //Status -->
                             <template #status="{ item }">
-                                <BBadge :variant="`${item.status === 'done' ? 'success' : 'warning'}`">{{ (item.status === 'done') ? 'Sudah Dikembalikan' : 'Belum Dikembalikan' }}</BBadge>
+                                <BBadge :variant="`${item.status === 'done' ? 'success' : 'warning'}`">{{ (item.status === 'done') ? 'Done' : 'Pending' }}</BBadge>
                             </template>
                             <template #action="{ item }">
                                 <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/inventory-management/${item.id}/mutation-edit`">
