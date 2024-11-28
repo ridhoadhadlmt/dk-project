@@ -41,7 +41,7 @@ export default {
             customValue: '',
             value: [],
             successAddModal: false,
-            saveAndAdd: true,
+            saveAndAdd: false,
             photo: null,
             photoUrl: '',
             document: null,
@@ -86,27 +86,29 @@ export default {
             console.log(this.document)
         },
         saveData(){
-
-            console.log(this.saveAndAdd)
-            axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
-                Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                if(this.saveAndAdd === true){
+            if(this.saveAndAdd == true){
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
                     this.successAddModal = true
-                    this.form = {}
-                }
-                else{
-                    this.$router.push('/inventory-management') 
                     
-                }
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal menambah data", "error");
+                    console.log(err)
+                })
                 
-            }).catch((err) => {
-                Swal.fire("Gagal!", "Gagal menambah data", "error");
-                console.log(err)
-            })
+            } else{
+                axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                    this.$router.back()
+                    
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal menambah data", "error");
+                    console.log(err)
+                })
+
+            }
             
         },
         updateData(){
-            
             
             axios.put(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.$route.params.id , this.form).then(()=> {
                 Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
@@ -117,7 +119,8 @@ export default {
             })
             
         },
-        handleAction(){
+        handleAction(saveAndAdd){
+            this.saveAndAdd = saveAndAdd
             if(this.$route.params.id){
                 this.updateData()
             }
@@ -307,8 +310,8 @@ export default {
                                     <BButton variant="light">Batalkan</BButton>
                                 </router-link>
                                 <div class="cta-right">
-                                    <BButton type="submit"  variant="primary" @click="handleAction" class="me-2">Simpan</BButton>
-                                    <BButton type="submit" variant="light" v-model="saveAndAdd" @click="handleAction">Simpan dan Tambah Lagi</BButton>
+                                    <BButton type="submit"  variant="primary" @click="handleAction(false)" class="me-2">Simpan</BButton>
+                                    <BButton type="submit" variant="light" @click="handleAction(true)">Simpan dan Tambah Lagi</BButton>
 
                                 </div>
                             </div>

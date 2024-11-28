@@ -18,7 +18,7 @@ export default {
                 userId: "",
                 inventoryCode: "",
                 mutationType: "in",
-                category: "",
+                category: "return",
                 price: 10000,
                 dateUse: "",
                 dateLost: "",
@@ -28,6 +28,10 @@ export default {
                 vendor: "",
                 note: "",
                 items: [
+                    {
+                        inventoryCode: '',
+                        qty: 1,
+                    }
                 ],
                 
             },
@@ -46,8 +50,9 @@ export default {
             ],
             data: [],
             inventoryCodes : [],
-            users : [],
             inventoryCode : '',
+            codeItem: [],
+            users : [],
             params: {
                 inventoryId: this.$route.params.id,
             },
@@ -98,10 +103,7 @@ export default {
                 const form = {
                     items: []
                 }
-                const obj = {
-                    inventoryCode: this.inventoryCode,
-                    qty: 1,
-                }
+                
                 form.inventoryId = this.form.inventoryId
                 form.mutationType = this.form.mutationType
                 form.category = this.form.category
@@ -109,8 +111,13 @@ export default {
                 form.price = this.form.price
                 form.vendor = this.form.vendor
                 form.note = this.form.note
-                form.items.push(obj)
-                form.items.push(...this.form.items)
+                this.codeItem.forEach((item) => {
+                    const obj = {
+                        inventoryCode: item,
+                        qty: 1,
+                    }
+                    form.items.push(obj)
+                })
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                     this.$router.push('/inventory-management/view/' + this.$route.params.id);
@@ -160,7 +167,101 @@ export default {
             }
             
         },
-        
+        updateData(){
+            if(this.form.mutationType == 'in' && this.form.category == 'return'){
+                const form = {}
+                form.inventoryId = this.form.inventoryId
+                form.refId = this.form.refId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.inventoryCode = this.form.inventoryCode
+                form.returnDate = this.form.returnDate
+                form.location = this.form.location
+                form.note = this.form.note
+                axios.put(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                    this.$router.push('/inventory-management/view/' + this.$route.params.id);
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                    console.log(err)
+                    console.log(form)
+                })
+            }
+            if(this.form.mutationType == 'in' && this.form.category == 'purchase'){
+                const form = {
+                    items: []
+                }
+                
+                form.inventoryId = this.form.inventoryId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.purchaseDate = this.form.purchaseDate
+                form.price = this.form.price
+                form.vendor = this.form.vendor
+                form.note = this.form.note
+                this.codeItem.forEach((item) => {
+                    const obj = {
+                        inventoryCode: item,
+                        qty: 1,
+                    }
+                    form.items.push(obj)
+                })
+                axios.put(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.$route.params.id, form).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                    this.$router.back()
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                    console.log(err)
+                })
+            }
+            if(this.form.mutationType == 'out' && this.form.category == 'use'){
+                const form = {
+                    items: [],
+                }
+                form.inventoryId = this.form.inventoryId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.dateUse = this.form.dateUse
+                form.userId = this.form.userId
+                form.dateReturnReminder = this.form.dateReturnReminder
+                form.userId = this.form.userId
+                form.note = this.form.note
+                form.items.push(...this.form.items)
+                axios.put(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                    this.$router.push('/inventory-management/view/' + this.$route.params.id);
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                    console.log(err)
+                })
+            }
+            if(this.form.mutationType == 'out' && this.form.category == 'lost'){
+                const form = {
+                    items: []
+                }
+                form.inventoryId = this.form.inventoryId
+                form.mutationType = this.form.mutationType
+                form.category = this.form.category
+                form.dateLost = this.form.dateLost
+                form.note = this.form.note
+                form.items.push(...this.form.items)
+                axios.put(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
+                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                    this.$router.push('/inventory-management/view/' + this.$route.params.id);
+                }).catch((err) => {
+                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                    console.log(err)
+                })
+            }
+        },
+        handleAction(){
+            if(this.$route.name === 'inventory-mutation-create' && this.$route.params.id){
+                this.saveData();
+            } 
+            else{
+                this.updateData();
+            }
+        },
         rightcolumn() {
             if (document.querySelector('.layout-rightside-col').classList.contains('d-block')) {
                 document.querySelector('.layout-rightside-col').classList.remove('d-block');
@@ -197,16 +298,16 @@ export default {
                 element.classList.add("d-none");
             }
         },
-        inputInventory(){
-            const obj = {
-                inventoryCode: this.inventoryCode,
-                qty: 1,
-            }
-            if(this.inventoryCode.length > 3){
+        // inputInventory(){
+        //     const obj = {
+        //         inventoryCode: this.inventoryCode,
+        //         qty: 1,
+        //     }
+        //     if(this.inventoryCode.length > 3){
 
-                this.form.items.push(obj)
-            }
-        },
+        //         this.form.items.push(obj)
+        //     }
+        // },
         selectInventory(){
             this.form.refId = this.inventoryCode.id
             this.form.inventoryCode = this.inventoryCode.code
@@ -243,15 +344,31 @@ export default {
                 });
 
         },
-        
-        
+        copyCode(index){
+            const items = this.form.items[index]
+            this.form.items.push({...items})
+            
+        },
+        deleteCode(index){
+            this.form.items.splice(index, 1)
+        },
         fetchData(){
             if(this.$route.params.id){
                 axios.get(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.$route.params.id, ).then((response) => {
+                    console.log(response)
+                    this.form = response.data.data
                     this.form.mutationType = response.data.data.mutationType;
                     this.form.category = response.data.data.in.category;
                     this.form.note = response.data.data.in.note;
-                    this.form.purchaseDate = response.data.data.in.purchaseDate;
+                    this.form.purchaseDate = response.data.data.in.purchaseDate.slice(0, 10);
+                    this.form.price = response.data.data.in.price
+                    this.form.vendor = response.data.data.in.vendor
+                    this.form.location = response.data.data.in.location
+                    const items = response.data.data.items
+                    items.forEach((item, index) => {
+                        this.codeItem[index] = item.inventoryCode
+                    })
+                    
                 
                 
             }).catch((error) => {
@@ -264,7 +381,7 @@ export default {
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        // this.fetchData();
+        this.fetchData();
         this.listCodeInventory();
         this.listUser();
     },
@@ -334,30 +451,30 @@ export default {
                                         </select>
                                     </div>
                                 </BCol>
-                                
-                                <BRow class="align-items-center" v-if="form.category === 'purchase'">
-                                    <label>Kode Inventory</label>
-                                    <BCol md="11">
-                                        <div>
-                                            <input type="text" class="form-control" id="kode" placeholder="Kode Inventory" v-model="inventoryCode">
-                                            
-                                        </div>
-                                    </BCol>
-                                    <BCol md="1">
-                                        <div class="d-flex">
-                                            <div class="mx-1">
-                                                <BButton variant="light" class="rounded-circle" size="sm">
-                                                    <img src="@/assets/icons/copy.svg" width="12" alt="cancel" />
-                                                </BButton>
+                                <BCol md="12" v-if="form.category === 'purchase'">
+                                    <BRow class="align-items-center" v-for="(item, index) in form.items" :key="index">
+                                        <label>Kode Inventory</label>
+                                        <BCol md="11">
+                                            <div>
+                                                <input type="text" class="form-control" id="kode" placeholder="Kode Inventory" v-model="codeItem[index]">
                                             </div>
-                                            <div class="mx-1">
-                                                <BButton variant="light" class="rounded-circle" size="sm">
-                                                    <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
-                                                </BButton>
+                                        </BCol>
+                                        <BCol md="1">
+                                            <div class="d-flex">
+                                                <div class="mx-1">
+                                                    <BButton variant="light" class="rounded-circle" size="sm" @click="copyCode(index)">
+                                                        <img src="@/assets/icons/copy.svg" width="12" alt="cancel" />
+                                                    </BButton>
+                                                </div>
+                                                <div class="mx-1">
+                                                    <BButton variant="light" class="rounded-circle" size="sm" @click="deleteCode(index)" v-if="form.items.length > 1">
+                                                        <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
+                                                    </BButton>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </BCol>
-                                </BRow>
+                                        </BCol>
+                                    </BRow>
+                                </BCol>
                                 <BRow class="align-items-center" v-if="form.mutationType === 'out' ">
                                     <label>Kode Inventory</label>
                                     <BCol md="11">
@@ -388,7 +505,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'in' && form.category == 'purchase'" >
                                     <label for="note" class="form-label">Tanggal Pembelian <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
+                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
                                     <!--<div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.returnDate" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
@@ -414,7 +531,7 @@ export default {
 
                                 <BCol md="6" v-if="form.mutationType == 'in' && form.category == 'return'">
                                     <label for="note" class="form-label">Tanggal Pengembalian <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.returnDate" required>
+                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.returnDate" required>
                                     <!--<div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.returnDate" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
@@ -427,7 +544,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
                                     <label for="note" class="form-label">Tanggal Dipinjam <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.useDate" equired>
+                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.useDate" equired>
                                     <!--<div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
@@ -436,7 +553,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
                                     <label for="note" class="form-label">Tanggal Pengingat Balik <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.dateUseReminder" required>
+                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.dateUseReminder" required>
                                     <!-- <div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
@@ -444,7 +561,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'lost'">
                                     <label for="note" class="form-label">Tanggal Hilang <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.dateLost" required>
+                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.dateLost" required>
                                     <!-- <div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
@@ -458,7 +575,7 @@ export default {
                                             Kembali
                                         </router-link>
                                     </BButton>
-                                    <BButton type="submit" variant="primary" @click="saveData()">Simpan</BButton>
+                                    <BButton type="submit" variant="primary" @click="handleAction()">Simpan</BButton>
 
                                 </div>
                             </div>
