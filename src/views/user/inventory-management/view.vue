@@ -31,7 +31,7 @@ export default {
                 },
                 {
                     title: 'Jenis Mutasi',
-                    key: 'mutationType',
+                    key: 'in',
                     show: true,
                     order:true
                 },
@@ -319,6 +319,10 @@ export default {
                                 {{ index + 1 }}
                             </template>
                             <!-- //Status -->
+                            <template #in="{ item }">
+                                <span v-if="item.mutationType == 'in'">{{  item.in.category == 'purchase' ? 'Pembelian' : 'Pengembalian'  }}</span>
+                                <span v-if="item.mutationType == 'out'">{{  item.out.category == 'use' ? 'Dipinjam' : 'Hilang' }}</span>
+                            </template>
                             <template #status="{ item }">
                                 <BBadge :variant="`${item.status === 'done' ? 'success' : 'warning'}`">{{ (item.status === 'done') ? 'Done' : 'Pending' }}</BBadge>
                             </template>

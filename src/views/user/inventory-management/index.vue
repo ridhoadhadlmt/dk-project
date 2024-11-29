@@ -340,6 +340,9 @@ export default {
                                 <template #no="{ index }">
                                     {{ index + 1 }}
                                 </template>
+                                <template #name="{ item }">
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px;">{{ item.name }}</span>
+                                </template>
                                 <!-- //Status -->
                                 <template #status="{ item }">   
                                     <span :class="item.isActive === true ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.isActive) ? 'Aktif' : 'Tidak Aktif' }}</span>
