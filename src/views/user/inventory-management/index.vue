@@ -55,12 +55,12 @@ export default {
                     show: false,
                     order:true
                 },
-                {
-                    title: 'Lokasi Penyimpanan',
-                    key: 'storageLocation',
-                    show: true,
-                    order:true
-                },
+                // {
+                //     title: 'Lokasi Penyimpanan',
+                //     key: 'storageLocation',
+                //     show: true,
+                //     order:true
+                // },
                 {
                     title: 'Pengguna Aktif',
                     key: 'activeUser',
@@ -340,6 +340,12 @@ export default {
                                 <template #no="{ index }">
                                     {{ index + 1 }}
                                 </template>
+
+                                <!-- Name -->
+                                <template #name="{ item }">
+                                    {{ item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name }}
+                                </template>
+
                                 <!-- //Status -->
                                 <template #status="{ item }">   
                                     <span :class="item.isActive === true ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.isActive) ? 'Aktif' : 'Tidak Aktif' }}</span>

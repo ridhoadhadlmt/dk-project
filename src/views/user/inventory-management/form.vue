@@ -16,6 +16,8 @@ export default {
     },
     data() {
         return {
+            previewPhoto: null,
+            previewDocument: null,
             form: {
                 name: "",
                 description: "",
@@ -25,7 +27,7 @@ export default {
                 partNumber: "",
                 upc: "",
                 unit: "",
-                price: "",
+                price: 0,
                 minStock: "",
                 type: '',
                 tags: [],
@@ -86,27 +88,18 @@ export default {
             console.log(this.document)
         },
         saveData(){
-            if(this.saveAndAdd == true){
-                axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
-                    this.successAddModal = true
-                    
-                }).catch((err) => {
-                    Swal.fire("Gagal!", "Gagal menambah data", "error");
-                    console.log(err)
-                })
-                
-            } else{
-                axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
-                    Swal.fire("Berhasil!", "Berhasil menambah data", "success");
-                    this.$router.back()
-                    
-                }).catch((err) => {
-                    Swal.fire("Gagal!", "Gagal menambah data", "error");
-                    console.log(err)
-                })
-
-            }
-            
+            axios.post(process.env.VUE_APP_API_URL + '/v1/inventories', this.form).then(()=> {
+                Swal.fire("Berhasil!", "Berhasil menambah data", "success");
+                if(this.saveAndAdd === true){
+                    this.$router.push('/inventory-management/create') 
+                }
+                else{
+                    this.$router.push('/inventory-management') 
+                }
+            }).catch((err) => {
+                Swal.fire("Gagal!", "Gagal menambah data", "error");
+                console.log(err)
+            })
         },
         updateData(){
             
@@ -185,6 +178,9 @@ export default {
                     this.form.minStock = response.data.data.minStock;
                     this.form.photo = response.data.data.photo;
                     this.form.document = response.data.data.document;
+
+                    this.previewPhoto = this.form.photo
+                    this.previewDocument = this.form.document
                     
                 }).catch((error) => {
                     console.log(error);
@@ -240,7 +236,7 @@ export default {
                                         <label for="name" class="form-label">Nama Perfleetan<span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="name" placeholder="Masukkan nama perfleetan" v-model="form.name">
                                     </div>
-                                    <div v-if="form.type === 'spareparts'">
+                                    <div v-if="form.type === 'sparepart'">
                                         <label for="name" class="form-label">Nama Sparepart<span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="name" placeholder="Masukkan nama sparepart" v-model="form.name">
                                     </div>
@@ -254,19 +250,21 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="photo" class="form-label">Foto <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
-                                        <div class="input-group">
+                                        <div class="input-group mb-2">
                                             <BFormFile v-model="photo" @change="uploadImage"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
+                                        <a :href="previewPhoto" target="_blank" class="text-primary mt-2 text-decoration-underline" v-if="previewPhoto">Lihat Foto</a>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="document" class="form-label">Dokumen <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
-                                         <div class="input-group">
+                                         <div class="input-group mb-2">
                                             <BFormFile v-model="document" @change="uploadDocument"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
                                         </div>
+                                        <a :href="previewDocument" target="_blank" class="text-primary mt-2 text-decoration-underline" v-if="previewDocument">Lihat Dokumen</a>
                                     </div>
                                 </BCol>
                                 
@@ -310,8 +308,11 @@ export default {
                                     <BButton variant="light">Batalkan</BButton>
                                 </router-link>
                                 <div class="cta-right">
-                                    <BButton type="submit"  variant="primary" @click="handleAction(false)" class="me-2">Simpan</BButton>
-                                    <BButton type="submit" variant="light" @click="handleAction(true)">Simpan dan Tambah Lagi</BButton>
+                                    <BButton type="submit"  variant="primary" @click="handleAction" class="me-2">Simpan</BButton>
+                                    <BButton type="submit" variant="light" @click="(() =>{
+                                        handleAction()
+                                        saveAndAdd = true
+                                    })">Simpan dan Tambah Lagi</BButton>
 
                                 </div>
                             </div>
