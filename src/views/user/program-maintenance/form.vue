@@ -6,7 +6,10 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
 import TableComponent from "@/components/table.vue";
-import MultiSelect from "vue-multiselect";
+// import MultiSelect from "vue-multiselect";
+import multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
+
 
 
 export default {
@@ -15,7 +18,8 @@ export default {
         Layout,
         HeaderPage,
         TableComponent,
-        MultiSelect,
+        // MultiSelect,
+        multiselect
 
     },
     data() {
@@ -302,7 +306,7 @@ export default {
                     this.form.parameterDurationNotification = response.data.data.parameterDurationNotification
                     this.dataActivity = response.data.data.activities
                     this.dataUser = response.data.data.users
-                    this.valueUser = this.dataUser.map(item => item.userId).userId
+                    this.form.users = this.dataUser.map(item => item.userId)
 
                     this.dataActivity.forEach((item) => {
                         this.activityItem.id = item.id
@@ -538,15 +542,15 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="assignment" class="form-label">Penugasan <span class="text-danger">*</span></label>
-                                        <MultiSelect maxHeight="100" v-model="valueUser" label="fullName" :taggable="true" track-by="id" @select="selectUser" :multiple="true" placeholder="Pilih Penugasan" :options="users">
-                                            <!-- <template #tag="{ option }"><span class="custom__tag"><span>{{ option.fullName }}</span>
-                                                </span></template> -->
-                                        </MultiSelect>
-                                        <!-- <multiselect v-model="form.users" mode="tags" value-prop="id"
+                                        <!-- <MultiSelect maxHeight="100" v-model="valueUser" label="fullName" :taggable="true" track-by="id" @select="selectUser" :multiple="true" placeholder="Pilih Penugasan" :options="users">
+                                            <template #tag="{ option }"><span class="custom__tag"><span>{{ option.fullName }}</span>
+                                                </span></template>
+                                        </MultiSelect> -->
+                                        <multiselect v-model="form.users" mode="tags" value-prop="id"
                                             label="fullName" :close-on-select="false" :searchable="true"
                                             :create-option="true" placeholder="Pilih Penugasan" :options="users">
                                             <template #singleLabel="{ option }"><strong>{{ option.fullName }}</strong></template>
-                                        </multiselect> -->
+                                        </multiselect>
                                     </div>
                                 </BCol>
                             </BRow>

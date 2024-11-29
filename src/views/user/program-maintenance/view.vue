@@ -6,15 +6,17 @@ import axios from "axios";
 import HeaderPage from "@/components/header-page.vue";
 import TableComponent from "@/components/table.vue";
 import Swal from "sweetalert2";
-import MultiSelect from "vue-multiselect";
-
+// import MultiSelect from "vue-multiselect";
+import multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
 export default {
     name: "program-maintenance-view",
     components: {
         Layout,
         HeaderPage,
         TableComponent,
-        MultiSelect
+        // MultiSelect
+        multiselect
     },
     data() {
         return {
@@ -54,6 +56,7 @@ export default {
             },
             users: [],
             dataActivity: [],
+            dataUser: [],
             params: {
                 page: 1,
                 limit: 10,
@@ -129,6 +132,9 @@ export default {
 
                 axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id).then((response) => {
                     this.form = response.data.data
+                    this.dataUser = response.data.data.users
+                    this.form.users = this.dataUser.map(item => item.userId)
+
                 }).catch((error) => {
                     console.log(error);
                 });
@@ -241,7 +247,11 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="assignment" class="form-label">Penugasan <span class="text-danger">*</span></label>
-                                        <MultiSelect v-model="form.users" :options="users" label="fullName" track-by="fullName"></MultiSelect>
+                                        <multiselect v-model="form.users" mode="tags" value-prop="id"
+                                            label="fullName" :close-on-select="false" :searchable="true"
+                                            :create-option="true" placeholder="Pilih Penugasan" :options="users">
+                                            <template #singleLabel="{ option }"><strong>{{ option.fullName }}</strong></template>
+                                        </multiselect>
                                     </div>
                                 </BCol>
                             </BRow>

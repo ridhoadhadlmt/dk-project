@@ -19,6 +19,7 @@ export default {
                 inventoryCode: "",
                 mutationType: "in",
                 category: "return",
+                location: '',
                 price: 10000,
                 dateUse: "",
                 dateLost: "",
@@ -111,6 +112,7 @@ export default {
                 form.price = this.form.price
                 form.vendor = this.form.vendor
                 form.note = this.form.note
+                form.location = this.form.location
                 this.codeItem.forEach((item) => {
                     const obj = {
                         inventoryCode: item,
@@ -138,7 +140,17 @@ export default {
                 form.dateReturnReminder = this.form.dateReturnReminder
                 form.userId = this.form.userId
                 form.note = this.form.note
-                form.items.push(...this.form.items)
+                this.codeItem.forEach((item) => {
+                    const obj = {
+                        inventoryCode: item.code,
+                        refId: item.id,
+                        qty: 1,
+                    }
+                    form.items.push(obj)
+                })
+
+                console.log(form)
+                
                 axios.post(process.env.VUE_APP_API_URL + '/v1/inventory-mutations', form).then(()=> {
                     Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                     this.$router.push('/inventory-management/view/' + this.$route.params.id);
@@ -199,6 +211,7 @@ export default {
                 form.price = this.form.price
                 form.vendor = this.form.vendor
                 form.note = this.form.note
+                form.location = this.form.location
                 this.codeItem.forEach((item) => {
                     const obj = {
                         inventoryCode: item,
@@ -375,6 +388,9 @@ export default {
                 console.log(error);
             });
             }
+        },
+        selectMutation(){
+            console.log(this.form.mutationType)
         }
         
 
@@ -451,7 +467,7 @@ export default {
                                         </select>
                                     </div>
                                 </BCol>
-                                <BCol md="12" v-if="form.category === 'purchase'">
+                                <BCol md="12" v-if="form.category !== 'return' && form.category !== 'use' && form.category !== 'lost' ">
                                     <BRow class="align-items-center" v-for="(item, index) in form.items" :key="index">
                                         <label>Kode Inventory</label>
                                         <BCol md="11">
@@ -475,30 +491,34 @@ export default {
                                         </BCol>
                                     </BRow>
                                 </BCol>
-                                <BRow class="align-items-center" v-if="form.mutationType === 'out' ">
-                                    <label>Kode Inventory</label>
-                                    <BCol md="11">
-                                        <div>
-                                            <select v-model="inventoryCode" class="form-select" @change="selectInventory">
-                                                <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
-                                            </select>
-                                        </div>
-                                    </BCol>
-                                    <BCol md="1">
-                                        <div class="d-flex">
-                                            <div class="mx-1">
-                                                <BButton variant="light" class="rounded-circle" size="sm">
-                                                    <img src="@/assets/icons/copy.svg" width="12" alt="cancel" />
-                                                </BButton>
+                                <BCol md="12" v-if="form.mutationType === 'out' && form.category !== 'return' && form.category !== 'purchase'">
+                                    <BRow class="align-items-center" v-for="(item, index) in form.items" :key="index">
+                                        <label>Kode Inventory</label>
+                                        <BCol md="11">
+                                            <div>
+                                                <select v-if="inventoryCodes.length" v-model="codeItem[index]" class="form-select" @change="selectInventory">
+                                                    <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
+                                                </select>
+                                                
+                                                <input v-if="!inventoryCodes.length" type="text" class="form-control" id="kode" placeholder="Kode Inventory" v-model="codeItem[index]">
                                             </div>
-                                            <div class="mx-1">
-                                                <BButton variant="light" class="rounded-circle" size="sm">
-                                                    <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
-                                                </BButton>
+                                        </BCol>
+                                        <BCol md="1">
+                                            <div class="d-flex">
+                                                <div class="mx-1">
+                                                    <BButton variant="light" class="rounded-circle" size="sm" @click="copyCode(index)">
+                                                        <img src="@/assets/icons/copy.svg" width="12" alt="cancel" />
+                                                    </BButton>
+                                                </div>
+                                                <div class="mx-1">
+                                                    <BButton variant="light" class="rounded-circle" size="sm" @click="deleteCode(index)" v-if="form.items.length > 1">
+                                                        <img src="@/assets/icons/cancel.svg" width="12" alt="cancel" />
+                                                    </BButton>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </BCol>
-                                </BRow>
+                                        </BCol>
+                                    </BRow>
+                                </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'in' && form.category == 'purchase'">
                                     <label for="note" class="form-label">Harga/Unit <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="note" placeholder="Masukkan Vendor" v-model="form.price">
@@ -544,7 +564,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
                                     <label for="note" class="form-label">Tanggal Dipinjam <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.useDate" equired>
+                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.dateUse" equired>
                                     <!--<div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="form.purchaseDate" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
@@ -553,7 +573,7 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
                                     <label for="note" class="form-label">Tanggal Pengingat Balik <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.dateUseReminder" required>
+                                    <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.dateReturnReminder" required>
                                     <!-- <div class="input-group">
                                         <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" required>
                                         <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
