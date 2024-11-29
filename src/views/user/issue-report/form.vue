@@ -349,6 +349,7 @@ export default {
                                             <BFormFile v-model="form.photo" @change="handleFileChange($event,'photo')"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
+                                        <a :href="preview.photo" target="_blank" class="text-primary mt-2 text-decoration-underline" v-if="preview.photo">Lihat Foto</a>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -357,6 +358,7 @@ export default {
                                         <BFormFile v-model="form.document" @change="handleFileChange($event,'document')"></BFormFile>
                                         <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
                                     </div>
+                                    <a :href="preview.document" target="_blank" class="text-primary mt-2 text-decoration-underline" v-if="preview.document">Lihat Dokumen</a>
                                 </BCol>
                                 <BCol md="6">
                                     <div>

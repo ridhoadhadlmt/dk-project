@@ -250,7 +250,12 @@ export default {
             };
 
             axios.put(process.env.VUE_APP_API_URL + '/v1/issues/' + this.deleteId + '/status', body).then(() => {
+                Swal.fire("Berhasil!", "Berhasil mengubah status", "success");
+                this.showModalReject = false;
+                this.showModalCheck = false;
                 this.getData();
+            }).catch(() => {
+                Swal.fire("Gagal!", "Gagal mengubah status", "error");
             });
         }
     },
