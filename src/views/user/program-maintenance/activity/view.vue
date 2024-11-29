@@ -84,9 +84,9 @@ export default {
                     response.data.data.items.forEach((item, index) => {
                         // console.log(index)
                         this.items[index] = item
-                        // this.activity.items[index].inventoryId = this.items[index].id
-                        // this.activity.items[index].type = this.items[index].type
-                        // this.activity.items.push(this.items[index])
+                        this.activity.items[index].inventoryId = this.items[index].id
+                        this.activity.items[index].type = this.items[index].type
+                        this.activity.items.push(this.items[index])
                     })
                     // console.log(this.activity.items)
                 }).catch((error) => {

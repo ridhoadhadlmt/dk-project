@@ -5,14 +5,17 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
-import MultiSelect from 'vue-multiselect'
+import multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
+// import MultiSelect from 'vue-multiselect'
 
 export default {
     name: "inventory-management-create",
     components: {
         Layout,
         HeaderPage,
-        MultiSelect,
+        // MultiSelect,
+        multiselect
     },
     data() {
         return {
@@ -37,8 +40,7 @@ export default {
                 {text : 'Spare Part', value: 'sparepart'},
             ],
             labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}, {name: 'Body', value: 'body'}],
-            labelValue: '',
-            customValue: '',
+            dataTag: [],
             value: [],
             successAddModal: false,
             saveAndAdd: false,
@@ -54,13 +56,13 @@ export default {
 
     methods: {
         
-        selectOpt(option){
-            const arrVal = []
-            arrVal.push(option)
-            arrVal.forEach(item => {
-                this.form.tags.push(item.value)
-            })
-        },
+        // selectOpt(option){
+        //     const arrVal = []
+        //     arrVal.push(option)
+        //     arrVal.forEach(item => {
+        //         this.form.tags.push(item.value)
+        //     })
+        // },
         uploadImage(event){
             this.photo = event.target.files[0]
             const formData = new FormData();
@@ -178,10 +180,10 @@ export default {
                     this.form.upc = response.data.data.upc;
                     this.form.unit = response.data.data.unit;
                     this.form.price = response.data.data.price;
-                    response.data.data.tags.forEach((item) => {
-                        this.value.push(item)
-                    });
-                    this.form.tags = this.value;
+                    this.dataTag = response.data.data.tags;
+                    console.log(this.dataTag)
+                    this.form.tags = this.dataTag.map(item => item)
+                    console.log(this.form.tags)
                     this.form.minStock = response.data.data.minStock;
                     this.form.photo = response.data.data.photo;
                     this.form.document = response.data.data.document;
@@ -240,20 +242,20 @@ export default {
                                         <label for="name" class="form-label">Nama Perfleetan<span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="name" placeholder="Masukkan nama perfleetan" v-model="form.name">
                                     </div>
-                                    <div v-if="form.type === 'spareparts'">
+                                    <div v-if="form.type === 'sparepart'">
                                         <label for="name" class="form-label">Nama Sparepart<span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="name" placeholder="Masukkan nama sparepart" v-model="form.name">
                                     </div>
                                 </BCol>
                                 <BCol md="12">
                                     <div>
-                                        <label for="deskripsi" class="form-label">Deskripsi <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <label for="deskripsi" class="form-label">Deskripsi <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                         <textarea name="" class="form-control" id="deskripsi" cols="10" rows="5" v-model="form.description"></textarea>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="photo" class="form-label">Foto <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <label for="photo" class="form-label">Foto <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <BFormFile v-model="photo" @change="uploadImage"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
@@ -262,7 +264,7 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="document" class="form-label">Dokumen <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <label for="document" class="form-label">Dokumen <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                          <div class="input-group">
                                             <BFormFile v-model="document" @change="uploadDocument"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
@@ -272,24 +274,24 @@ export default {
                                 
                                 <BCol md="6">
                                     <div>
-                                        <label for="merk" class="form-label">Merk <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <label for="merk" class="form-label">Merk <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="merk" placeholder="Masukkan merk" v-model="form.merk">
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="part-number" class="form-label">Part Number <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <label for="part-number" class="form-label">Part Number <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="part-number" placeholder="Masukkan part number" v-model="form.partNumber">
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="upc" class="form-label">UPC <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <label for="upc" class="form-label">UPC <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="upc" placeholder="Masukkan UPC" v-model="form.upc">
                                     </div>
                                 </BCol>
                                 <BCol md="6">
-                                    <label for="unitSize" class="form-label">Unit Ukuran <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                    <label for="unitSize" class="form-label">Unit Ukuran <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="unitSize" placeholder="Masukkan unit ukuran" v-model="form.unit">
                                 </BCol>
                                 <BCol md="6" v-if="form.type != 'sparepart'">
@@ -298,7 +300,12 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <label for="label" class="form-label">Label Bebas <span class="text-danger">*</span></label>
-                                    <MultiSelect maxHeight="100" v-model="value" label="name" track-by="name"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect>
+                                    <!-- <MultiSelect maxHeight="100" v-model="value" label="name" track-by="name"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect> -->
+                                    <multiselect v-model="form.tags" mode="tags" value-prop="value"
+                                        label="name" :close-on-select="false" :searchable="true"
+                                        :create-option="true" placeholder="Label Bebas" :options="labels">
+                                        <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                    </multiselect>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="stock" class="form-label">Ingatkan jika persediaan mencapai <span class="text-danger">*</span></label>
