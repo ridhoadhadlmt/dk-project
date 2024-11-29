@@ -108,6 +108,17 @@ export default {
             showModalActivity: false,
             showModalDelete: false,
             isDelete: false,
+            units: [
+
+                { value: 'Pcs', name: 'Pcs' },
+                { value: 'Hari', name: 'Hari' },
+                { value: 'Jam', name: 'Jam' },
+                { value: 'Gr', name: 'Gr' },
+                { value: 'Kg', name: 'Kg' },
+                { value: 'Ltr', name: 'Ltr' },
+                { value: 'Ml', name: 'Ml' },
+                { value: 'Meter', name: 'Meter' },
+            ],
         }
     },
     watch: {
@@ -449,7 +460,7 @@ export default {
                             <div class="input-group">
                                 <input type="text" class="form-control" v-model="activity.items[index].qty" id="quantity" width="80%" placeholder="Quantity" required @change="lineItemCalculate(index)">
                                 <select id="unit" class="form-select" v-model="activity.items[index].unit" required>
-                                    <option selected>Pcs</option>
+                                    <option v-for="unit in units" :key="unit.value" :value="unit.value">{{ unit.name }}</option>
                                 </select>
                             </div>
                         </div>

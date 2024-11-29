@@ -94,7 +94,13 @@ export default {
             ],
             units: [
                 { value: 'Pcs', name: 'Pcs' },
-                { value: 'Bungkus', name: 'Bungkus' },
+                { value: 'Hari', name: 'Hari' },
+                { value: 'Jam', name: 'Jam' },
+                { value: 'Gr', name: 'Gr' },
+                { value: 'Kg', name: 'Kg' },
+                { value: 'Ltr', name: 'Ltr' },
+                { value: 'Ml', name: 'Ml' },
+                { value: 'Meter', name: 'Meter' },
             ],
             params: {
                 page: 1,
