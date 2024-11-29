@@ -248,9 +248,15 @@ export default {
                                 <h3>{{ detail.name }}</h3>
                                 <h3>Rp.{{ detail.price }} <span class="fs-16 text-black-50">Harga/Unit</span></h3>
                                 <div class="d-flex">
-                                    <h5 class="text-black-50">Merk : <span class="text-black">{{ detail.merk }}</span></h5>
-                                    <h5 class="ps-4 text-black-50">Unit Ukuran : <span class="text-black">{{ detail.minStock }}</span></h5>
-                                    <h5 class="ps-4 text-black-50">Dokumen : Dokumen 1</h5>
+                                    <div class="w-25">
+                                        <h5 class="text-black-50">Merk : <span class="text-black">{{ detail.merk }}</span></h5>
+                                    </div>
+                                    <div class="w-25">
+                                        <h5 class="ps-4 text-black-50">Unit Ukuran : <span class="text-black">{{ detail.minStock }}</span></h5>
+                                    </div>
+                                    <div class="w-25">
+                                        <h5 class="ps-4 text-black-50">Dokumen : <a class="link-underline-dark" target="_blank" :href="detail.document">Lihat Dokumen</a></h5>
+                                    </div>
                                 </div>
                                 <h5 class="text-black-50">{{ detail.description }}
                                 </h5>
@@ -263,10 +269,10 @@ export default {
                             <div class="m-0 text-black-50 fs-16">UPC : <span class="text-black"> {{ detail.upc }} </span></div>
                             <div class="m-0 text-black-50 fs-16 ps-4">Jumlah : <span class="text-black"> {{detail.minStock }} </span></div>
                         </div>
-                        <div class="py-4 fs-16">Kode Inventaris : <BBadge variant="light" class="fs-16">{{ detail.partNumber }}</BBadge></div>
-                        <div class="py-4 fs-16">Vendor : <BBadge variant="light" class="fs-16">PT Jaya Abadi</BBadge></div>
+                        <div class="py-4 fs-16">Kode Inventaris : <BBadge variant="light" class="fs-16">{{ detail.code }}</BBadge></div>
+                        <div class="py-4 fs-16">Vendor : <BBadge variant="light" class="fs-16">{{  detail.vendor  }}</BBadge></div>
                         <div class="py-4 fs-16">Label Bebas : <BBadge variant="light" class="fs-16 ms-2" v-for="detail in detail.tags" :key="detail">{{ detail }}</BBadge></div>
-                        <div class="py-4 fs-16">Lokasi Penyimpanan : <span>Bandung</span></div>
+                        <div class="py-4 fs-16">Lokasi Penyimpanan : <BBadge variant="light" class="fs-16">{{  detail.location  }}</BBadge></div>
                     </BRow>
                 </div>
                 

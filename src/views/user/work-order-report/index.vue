@@ -7,6 +7,7 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
+import FilterCard from "./filter-card.vue";
 
 
 export default {
@@ -14,7 +15,8 @@ export default {
         Layout,
         TableComponent,
         SelectHeader,
-        HeaderPage
+        HeaderPage,
+        FilterCard
     },
     data() {
         return {
@@ -33,7 +35,7 @@ export default {
                 },
                 {
                     title: 'Jumlah Backlog',
-                    key: 'qty',
+                    key: 'backlogCount',
                     show: true,
                     order:true
                 },
@@ -51,7 +53,7 @@ export default {
                 },
                 {
                     title: 'Tanggal Mulai',
-                    key: 'start_date',
+                    key: 'startedAt',
                     show: true,
                     order:true
                 },
@@ -59,102 +61,6 @@ export default {
                     title: 'Status',
                     key: 'status',
                     show: true,
-                    order:true
-                },
-                {
-                    title: 'No.Work Order',
-                    key: 'status',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Referensi Issue',
-                    key: 'referency_issue',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Kode Fleet',
-                    key: 'code_fleet',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tipe Fleet',
-                    key: 'type_fleet',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Judul WO',
-                    key: 'title_wo',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Jenis WO',
-                    key: 'type_fleet',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Periodic WO',
-                    key: 'periodic_fleet',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Kategori Kerusakan',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal & Jam WO',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal Dimulai',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Target',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'PIC Mekanik',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Tanggal Aktual Selesai',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Status',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Estimasi biaya WO',
-                    key: 'category',
-                    show: false,
-                    order:true
-                },
-                {
-                    title: 'Biaya WO',
-                    key: 'category',
-                    show: false,
                     order:true
                 },
                 {
@@ -180,7 +86,8 @@ export default {
             
             deleteId: null,
             showSelectHeader: false,
-            showModalDelete: false
+            showModalDelete: false,
+            showModalFilter: false
         };
     },
     watch: {
@@ -190,26 +97,20 @@ export default {
             },
             deep: true
         },
-        params: {
-            handler() {
-                this.getData();
-            },
-            deep: true
-        }
     },
     methods: {
         getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins", {
-            //     params: this.params
-            // })
-            //     .then((response) => {
-            //         this.data = response.data.data.items;
-            //         this.config.total_pages = response.data.data.meta.totalPages;
-            //         this.config.total_items = response.data.data.meta.totalItems;
-            //     })
-            //     .catch((error) => {
-            //         console.log(error);
-            //     });
+            axios.get(process.env.VUE_APP_API_URL + "/v1/work-orders", {
+                params: this.params
+            })
+                .then((response) => {
+                    this.data = response.data.data.items;
+                    this.config.total_pages = response.data.data.meta.totalPages;
+                    this.config.total_items = response.data.data.meta.totalItems;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
 
         },
         rightcolumn() {
@@ -264,7 +165,7 @@ export default {
 
         deleteDataMethod() {
             // this.showModalDelete = false
-            axios.delete(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.deleteId).then(() => {
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.deleteId).then(() => {
                 this.getData();
                 this.deleteId = null;
                 this.showModalDelete = false;
@@ -285,21 +186,40 @@ export default {
         },
         exportExcel() {
 			axios.defaults.responseType = 'blob';
-			axios.get(process.env.VUE_APP_API_URL+'/cms/v1/admins/export', {
+			axios.get(process.env.VUE_APP_API_URL+'/v1/work-orders/export', {
                 params:{
-					sortBy:"fullName.asc",
+					sortBy:"id.asc",
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
 					const link = document.createElement('a');
 					link.href = url;
-					link.setAttribute('download', `Program Maintenance.xlsx`);
+					link.setAttribute('download', `Work Order.xlsx`);
 					document.body.appendChild(link);
 					link.click();
 					axios.defaults.responseType = 'json'
 
 				});
 		},
+        setFilterData(params) {
+            this.params = {
+                ...this.params,
+                ...params
+            };
+            this.getData();
+        },
+        hideModalFilter(newVal) {
+            this.showModalFilter = newVal;
+        },
+        resetFilter() {
+            this.params = {
+                page: 1,
+                limit: 10,
+                search: '',
+                sortBy: 'id.desc',
+            };
+            this.getData();
+        }
     },
     mounted() {
         this.getData();
@@ -311,9 +231,20 @@ export default {
 
 <template>
     <Layout>
-
         
-        <SelectHeader :showModal="showSelectHeader" :headers="headers" @hideModal="hideSelectHeaderMethod" @selectHeader="selectHeaderMethod" />
+        <FilterCard 
+            :showModal="showModalFilter" 
+            @hideModalFilter="hideModalFilter" 
+            @setFilterData="setFilterData"
+            @resetFilter="resetFilter"
+        />
+        
+        <SelectHeader 
+            :showModal="showSelectHeader" 
+            :headers="headers" 
+            @hideModal="hideSelectHeaderMethod" 
+            @selectHeader="selectHeaderMethod" 
+        />
         
         <!-- Modal Delete -->
         <BModal v-model="showModalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
@@ -328,7 +259,7 @@ export default {
         </BModal>
         <!-- //Modal Delete -->
 
-        <HeaderPage title="Administrator" pageTitle="Admin" />
+        <HeaderPage title="Work Order" pageTitle="Work Order" />
 
         <BRow>
             <BCol xl="12">
@@ -339,14 +270,14 @@ export default {
 
                     <BCardBody>
                         <div class="d-flex flex-wrap justify-content-between py-lg-4">
-                            <h4 class="card-title mb-0">Data Admin</h4>
+                            <h4 class="card-title mb-0">Data Work Order</h4>
 
                             <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
                                 <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </BButton>
                                
-                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;">
+                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
                                     <img src="@/assets/icons/filter.svg" alt="filter" />
                                     Filter
                                 </BButton>
@@ -357,7 +288,7 @@ export default {
 
                                 <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                     <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search" @input="getData">
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
 
@@ -375,21 +306,29 @@ export default {
                                 <template #no="{ index }">
                                     {{ index + 1 }}
                                 </template>
+                                <template #startedAt="{ item }">
+                                    {{ $filters.formatDate(item.startedAt) }}
+                                </template>
+                                
                                 <!-- //Status -->
                                 <template #qty="{ item }">   
                                     <div class="p-2 d-flex align-items-center justify-content-center rounded-pill bg-warning text-white fs-22'" style="width: 30px;height:30px;">{{ item.qty }}</div>
                                 </template>
-                                <template #status="{ item }">   
-                                    <span :class="item.status === 'completed' ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.status) ? 'Completed' : 'Pending' }}</span>
+
+                                <template #status="{ item }"> 
+                                     <span v-if="item.status === 'completed'" class="badge rounded-pill bg-success-subtle text-success fs-12">Completed</span>
+                                     <span v-if="item.status === 'draft'" class="badge rounded-pill bg-secondary-subtle text-secondary fs-12">Draft</span>
+                                     <span v-if="item.status === 'pending'" class="badge rounded-pill bg-warning-subtle text-warning fs-12">Pending</span>
+                                     <span v-if="item.status === 'in_progress'" class="badge rounded-pill bg-info-subtle text-info fs-12">In Progress</span>
                                 </template>
                                 <template #action="{ item }">
-                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/work-order-report/edit/${item.id}`">
+                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/work-order/edit/${item.id}`">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
                                     </BButton>
                                     <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
                                         <img src="@/assets/icons/delete.svg" alt="delete" />
                                     </BButton>
-                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/work-order-report/view/${item.id}`">
+                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/work-order/view/${item.id}`">
                                         <img src="@/assets/icons/view.svg" alt="eye" />
                                     </BButton>
                                 </template>

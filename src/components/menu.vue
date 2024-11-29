@@ -238,9 +238,9 @@ export default {
         </li>
 
         <li class="nav-item mb-2">
-          <router-link class="nav-link menu-link" to="/program-maintenance">
-            <img src="@/assets/images/sidebar/icon/calendar.svg" alt="role" class="me-2">
-            <span data-key="t-program-maintenance" class="nav-item-text">Program Maintenance</span>
+          <router-link class="nav-link menu-link" to="/maintenance-programs">
+            <img src="@/assets/images/sidebar/icon/role.svg" alt="role" class="me-2">
+            <span data-key="t-maintenance-programs" class="nav-item-text">Program Maintenance</span>
           </router-link>
         </li>
 
@@ -259,9 +259,9 @@ export default {
         </li> 
 
         <li class="nav-item mb-2">
-          <router-link class="nav-link menu-link" to="/work-order-report">
-            <img src="@/assets/images/sidebar/icon/enginer.svg" alt="work-order-report" class="me-2">
-            <span data-key="t-work-order-report" class="nav-item-text">Work Order Report</span>
+          <router-link class="nav-link menu-link" to="/work-order">
+            <img src="@/assets/images/sidebar/icon/enginer.svg" alt="work-order" class="me-2">
+            <span data-key="t-work-order" class="nav-item-text">Work Order Report</span>
           </router-link>
         </li>
 

@@ -39,7 +39,7 @@ export default {
                 },
                 {
                     title: 'Penugasan',
-                    key: 'assignment',
+                    key: 'users',
                     show: true,
                     order:true
                 },
@@ -51,11 +51,7 @@ export default {
                     order:false
                 }
             ],
-            data: [
-                {id: 1, name: 'Program 1', qty: 2, type: 'Teknis', assignment: 'Ahmad Wicaksono', meta: {totalPages: 10} },
-                {id: 2, name: 'Program 2', qty: 2, type: 'Non Teknis', assignment: '3 User', meta: {totalPages: 10}},
-                
-            ],
+            data: [],
             
             params: {
                 page: 1,
@@ -67,10 +63,11 @@ export default {
                 total_pages: 0,
                 total_items: 0,
             },
-            
+            search: '',
             deleteId: null,
             showSelectHeader: false,
-            showModalDelete: false
+            showModalDelete: false,
+            hover: false
         };
     },
     watch: {
@@ -80,26 +77,32 @@ export default {
             },
             deep: true
         },
-        params: {
-            handler() {
-                this.getData();
-            },
-            deep: true
-        }
+        
+        // search: {
+        //     handler(){
+        //         if(this.search.length === 0 || this.search.length > 1){
+        //             this.params.search = this.search
+        //             if(this.timeout) clearTimeout(this.timeout)
+        //             this.timeout = setTimeout(() => {
+        //                 this.listData()
+        //             }, 500)
+        //         }
+        //     }
+        // }
     },
     methods: {
-        getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins", {
-            //     params: this.params
-            // })
-            //     .then((response) => {
-            //         this.data = response.data.data.items;
-            //         this.config.total_pages = response.data.data.meta.totalPages;
-            //         this.config.total_items = response.data.data.meta.totalItems;
-            //     })
-            //     .catch((error) => {
-            //         console.log(error);
-            //     });
+        listData() {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/maintenance-programs", {
+                params: this.params,
+            })
+            .then((response) => {
+                this.data = response.data.data.items;
+                this.config.total_pages = response.data.data.meta.totalPages;
+                this.config.total_items = response.data.data.meta.totalItems;
+            })
+            .catch((error) => {
+                console.log(error);
+            });
        
         },
         rightcolumn() {
@@ -154,8 +157,8 @@ export default {
 
         deleteDataMethod() {
             // this.showModalDelete = false
-            axios.delete(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.deleteId).then(() => {
-                this.getData();
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.deleteId).then(() => {
+                this.listData();
                 this.deleteId = null;
                 this.showModalDelete = false;
 
@@ -171,13 +174,13 @@ export default {
         },
         sort(sortBy) {
             this.params.sortBy = `${sortBy}.desc`;
-            this.getData();
+            this.listData();
         },
         exportExcel() {
 			axios.defaults.responseType = 'blob';
-			axios.get(process.env.VUE_APP_API_URL+'/cms/v1/admins/export', {
+			axios.get(process.env.VUE_APP_API_URL+'/v1/maintenance-programs/export', {
                 params:{
-					sortBy:"fullName.asc",
+					sortBy:"id.asc",
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
@@ -192,8 +195,8 @@ export default {
 		},
     },
     mounted() {
-        this.getData();
         window.addEventListener("resize", this.resizerightcolumn);
+        this.listData();
     }
 
 };
@@ -247,13 +250,13 @@ export default {
 
                                 <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                     <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                        <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
 
-                                    <router-link :to="{ name: 'program-maintenance-create' }">
+                                    <router-link :to="{ name: 'maintenance-programs-create' }">
                                         <BButton variant="primary" class="btn btn-md" style="white-space: nowrap;">
-                                            Tambah Progran
+                                            Tambah Program
                                         </BButton>
                                     </router-link>
                                 </div>
@@ -266,17 +269,44 @@ export default {
                                     {{ index + 1 }}
                                 </template>
                                 <!-- //Status -->
+                                <template #users="{ item }">   
+                                    
+                                    <!-- <div class="position-relative z-1" v-if="item.users.length > 1">
+                                        
+                                        <BPopover :hover="true" :close-on-hide="true" :delay="{show: 0, hide: 0}">
+                                            <template #target>
+                                                <span>{{ item.users.length }} User</span>
+                                            </template>
+                                            <div class="">
+                                                <div v-for="item, index in item.users" :key="index">
+                                                    {{ item }}
+                                                </div>
+                                            </div>
+                                        </BPopover>
+                                    </div> -->
+                                    <div class="z-0" v-if="item.users.length > 1">
+                                        <span class="text-black" @mouseover="hover = true" @mouseleave="hover = false" >{{ item.users.length }} <u>User</u></span>
+                                        <div v-show="hover" class="position-absolute shadow-sm rounded-2 p-3 z-1 border bg-white" style="margin-left: 50px;margin-top: -52px;">
+                                            <div v-for="item, index in item.users" :key="index" class="fs-16 text-black">
+                                                {{ item }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else>
+                                        <span v-for="item, index in item.users" :key="index">{{ item }}</span>
+                                    </div>
+                                </template>
                                 <template #status="{ item }">   
                                     <span :class="item.isActive === true ? 'badge rounded-pill bg-success-subtle text-success fs-12' : 'badge rounded-pill bg-danger-subtle text-danger fs-12'">{{ (item.isActive) ? 'Aktif' : 'Tidak Aktif' }}</span>
                                 </template>
                                 <template #action="{ item }">
-                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/program-maintenance/edit/${item.id}`">
+                                    <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/maintenance-programs/edit/${item.id}`">
                                         <img src="@/assets/icons/edit.svg" alt="pencil" />
                                     </BButton>
                                     <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
                                         <img src="@/assets/icons/delete.svg" alt="delete" />
                                     </BButton>
-                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/program-maintenance/view/${item.id}`">
+                                    <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/maintenance-programs/view/${item.id}`">
                                         <img src="@/assets/icons/view.svg" alt="eye" />
                                     </BButton>
                                 </template>

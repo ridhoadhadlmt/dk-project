@@ -238,6 +238,7 @@ export default {
                 status: status
             }).then(() => {
                 this.getData();
+                this.getSummary();
                 this.showModalCheck = false;
             });
         }
