@@ -40,18 +40,18 @@ export default {
                 {text : 'In', value: 'in'},
                 {text : 'Out', value: 'out'},
             ],
-            reasonOut: [
+            categoryOut: [
                 {text : 'Dipinjam', value: 'use'},
                 {text : 'Hilang', value: 'lost'},
                 
             ],
-            reasonIn : [
+            categoryIn : [
                 {text : 'Pengembalian', value: 'return'},
                 {text : 'Pembelian', value: 'purchase'},
             ],
+            categories: [],
             data: [],
             inventoryCodes : [],
-            inventoryCode : '',
             codeItem: [],
             users : [],
             params: {
@@ -60,7 +60,7 @@ export default {
             selectedInventoryCode: null,
             items : [
             ],
-
+            inventoryCode : '',
             
         };
     },
@@ -68,14 +68,7 @@ export default {
             
         },
     computed: {
-        mutationType :{
-            get(){
-                return this.mutationType
-            },
-            set(){
-                this.mutationType == 'in'
-            }
-        }
+        
     },
     methods: {
         
@@ -390,16 +383,27 @@ export default {
             }
         },
         selectMutation(){
-            console.log(this.form.mutationType)
+            
+            if(this.form.mutationType == 'in'){
+                this.form.category = 'return'
+            } else{
+                this.form.category = 'use'
+                
+            }
+            
+
+        
+
         }
         
 
     },
+    
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        this.fetchData();
-        this.listCodeInventory();
-        this.listUser();
+        // this.fetchData();
+        // this.listCodeInventory();
+        // this.listUser();
     },
 
 };
@@ -442,8 +446,7 @@ export default {
                                         size="lg"
                                         v-model="form.mutationType"
                                         :options="types"
-                                        name="radio-mutation-type"
-                                        @change="selectMutation"
+                                        @change="selectMutation($event)"
                                         />
                                     </div>
                                 </BCol>
@@ -453,12 +456,11 @@ export default {
                                         <BFormRadioGroup
                                         size="lg"
                                         v-model="form.category"
-                                        @change="selectCategory"
-                                        :options="form.mutationType == 'in' ? reasonIn : reasonOut "
-                                        name="radio-category"
+                                        :options="form.mutationType == 'in' ? categoryIn : categoryOut"
                                         />
                                     </div>
                                 </BCol>
+                                {{ test }}
                                 <BCol md="6" v-if="form.mutationType !== 'out' && form.category !== 'purchase'">
                                     <div>
                                         <label>Kode Inventory <span class="text-danger">*</span></label>
@@ -468,8 +470,8 @@ export default {
                                     </div>
                                 </BCol>
                                 <BCol md="12" v-if="form.category !== 'return' && form.category !== 'use' && form.category !== 'lost' ">
-                                    <BRow class="align-items-center" v-for="(item, index) in form.items" :key="index">
-                                        <label>Kode Inventory</label>
+                                    <label>Kode Inventory</label>
+                                    <BRow class="align-items-center gy-3" v-for="(item, index) in form.items" :key="index">
                                         <BCol md="11">
                                             <div>
                                                 <input type="text" class="form-control" id="kode" placeholder="Kode Inventory" v-model="codeItem[index]">
@@ -492,8 +494,8 @@ export default {
                                     </BRow>
                                 </BCol>
                                 <BCol md="12" v-if="form.mutationType === 'out' && form.category !== 'return' && form.category !== 'purchase'">
-                                    <BRow class="align-items-center" v-for="(item, index) in form.items" :key="index">
-                                        <label>Kode Inventory</label>
+                                    <label>Kode Inventory</label>
+                                    <BRow class="align-items-center gy-3" v-for="(item, index) in form.items" :key="index">
                                         <BCol md="11">
                                             <div>
                                                 <select v-if="inventoryCodes.length" v-model="codeItem[index]" class="form-select" @change="selectInventory">
@@ -540,7 +542,7 @@ export default {
                                     <label for="note" class="form-label">Lokasi Penyimpanan <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="note" placeholder="Masukkan Lokasi" v-model="form.location">
                                 </BCol>
-                                <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
+                                <BCol md="6" v-if="form.mutationType == 'out' && form.category !== 'lost'">
                                     <label for="peminjam" class="form-label">Peminjam <span class="text-danger">*</span></label>
                                     <select class="form-select" v-model="form.userId">
                                         <option selected>Masukkan Peminjam</option>
@@ -562,7 +564,7 @@ export default {
                                     <label for="note" class="form-label">Catatan</label>
                                     <input type="text" class="form-control" id="note" placeholder="Masukkan Catatan" v-model="form.note">
                                 </BCol>
-                                <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
+                                <BCol md="6" v-if="form.mutationType == 'out' && form.category !== 'lost'">
                                     <label for="note" class="form-label">Tanggal Dipinjam <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.dateUse" equired>
                                     <!--<div class="input-group">
@@ -571,7 +573,7 @@ export default {
                                     </div>
                                     -->
                                 </BCol>
-                                <BCol md="6" v-if="form.mutationType == 'out' && form.category == 'use'">
+                                <BCol md="6" v-if="form.mutationType == 'out' && form.category !== 'lost'">
                                     <label for="note" class="form-label">Tanggal Pengingat Balik <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="form.dateReturnReminder" required>
                                     <!-- <div class="input-group">
