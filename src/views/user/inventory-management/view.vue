@@ -31,7 +31,7 @@ export default {
                 },
                 {
                     title: 'Jenis Mutasi',
-                    key: 'mutationType',
+                    key: 'in',
                     show: true,
                     order:true
                 },
@@ -85,17 +85,23 @@ export default {
             showModalDelete: false,
             mutationId: '',
             inventoryId: '',
+            search: '',
             
             
         };
     },
     watch: {
-        params: {
-            handler() {
-                this.listData({inventoryId: this.$route.params.id});
-            },
-            deep: true
-        },
+        search: {
+            handler(){
+                if(this.search.length === 0 || this.search.length > 1){
+                    this.params.search = this.search
+                    if(this.timeout) clearTimeout(this.timeout)
+                    this.timeout = setTimeout(() => {
+                        this.listData()
+                    }, 500)
+                }
+            }
+        }
         
     },
     methods: {
@@ -136,7 +142,7 @@ export default {
             }
         },
 
-        getData() {
+        listData() {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventories/" + this.$route.params.id
             )
                 .then(response => {
@@ -148,7 +154,7 @@ export default {
                 });
         },
         
-        listData(){
+        listDataMutation(){
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventory-mutations",{
             params: this.params,
             
@@ -170,7 +176,7 @@ export default {
         },
         deleteData() {
             axios.delete(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.mutationId).then(() => {
-                this.listData();
+                this.listDataMutation();
                 this.mutationId = null;
                 this.showModalDelete = false;
 
@@ -186,8 +192,8 @@ export default {
     },
 
     mounted() {
-        this.getData();
         this.listData();
+        this.listDataMutation();
         window.addEventListener("resize", this.resizerightcolumn);
     }
 
@@ -232,8 +238,8 @@ export default {
                 <div class="p-4 rounded-4 shadow-sm bg-white">
                     <BRow class="mb-3">
                         <BCol xl="2">
-                            <div class="w-100 h-50">
-                                <img :src="detail.photo" class="rounded-4 w-100 h-100 object-fit-cover" alt="">
+                            <div class="h-25">
+                                <img :src="detail.photo" class="rounded-4 img-fluid object-fit-cover" alt="">
                             </div>
                         </BCol>
                         <BCol xl="10">
@@ -242,9 +248,15 @@ export default {
                                 <h3>{{ detail.name }}</h3>
                                 <h3>Rp.{{ detail.price }} <span class="fs-16 text-black-50">Harga/Unit</span></h3>
                                 <div class="d-flex">
-                                    <h5 class="text-black-50">Merk : <span class="text-black">{{ detail.merk }}</span></h5>
-                                    <h5 class="ps-4 text-black-50">Unit Ukuran : <span class="text-black">{{ detail.minStock }}</span></h5>
-                                    <h5 class="ps-4 text-black-50">Dokumen : Dokumen 1</h5>
+                                    <div class="w-25">
+                                        <h5 class="text-black-50">Merk : <span class="text-black">{{ detail.merk }}</span></h5>
+                                    </div>
+                                    <div class="w-25">
+                                        <h5 class="ps-4 text-black-50">Unit Ukuran : <span class="text-black">{{ detail.minStock }}</span></h5>
+                                    </div>
+                                    <div class="w-25">
+                                        <h5 class="ps-4 text-black-50">Dokumen : <a class="link-underline-dark" target="_blank" :href="detail.document">Lihat Dokumen</a></h5>
+                                    </div>
                                 </div>
                                 <h5 class="text-black-50">{{ detail.description }}
                                 </h5>
@@ -257,10 +269,10 @@ export default {
                             <div class="m-0 text-black-50 fs-16">UPC : <span class="text-black"> {{ detail.upc }} </span></div>
                             <div class="m-0 text-black-50 fs-16 ps-4">Jumlah : <span class="text-black"> {{detail.minStock }} </span></div>
                         </div>
-                        <div class="py-4 fs-16">Kode Inventaris : <BBadge variant="light" class="fs-16">{{ detail.partNumber }}</BBadge></div>
-                        <div class="py-4 fs-16">Vendor : <BBadge variant="light" class="fs-16">PT Jaya Abadi</BBadge></div>
+                        <div class="py-4 fs-16">Kode Inventaris : <BBadge variant="light" class="fs-16">{{ detail.code }}</BBadge></div>
+                        <div class="py-4 fs-16">Vendor : <BBadge variant="light" class="fs-16">{{  detail.vendor  }}</BBadge></div>
                         <div class="py-4 fs-16">Label Bebas : <BBadge variant="light" class="fs-16 ms-2" v-for="detail in detail.tags" :key="detail">{{ detail }}</BBadge></div>
-                        <div class="py-4 fs-16">Lokasi Penyimpanan : <span>Bandung</span></div>
+                        <div class="py-4 fs-16">Lokasi Penyimpanan : <BBadge variant="light" class="fs-16">{{  detail.location  }}</BBadge></div>
                     </BRow>
                 </div>
                 
@@ -277,7 +289,7 @@ export default {
 
                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                     <i class="ri-search-line search-icon"></i>
                                 </div>
 
@@ -307,8 +319,12 @@ export default {
                                 {{ index + 1 }}
                             </template>
                             <!-- //Status -->
+                            <template #in="{ item }">
+                                <span v-if="item.mutationType == 'in'">{{  item.in.category == 'purchase' ? 'Pembelian' : 'Pengembalian'  }}</span>
+                                <span v-if="item.mutationType == 'out'">{{  item.out.category == 'use' ? 'Dipinjam' : 'Hilang' }}</span>
+                            </template>
                             <template #status="{ item }">
-                                <BBadge :variant="`${item.status === 'done' ? 'success' : 'warning'}`">{{ (item.status === 'done') ? 'Sudah Dikembalikan' : 'Belum Dikembalikan' }}</BBadge>
+                                <BBadge :variant="`${item.status === 'done' ? 'success' : 'warning'}`">{{ (item.status === 'done') ? 'Done' : 'Pending' }}</BBadge>
                             </template>
                             <template #action="{ item }">
                                 <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/inventory-management/${item.id}/mutation-edit`">

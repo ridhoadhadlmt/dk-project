@@ -201,6 +201,8 @@ export default {
                     this.form = response.data.data;
                     this.preview.photo = response.data.data.photo;
                     this.preview.document = response.data.data.document;
+
+                    this.form.inspectionIds = response.data.data.inspections.map(item => item.inspection.id);
                 }).catch((error) => {
                     console.log(error);
                 });

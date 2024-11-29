@@ -77,23 +77,18 @@ export default {
             },
             deep: true
         },
-        params: {
-            handler() {
-                this.listData();
-            },
-            deep: true
-        },
-        search: {
-            handler(){
-                if(this.search.length === 0 || this.search.length > 1){
-                    this.params.search = this.search
-                    if(this.timeout) clearTimeout(this.timeout)
-                    this.timeout = setTimeout(() => {
-                        this.listData()
-                    }, 500)
-                }
-            }
-        }
+        
+        // search: {
+        //     handler(){
+        //         if(this.search.length === 0 || this.search.length > 1){
+        //             this.params.search = this.search
+        //             if(this.timeout) clearTimeout(this.timeout)
+        //             this.timeout = setTimeout(() => {
+        //                 this.listData()
+        //             }, 500)
+        //         }
+        //     }
+        // }
     },
     methods: {
         listData() {

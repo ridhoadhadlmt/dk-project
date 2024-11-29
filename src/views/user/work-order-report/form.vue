@@ -11,6 +11,7 @@ import "@vueform/multiselect/themes/default.css";
 import flatPickr from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 import moment from "moment";
+import ModalActivity from "@/components/ShowModalActivity.vue";
 
 export default {
     name: "work-order-report-create",
@@ -20,18 +21,21 @@ export default {
         TableComponent,
         Multiselect,
         flatPickr,
+        ModalActivity
     },
     data() {
         return {
+            selectedViewActivity: null,
+            showModalViewActivity: false,
             editActivityIndex: null,
             changeDocument: false,
             changePhoto: false,
-            typeFleet : "",
+            typeFleet: "",
             startedAtDate: "",
             startedAtTime: "",
             targetedAtDate: "",
             targetedAtTime: "",
-            preview:{
+            preview: {
                 document: "",
                 photo: "",
             },
@@ -61,36 +65,36 @@ export default {
             users: [],
             inventories: [],
             tags: [
-                {id: 1, name: 'Label 1'},
-                {id: 2, name: 'Label 2'},
-                {id: 3, name: 'Label 3'},
+                { id: 1, name: 'Label 1' },
+                { id: 2, name: 'Label 2' },
+                { id: 3, name: 'Label 3' },
             ],
             options: [
-                {label: 'Teknis', value: 'teknis'},
-                {label: 'Non Teknis', value: 'nonteknis'},
+                { label: 'Teknis', value: 'teknis' },
+                { label: 'Non Teknis', value: 'nonteknis' },
             ],
             woTypes: [
-                {id:1, name: 'Perbaikan'},
-                {id:2, name: 'Perawatan'},
-                {id:3, name: 'Penambahan'},
+                { id: 1, name: 'Perbaikan' },
+                { id: 2, name: 'Perawatan' },
+                { id: 3, name: 'Penambahan' },
             ],
             data: [
-                { id: 1, title: 'Lorem Ipsum', start_date: '11 Desember 2023', end_date: '23 April 2024', actual: '22 April 2024', total: "Rp.4.500.000"}
+                { id: 1, title: 'Lorem Ipsum', start_date: '11 Desember 2023', end_date: '23 April 2024', actual: '22 April 2024', total: "Rp.4.500.000" }
             ],
             periodics: [
-                {value: 'short_term', text: 'Short Term'},
-                {value: 'long_term', text: 'Long Term'},
+                { value: 'short_term', text: 'Short Term' },
+                { value: 'long_term', text: 'Long Term' },
             ],
             priority: [
-                {value: 'critical', text: 'Critical'},
-                {value: 'high', text: 'High'},
-                {value: 'medium', text: 'Medium'},
-                {value: 'low', text: 'Low'},
-                {value: 'no_priority', text: 'No Priority'},
+                { value: 'critical', text: 'Critical' },
+                { value: 'high', text: 'High' },
+                { value: 'medium', text: 'Medium' },
+                { value: 'low', text: 'Low' },
+                { value: 'no_priority', text: 'No Priority' },
             ],
             units: [
-                {value: 'Pcs', name: 'Pcs'},
-                {value: 'Bungkus', name: 'Bungkus'},
+                { value: 'Pcs', name: 'Pcs' },
+                { value: 'Bungkus', name: 'Bungkus' },
             ],
             params: {
                 page: 1,
@@ -98,7 +102,7 @@ export default {
                 search: '',
                 sortBy: 'id.desc',
             },
-            config:{
+            config: {
                 total_pages: 0,
                 total_item: 0,
             },
@@ -127,43 +131,43 @@ export default {
                     title: 'No',
                     key: 'no',
                     show: true,
-                    order:false
+                    order: false
                 },
                 {
                     title: 'Judul',
                     key: 'title',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Start Date',
                     key: 'startDate',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Due Date',
                     key: 'endDate',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Actual Finish Date',
                     key: 'actualFinishDate',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Sub Total',
                     key: 'total',
                     show: true,
-                    order:true
+                    order: true
                 },
                 {
                     title: 'Action',
                     key: 'action',
                     show: true,
-                    order:false
+                    order: false
                 }
             ],
         }
@@ -171,7 +175,7 @@ export default {
     watch: {
     },
     methods: {
-        showModalActivityMethod(){
+        showModalActivityMethod() {
             this.formDataActivity = {
                 title: '',
                 startDate: '',
@@ -267,14 +271,13 @@ export default {
         },
 
         fetchData() {
-            if(this.$route.params.id) {
+            if (this.$route.params.id) {
                 axios.get(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.$route.params.id).then((response) => {
                     const data = response.data.data;
 
                     this.form.code = data.code;
                     this.form.fleetId = data.fleetId;
                     this.form.title = data.title;
-                    this.form.issueIds = data.issueIds;
                     this.form.type = parseInt(data.type);
                     this.form.periodic = data.periodic;
                     this.form.category = data.category;
@@ -295,27 +298,33 @@ export default {
                     this.targetedAtDate = data.targetedAt.split(' ')[0];
                     this.targetedAtTime = moment(data.targetedAt).format('HH:mm');
 
+                    this.form.issueIds = data.issues.map(item => item.issue.id);
+
 
                     this.dataActivity = data.activities.map((activity) => {
                         const items = activity.items.map((item) => {
                             return {
+                                id: item.id,
                                 type: item.type,
                                 inventoryId: item.inventoryId,
                                 value: item.value,
                                 qty: item.qty,
                                 unit: item.unit,
                                 price: item.price,
-                                total: item.total
+                                total: item.total,
+                                isDelete: false
                             }
                         })
                         return {
+                            id: activity.id,
                             title: activity.title,
                             startDate: activity.startDate,
                             endDate: activity.endDate,
                             total: activity.total,
                             actualFinishDate: activity.actualFinishDate,
                             note: activity.note,
-                            items: items
+                            items: items,
+                            isDelete: false
                         }
                     });
                 }).catch((error) => {
@@ -335,13 +344,13 @@ export default {
         copyItem(index) {
             // this.formDataActivity.items.push(this.formDataActivity.items[index]);
             const item = this.formDataActivity.items[index];
-            this.formDataActivity.items.push({...item});
+            this.formDataActivity.items.push({ ...item });
         },
         deleteItem(index) {
             this.formDataActivity.items.splice(index, 1);
         },
         submitActivity() {
-            if(this.activityIndex == null) {
+            if (this.activityIndex == null) {
                 this.dataActivity.push(this.formDataActivity);
             } else {
                 this.dataActivity[this.activityIndex] = this.formDataActivity;
@@ -367,8 +376,8 @@ export default {
                 ]
             }
         },
-        handleFileChange(event,type) {
-            if(type === 'photo') {
+        handleFileChange(event, type) {
+            if (type === 'photo') {
                 this.changePhoto = true;
             } else {
                 this.changeDocument = true;
@@ -378,15 +387,15 @@ export default {
             this.preview[type] = URL.createObjectURL(event.target.files[0]);
         },
         async submit() {
-            
+
             let photo = this.form.photo;
             let document = this.form.document;
 
-            if(this.changePhoto) {
-                photo = await this.uploadFile(this.form.photo,'photo')
+            if (this.changePhoto) {
+                photo = await this.uploadFile(this.form.photo, 'photo')
             }
-            if(this.changeDocument) {
-                document = await this.uploadFile(this.form.document,'document')
+            if (this.changeDocument) {
+                document = await this.uploadFile(this.form.document, 'document')
             }
 
             const body = {
@@ -398,19 +407,20 @@ export default {
                 document: document
             }
 
-            if(this.$route.params.id) {
+
+            if (this.$route.params.id) {
                 axios.put(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.$route.params.id, body).then(() => {
                     Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
                     this.$router.push('/work-order');
-                }).catch((error) => {
-                    console.log(error);
+                }).catch(() => {
+                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
                 });
-            } else{
+            } else {
                 axios.post(process.env.VUE_APP_API_URL + '/v1/work-orders', body).then(() => {
                     Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
                     this.$router.push('/work-order');
-                }).catch((error) => {
-                    console.log(error);
+                }).catch(() => {
+                    Swal.fire("Gagal!", "Gagal menambahkan data", "error");
                 });
             }
         },
@@ -430,7 +440,11 @@ export default {
         },
 
         deleteActivity(index) {
-            this.dataActivity.splice(index, 1);
+            // this.dataActivity.splice(index, 1);
+            this.dataActivity[index].isDelete = true;
+            this.dataActivity[index].items.forEach(item => {
+                item.isDelete = true;
+            });
         },
 
         editActivity(index) {
@@ -448,6 +462,11 @@ export default {
         this.fetchData();
         this.fetchTags();
         this.fetchInventories();
+    },
+    computed: {
+        filteredDataActivity() {
+            return this.dataActivity.filter(item => !item.isDelete);
+        }
     }
 
 };
@@ -456,229 +475,248 @@ export default {
 <template>
     <Layout>
         <HeaderPage title="Work Order Report" pageTitle="Work Order Report" />
-        <BModal v-model="showModalActivity" hide-footer title="Tambah Aktifitas" centered  class="v-modal-custom" size="xl">
+        <BModal v-model="showModalActivity" hide-footer title="Tambah Aktifitas" centered class="v-modal-custom"
+            size="xl">
             <BForm @submit.prevent="submitActivity">
                 <BRow>
-                <BCol md="12" class="mb-3">
-                    <div>
-                        <label for="">Judul <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" placeholder="Masukkan judul" v-model="formDataActivity.title">
-                    </div>
-                </BCol>
-                <BRow class="mb-3">
-                    <BCol md="4">
+                    <BCol md="12" class="mb-3">
                         <div>
-                            <label for="" class="form-label">Start Date<span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.startDate" required>
-                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
-                            </div>
+                            <label for="">Judul <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" placeholder="Masukkan judul"
+                                v-model="formDataActivity.title">
                         </div>
                     </BCol>
-                    <BCol md="4">
-                        <div>
-                            <label for="" class="form-label">Due Date<span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.endDate" required>
-                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
+                    <BRow class="mb-3">
+                        <BCol md="4">
+                            <div>
+                                <label for="" class="form-label">Start Date<span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <flat-pickr v-model="formDataActivity.startDate" class="form-control" id="date"
+                                        placeholder="Pilih Tanggal" required></flat-pickr>
+                                    <!-- <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.startDate" required> -->
+                                    <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
+                                </div>
                             </div>
+                        </BCol>
+                        <BCol md="4">
+                            <div>
+                                <label for="" class="form-label">Due Date<span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <flat-pickr v-model="formDataActivity.endDate" class="form-control" id="date"
+                                        placeholder="Pilih Tanggal" required></flat-pickr>
+                                    <!-- <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.endDate" required> -->
+                                    <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
+                                </div>
+                            </div>
+                        </BCol>
+                        <BCol md="4">
+                            <div>
+                                <label for="" class="form-label">Actual Finish Date</label>
+                                <div class="input-group">
+                                    <flat-pickr v-model="formDataActivity.actualFinishDate" class="form-control"
+                                        id="date" placeholder="Pilih Tanggal" required></flat-pickr>
+                                    <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
+                                </div>
+                            </div>
+                        </BCol>
+                    </BRow>
+                    <BCol md="12" class="mb-3">
+                        <div>
+                            <label for="">Note </label>
+                            <textarea type="text" class="form-control" placeholder="Masukkan note"
+                                v-model="formDataActivity.note"></textarea>
                         </div>
                     </BCol>
-                    <BCol md="4">
-                        <div>
-                            <label for="" class="form-label">Actual Finish Date</label>
-                            <div class="input-group">
-                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="formDataActivity.actualFinishDate" required>
-                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
+
+                    <label for="" class="form-label">Line Items <span class="text-danger">*</span></label>
+                    <BRow class="mb-3" v-for="(item, index) in formDataActivity.items" :key="index">
+
+                        <BCol md="2">
+                            <div>
+                                <multiselect v-model="formDataActivity.items[index].inventoryId" :options="inventories"
+                                    :searchable="false" placeholder="Pilih Inventory" :allow-empty="false"
+                                    value-prop="id" label="name" @select="(value) => selectTypeActivity(value, index)">
+                                    <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                </multiselect>
                             </div>
+                        </BCol>
+                        <BCol md="2">
+                            <div>
+                                <input type="text" class="form-control" placeholder="Masukkan Nama"
+                                    v-model="formDataActivity.items[index].type" disabled>
+                            </div>
+                        </BCol>
+                        <BCol md="2" class="pe-0">
+                            <div>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="quantity" width="80%"
+                                        placeholder="Quantity" required v-model="formDataActivity.items[index].qty"
+                                        @change="lineItemCalculate(index)">
+                                    <select id="" class="form-select" required
+                                        v-model="formDataActivity.items[index].unit">
+                                        <option selected>Pilih Satuan</option>
+                                        <option v-for="unit in units" :key="unit.id" :value="unit.value">{{ unit.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </BCol>
+
+                        <BCol md="6" class="p-0">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex align-items-center mx-2">
+                                    <i class="bx bx-x fs-22"></i>
+                                </div>
+                                <div>
+                                    <input type="number" class="form-control" placeholder="Rp 0"
+                                        v-model="formDataActivity.items[index].price"
+                                        @change="lineItemCalculate(index)">
+                                </div>
+                                <div class="d-flex align-items-center mx-2">
+                                    <i class="las la-equals fs-22"></i>
+                                </div>
+                                <div>
+                                    <input type="number" class="form-control" disabled placeholder="Rp 0"
+                                        v-model="formDataActivity.items[index].total">
+                                </div>
+                                <div class="d-flex align-items-center mx-2">
+                                    <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i
+                                            class="bx bxs-copy-alt fs-22"></i></BButton>
+                                </div>
+                                <div class="d-flex align-items-center mx-2">
+                                    <BButton variant="link"
+                                        class="p-1 rounded-circle d-flex align-items-center bg-light"
+                                        @click="deleteItem(index)" v-if="formDataActivity.items.length > 1"><i
+                                            class="bx bx-x fs-22"></i>
+                                    </BButton>
+                                </div>
+                            </div>
+                        </BCol>
+                    </BRow>
+                    <BCol md="12">
+                        <div>
+                            <label for="">Subtotal </label>
+                            <input type="number" class="form-control" placeholder="Rp0" disabled
+                                v-model="formDataActivity.total">
                         </div>
                     </BCol>
                 </BRow>
-                <BCol md="12" class="mb-3">
-                    <div>
-                        <label for="">Note </label>
-                        <textarea type="text" class="form-control" placeholder="Masukkan note" v-model="formDataActivity.note"></textarea>
-                    </div>
-                </BCol>
-
-                <label for="" class="form-label">Line Items <span class="text-danger">*</span></label>
-                <BRow class="mb-3" v-for="(item, index) in formDataActivity.items" :key="index">
-
-                    <BCol md="2">
-                        <div>
-                            <multiselect v-model="formDataActivity.items[index].inventoryId" 
-                                :options="inventories" 
-                                :searchable="false" 
-                                placeholder="Pilih Inventory" 
-                                :allow-empty="false" 
-                                value-prop="id" 
-                                label="name" 
-                                @select="(value) => selectTypeActivity(value, index)">
-                                <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
-                            </multiselect>
-                        </div>
-                    </BCol>
-                    <BCol md="2">
-                        <div>
-                            <input type="text" class="form-control" placeholder="Masukkan Nama" v-model="formDataActivity.items[index].type" disabled>
-                        </div>
-                    </BCol>
-                    <BCol md="2" class="pe-0">
-                        <div>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="quantity" width="80%" placeholder="Quantity" required v-model="formDataActivity.items[index].qty" @change="lineItemCalculate(index)">
-                                <select id="" class="form-select" required v-model="formDataActivity.items[index].unit">
-                                    <option selected>Pilih Satuan</option>
-                                    <option v-for="unit in units" :key="unit.id" :value="unit.value">{{ unit.name }}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </BCol>
-                    
-                    <BCol md="6" class="p-0">
-                        <div class="d-flex justify-content-between">
-                            <div class="d-flex align-items-center mx-2">
-                                <i class="bx bx-x fs-22"></i>
-                            </div>
-                            <div>
-                                <input type="number" class="form-control" placeholder="Rp 0" v-model="formDataActivity.items[index].price" @change="lineItemCalculate(index)">
-                            </div>
-                            <div class="d-flex align-items-center mx-2">
-                                <i class="las la-equals fs-22"></i>
-                            </div>
-                            <div>
-                                <input type="number" class="form-control" disabled placeholder="Rp 0" v-model="formDataActivity.items[index].total">
-                            </div>
-                            <div class="d-flex align-items-center mx-2">
-                                <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i class="bx bxs-copy-alt fs-22"></i></BButton>
-                            </div>
-                            <div class="d-flex align-items-center mx-2">
-                                <BButton variant="link" class="p-1 rounded-circle d-flex align-items-center bg-light" @click="deleteItem(index)" v-if="formDataActivity.items.length > 1"><i class="bx bx-x fs-22"></i></BButton>
-                            </div>
-                        </div>
-                    </BCol>
-                </BRow>
-                <BCol md="12">
-                    <div>
-                        <label for="">Subtotal </label>
-                        <input type="number" class="form-control" placeholder="Rp0" disabled v-model="formDataActivity.total">
-                    </div>
-                </BCol>
-            </BRow>
             </BForm>
             <div class="cta">
-                
+
                 <div class="d-flex justify-content-end mt-4">
                     <BButton variant="light" class="me-2" @click="showModalActivity = false">Kembali</BButton>
                     <BButton variant="dark" @click="submitActivity">Simpan</BButton>
                 </div>
             </div>
         </BModal>
+
+        
+
+        <ModalActivity 
+            :data="dataActivity[selectedViewActivity]" 
+            :showModal="showModalViewActivity" 
+            :inventories="inventories"
+            @hideModalActivity="() => {
+                showModalViewActivity = false
+            }" 
+            v-if="selectedViewActivity !== null"
+        />
+
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
-                    <!-- <BCardHeader>
-                        
-                    </BCardHeader> -->
-
                     <BCardBody>
                         <BForm @submit.prevent="submit">
                             <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
-                                        <label for="code-fleet" class="form-label">Kode Fleet<span class="text-danger">*</span></label>
+                                        <label for="code-fleet" class="form-label">Kode Fleet<span
+                                                class="text-danger">*</span></label>
                                         <multiselect v-model="form.fleetId" deselect-label="Can't remove this value"
                                             value-prop="id" label="name" placeholder="Select one" :options="fleets"
                                             :searchable="false" :allow-empty="false" @select="typeFleetMethod">
-                                            <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                            <template #singleLabel="{ option }"><strong>{{ option.name
+                                                    }}</strong></template>
                                         </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="type-fleet" class="form-label">Tipe Fleet <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="type-fleet" disabled placeholder="Fleet" v-model="typeFleet" required>
+                                        <label for="type-fleet" class="form-label">Tipe Fleet <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="type-fleet" disabled
+                                            placeholder="Fleet" v-model="typeFleet" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="duration" class="form-label">Referensi Issue <span class="text-danger">*</span></label>
-                                        <multiselect v-model="form.issueIds" mode="tags" value-prop="id" label="complaintTitle"
-                                            :close-on-select="false" :searchable="true" :create-option="true" placeholder="Pilih Issue"
-                                            :options="issues">
-                                            <template #singleLabel="{ option }"><strong>{{ option.issueCode + ' - ' + option.complaintTitle }}</strong></template>
+                                        <label for="duration" class="form-label">Referensi Issue <span
+                                                class="text-danger">*</span></label>
+                                        <multiselect v-model="form.issueIds" mode="tags" value-prop="id"
+                                            label="complaintTitle" :close-on-select="false" :searchable="true"
+                                            :create-option="true" placeholder="Pilih Issue" :options="issues">
+                                            <template #singleLabel="{ option }"><strong>{{ option.issueCode + ' - ' +
+                                                    option.complaintTitle }}</strong></template>
                                         </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="notification" class="form-label">Referensi Reminder <span class="text-danger">*</span></label>
-                                        <select id="code-fleet" class="form-select" required>
-                                            <option selected></option>
-                                            <!-- <option v-for=" in " :key="" :value="">{{  }}</option> -->
-                                        </select>
+                                        <label for="title" class="form-label">Judul WO <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="title"
+                                            placeholder="Masukkan judul wo" v-model="form.title" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="title" class="form-label">Judul WO <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="title" placeholder="Masukkan judul wo" v-model="form.title" required>
-                                    </div>
-                                </BCol>
-                                <BCol md="6">
-                                    <div>
-                                        <label for="notification" class="form-label">Jenis WO <span class="text-danger">*</span></label>
-                                        <multiselect v-model="form.type" :options="woTypes" :searchable="false" placeholder="Pilih Jenis WO" :allow-empty="false" value-prop="id" label="name">
-                                            <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                        <label for="notification" class="form-label">Jenis WO <span
+                                                class="text-danger">*</span></label>
+                                        <multiselect v-model="form.type" :options="woTypes" :searchable="false"
+                                            placeholder="Pilih Jenis WO" :allow-empty="false" value-prop="id"
+                                            label="name">
+                                            <template #singleLabel="{ option }"><strong>{{ option.name
+                                                    }}</strong></template>
                                         </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="notification" class="form-label">Periodic WO <span class="text-danger">*</span></label>
-                                        <BFormRadioGroup
-                                        size="lg"
-                                        v-model="form.periodic"
-                                        :options="periodics"
-                                        value-prop="value"
-                                        label-prop="text"
-                                        name="radio-options"
-                                        />
+                                        <label for="notification" class="form-label">Periodic WO <span
+                                                class="text-danger">*</span></label>
+                                        <BFormRadioGroup size="lg" v-model="form.periodic" :options="periodics"
+                                            value-prop="value" label-prop="text" name="radio-options" />
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="notification" class="form-label">Prioritas<span class="text-danger">*</span></label>
-                                        <multiselect v-model="form.priority" :options="priority" :searchable="false" placeholder="Pilih Prioritas" :allow-empty="false" value-prop="value" label="text">
-                                            <template #singleLabel="{ option }"><strong>{{ option.text }}</strong></template>
+                                        <label for="notification" class="form-label">Prioritas<span
+                                                class="text-danger">*</span></label>
+                                        <multiselect v-model="form.priority" :options="priority" :searchable="false"
+                                            placeholder="Pilih Prioritas" :allow-empty="false" value-prop="value"
+                                            label="text">
+                                            <template #singleLabel="{ option }"><strong>{{ option.text
+                                                    }}</strong></template>
                                         </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
-                                    <label for="start-date" class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                                    <label for="start-date" class="form-label">Tanggal Mulai <span
+                                            class="text-danger">*</span></label>
                                     <BRow>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <flat-pickr 
-                                                    v-model="startedAtDate" 
-                                                    class="form-control" 
-                                                    id="date" 
-                                                    placeholder="Pilih Tanggal" 
-                                                    required 
-                                                ></flat-pickr>
+                                                <flat-pickr v-model="startedAtDate" class="form-control" id="date"
+                                                    placeholder="Pilih Tanggal" required></flat-pickr>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                                             </div>
                                         </BCol>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <flat-pickr 
-                                                    v-model="startedAtTime" 
-                                                    class="form-control" 
-                                                    id="date" 
-                                                    placeholder="Pilih Jam" 
-                                                    required 
-                                                    :config="{enableTime: true, noCalendar: true}"
-                                                ></flat-pickr>
+                                                <flat-pickr v-model="startedAtTime" class="form-control" id="date"
+                                                    placeholder="Pilih Jam" required
+                                                    :config="{ enableTime: true, noCalendar: true }"></flat-pickr>
                                                 <!-- <input type="time" class="form-control" id="date" placeholder="Masukkan Jam" v-model="startedAtTime" required> -->
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/clock.svg" width="20"></span> -->
                                             </div>
@@ -686,24 +724,21 @@ export default {
                                     </BRow>
                                 </BCol>
                                 <BCol md="6">
-                                    <label for="target" class="form-label">Target <span class="text-danger">*</span></label>
+                                    <label for="target" class="form-label">Target <span
+                                            class="text-danger">*</span></label>
                                     <BRow>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <flat-pickr v-model="targetedAtDate" class="form-control" id="date" placeholder="Pilih Tanggal" required></flat-pickr>
+                                                <flat-pickr v-model="targetedAtDate" class="form-control" id="date"
+                                                    placeholder="Pilih Tanggal" required></flat-pickr>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
                                             </div>
                                         </BCol>
                                         <BCol md="6">
                                             <div class="input-group">
-                                                <flat-pickr 
-                                                    v-model="targetedAtTime" 
-                                                    class="form-control" 
-                                                    id="date" 
-                                                    placeholder="Pilih Jam" 
-                                                    required 
-                                                    :config="{enableTime: true, noCalendar: true}"
-                                                ></flat-pickr>
+                                                <flat-pickr v-model="targetedAtTime" class="form-control" id="date"
+                                                    placeholder="Pilih Jam" required
+                                                    :config="{ enableTime: true, noCalendar: true }"></flat-pickr>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/clock.svg" width="20"></span> -->
                                             </div>
                                         </BCol>
@@ -711,62 +746,73 @@ export default {
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="notification" class="form-label">PIC Mekanik<span class="text-danger">*</span></label>
-                                        <multiselect v-model="form.picId" :options="users" :searchable="false" placeholder="Pilih PIC Mekanik" :allow-empty="false" value-prop="id" label="fullName">
-                                            <template #singleLabel="{ option }"><strong>{{ option.fullName }}</strong></template>
+                                        <label for="notification" class="form-label">PIC Mekanik<span
+                                                class="text-danger">*</span></label>
+                                        <multiselect v-model="form.picId" :options="users" :searchable="false"
+                                            placeholder="Pilih PIC Mekanik" :allow-empty="false" value-prop="id"
+                                            label="fullName">
+                                            <template #singleLabel="{ option }"><strong>{{ option.fullName
+                                                    }}</strong></template>
                                         </multiselect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="document" class="form-label">Photo <span v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
-                                         <div class="input-group">
-                                            <BFormFile v-model="form.photo" @change="handleFileChange($event,'photo')"></BFormFile>
-                                            <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
+                                        <label for="document" class="form-label">Photo <span
+                                                v-if="form.type === 'spareparts'" class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <BFormFile v-model="form.photo" @change="handleFileChange($event, 'photo')">
+                                            </BFormFile>
+                                            <span class="input-group-text bg-transparent fs-22"><img
+                                                    src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="document" class="form-label">Dokumen <span class="text-danger">*</span></label>
-                                         <div class="input-group">
-                                            <BFormFile v-model="form.document" @change="handleFileChange($event,'document')"></BFormFile>
-                                            <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
+                                        <label for="document" class="form-label">Dokumen <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <BFormFile v-model="form.document"
+                                                @change="handleFileChange($event, 'document')">
+                                            </BFormFile>
+                                            <span class="input-group-text bg-transparent fs-22"><img
+                                                    src="@/assets/icons/doc.svg" width="20"></span>
                                         </div>
                                     </div>
                                 </BCol>
                                 <BCol md="12">
                                     <div>
                                         <label for="title" class="form-label">Komen</label>
-                                        <textarea name="" id="" cols="30" class="form-control" rows="10" v-model="form.comment" placeholder="Masukkan komen"></textarea>
+                                        <textarea name="" id="" cols="30" class="form-control" rows="10"
+                                            v-model="form.comment" placeholder="Masukkan komen"></textarea>
                                     </div>
                                 </BCol>
                                 <BCol md="3">
                                     <div>
-                                        <label for="title" class="form-label">Parameter Dimulai <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" id="title" placeholder="0" v-model="form.startParameter" required>
+                                        <label for="title" class="form-label">Parameter Dimulai <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="title" placeholder="0"
+                                            v-model="form.startParameter" required>
                                     </div>
                                 </BCol>
                                 <BCol md="3">
                                     <div>
-                                        <label for="title" class="form-label">Estimasi Biaya <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" id="title" placeholder="0" v-model="form.workOrderEstimation" required>
+                                        <label for="title" class="form-label">Estimasi Biaya <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="title" placeholder="0"
+                                            v-model="form.workOrderEstimation" required>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="notification" class="form-label">Label Bebas<span class="text-danger">*</span></label>
-                                        <multiselect v-model="form.tags" 
-                                            :options="tags" 
-                                            :searchable="false" 
-                                            placeholder="Pilih Label Bebas" 
-                                            mode="tags" 
-                                            :close-on-select="false" 
-                                            :create-option="true" 
-                                            :allow-empty="false" 
-                                            value-prop="tag" 
-                                            label="tag">
-                                            <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                        <label for="notification" class="form-label">Label Bebas<span
+                                                class="text-danger">*</span></label>
+                                        <multiselect v-model="form.tags" :options="tags" :searchable="false"
+                                            placeholder="Pilih Label Bebas" mode="tags" :close-on-select="false"
+                                            :create-option="true" :allow-empty="false" value-prop="tag" label="tag">
+                                            <template #singleLabel="{ option }"><strong>{{ option.name
+                                                    }}</strong></template>
                                         </multiselect>
                                     </div>
                                 </BCol>
@@ -780,38 +826,62 @@ export default {
                     <div class="d-flex flex-wrap justify-content-between py-lg-4">
                         <h4 class="card-title mb-0">Aktivitas</h4>
                         <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
-                            <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
+                            <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0"
+                                style="flex-grow: 1;">
                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                    <input type="text" class="form-control" placeholder="Search..." style="width: 100%;"
+                                        v-model="params.search">
                                     <i class="ri-search-line search-icon"></i>
                                 </div>
 
-                                <BButton variant="primary" class="btn btn-md" @click="showModalActivityMethod()" style="white-space: nowrap;">
+                                <BButton variant="primary" class="btn btn-md" @click="showModalActivityMethod()"
+                                    style="white-space: nowrap;">
                                     Tambah Aktivitas
                                 </BButton>
                             </div>
                         </div>
                     </div>
                     <div class="live-preview">
-                        <table-component :headers="headersActivity" :data="dataActivity" :action="action" v-if="dataActivity.length > 0" @sort="sort($event.sortBy)">
+                        <table-component :headers="headersActivity" :data="filteredDataActivity" :action="action"
+                            v-if="filteredDataActivity.length > 0" @sort="sort($event.sortBy)">
                             <!-- NO -->
                             <template #no="{ index }">
                                 {{ index + 1 }}
                             </template>
 
-                            <template #action="{ item, index }">
+                            <template #startDate="{ item }">
+                                {{ $filters.formatDate(item.startDate) }}
+                            </template>
+                            <template #endDate="{ item }">
+                                {{ $filters.formatDate(item.endDate) }}
+                            </template>
+                            <template #actualFinishDate="{ item }">
+                                {{ $filters.formatDate(item.actualFinishDate) }}
+                            </template>
+
+                            <!-- subtotal -->
+                            <template #total="{ item }">
+                                {{ $filters.formatRupiah(item.total) }}
+                            </template>
+
+                            <template #action="{ index }">
                                 <BButton variant="link" class="link-dark fs-22" size="sm" @click="editActivity(index)">
                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="deleteActivity(index)">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm"
+                                    @click="deleteActivity(index)">
                                     <img src="@/assets/icons/delete.svg" alt="delete" />
                                 </BButton>
-                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm" :to="`/program-maintenance/view/${item.id}`">
+                                <BButton variant="link" class="link-opacity-75 fs-22" size="sm"
+                                    @click="(() => {
+                                        selectedViewActivity = index
+                                        showModalViewActivity = true
+                                    })">
                                     <img src="@/assets/icons/view.svg" alt="eye" />
                                 </BButton>
                             </template>
 
-                            <template #pagination>  
+                            <template #pagination>
 
                                 <div class="d-flex justify-content-end mt-3">
                                     <button class="btn btn-light me-2">Kembali</button>

@@ -2,20 +2,83 @@
 
 import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
-// import axios from "axios";
+import HeaderPage from "@/components/header-page.vue";
+import axios from "axios";
+
+import "@vueform/multiselect/themes/default.css";
+import TableComponent from "@/components/table.vue";
+import Multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
 
 export default {
     name: "program-maintenance-create",
     components: {
         Layout,
+        HeaderPage,
+        TableComponent,
+        Multiselect
     },
     data() {
         return {
-            // datas: null,
-            datas: [
-                {id: 1, name: 'Program 1', type: 'Teknis', assignment: 'Ahmad Wicaksono', },
-                {id: 2, name: 'Program 2', type: 'Non Teknis', assignment: '3 User',},
-            ]
+            id: this.$route.params.id,
+            datas: null,
+            showModalPhoto: false,
+            activities: [],
+            params: {
+                page: 1,
+                limit: 10,
+                search: '',
+                sortBy: 'id.desc',
+                backlog_id: this.$route.params.id
+            },
+            config:{
+                total_pages: 0,
+                total_items: 0,
+            },
+            headersActivity: [
+                {
+                    title: 'No',
+                    key: 'no',
+                    show: true,
+                    order: false
+                },
+                {
+                    title: 'Judul',
+                    key: 'title',
+                    show: true,
+                    order: true
+                },
+                {
+                    title: 'Start Date',
+                    key: 'startDate',
+                    show: true,
+                    order: true
+                },
+                {
+                    title: 'Due Date',
+                    key: 'endDate',
+                    show: true,
+                    order: true
+                },
+                {
+                    title: 'Actual Finish Date',
+                    key: 'actualFinishDate',
+                    show: true,
+                    order: true
+                },
+                {
+                    title: 'Sub Total',
+                    key: 'total',
+                    show: true,
+                    order: true
+                },
+                {
+                    title: 'Action',
+                    key: 'action',
+                    show: true,
+                    order: false
+                }
+            ],
         };
     },
     watch: {
@@ -59,18 +122,57 @@ export default {
         },
 
         getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins/" + this.$route.params.id)
-            //     .then(response => {
-            //         this.datas = response.data.data;
-            //         // console.log(response.data);
-            //     })
-            //     .catch(error => {
-            //         console.log(error);
-            //     });
+            axios.get(process.env.VUE_APP_API_URL + "/v1/backlogs/" + this.$route.params.id)
+                .then(response => {
+                    this.datas = response.data.data;
+                })
+                .catch(error => {
+                    console.log(error);
+                });
         },
+        fetchActivities() {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/backlog_activities/", {
+                params: this.params
+            })
+                .then(response => {
+                    this.activities = response.data.data.items;
+                    this.config.total_pages = response.data.data.meta.totalPages;
+                    this.config.total_items = response.data.data.meta.totalItems;
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        },
+
+        downloadDocument() {
+            window.open(this.datas.document, '_blank');
+        }
+    },
+    computed: {
+        type() {
+            if (this.datas.type == '1') {
+                return 'Perbaikan';
+            } else if (this.datas.type == '2') {
+                return 'Perawatan';
+            } else if (this.datas.type == '3') {
+                return 'Penambahan Nilai';
+            } else {
+                return 'Lainnya';
+            }
+        },
+        periodicWO() {
+            if (this.datas.periodic == 'short_term') {
+                return 'Short Term';
+            } else if (this.datas.periodic == 'long_term') {
+                return 'Long Term';
+            } else {
+                return 'Lainnya';
+            }
+        }
     },
     mounted() {
         this.getData();
+        this.fetchActivities();
         window.addEventListener("resize", this.resizerightcolumn);
     }
 
@@ -79,63 +181,210 @@ export default {
 
 <template>
     <Layout>
-        <BRow>
-            <BCol>
-                <div class="h-100">
-                    <BRow class="mb-3 pb-1">
-                        <BCol cols="12">
-                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                                <div class="flex-grow-1">
-                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
-                                    <p class="text-muted mb-0">
-                                        {{$route.meta.description}}
-                                    </p>
-                                </div>
+        <HeaderPage title="Issue Report" pageTitle="Issue Report" />
 
-                            </div>
-                        </BCol>
-                    </BRow>
-
-                </div>
-            </BCol>
-        </BRow>
+        <!-- Show Photo -->
+        <BModal v-model="showModalPhoto" hide-footer hide-header-close centered class="v-modal-custom" size="sm"
+            no-body>
+            <div class="text-center">
+                <img :src="datas.photo" alt="photo" class="img-fluid" v-if="datas">
+            </div>
+        </BModal>
 
         <BRow v-if="datas">
             <BCol xl="12">
                 <BCard>
                     <BCardBody>
-                        <div class="">
-                            <h3 class="mr-3">{{ datas.name }} </h3>
-                        </div>
+                        <BRow>
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">No. Backlog</p>
+                                <input type="text" class="form-control" :value="datas.backlogCode" disabled />
+                            </BCol>
 
-                        <div class="mt-3 d-flex gap-2">
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-phone fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.type || "-" }}</p>
-                            </div>
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">Referensi WO</p>
+                                <input type="text" class="form-control" :value="datas.workOrder?.code" disabled />
+                            </BCol>
 
-                            
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-whatsapp fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.assignment || "-" }}</p>
-                            </div>
+                            <!-- Tipe Fleet -->
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">Tipe Fleet</p>
+                                <input type="text" class="form-control" :value="datas.fleet?.fleetType?.name" disabled />
+                            </BCol>
 
-                            
-                        </div>
+                            <!-- Kode Fleet -->
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">Kode Fleet</p>
+                                <input type="text" class="form-control" :value="datas.fleet?.code" disabled />
+                            </BCol>
+
+                            <!-- Judul -->
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">Judul</p>
+                                <input type="text" class="form-control" :value="datas.title" disabled />
+                            </BCol>
+
+                            <!-- Jenis -->
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">Jenis</p>
+                                <input type="text" class="form-control" :value="type" disabled />
+                            </BCol>
+
+                            <!-- Periodic WO -->
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">Periodic Backlog</p>
+                                <input type="text" class="form-control" :value="periodicWO" disabled />
+                            </BCol>
+
+                            <!-- Jenis -->
+                            <BCol md="6" class="mb-4">
+                                <p class="text-muted mb-2 fs-14">Kategory Kerusakan</p>
+                                <input type="text" class="form-control" :value="datas.category" disabled />
+                            </BCol>
+
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Alasan Bebas</h5>
+                                <Multiselect 
+                                    :options="datas.tags"  
+                                    v-model="datas.tags" 
+                                    multiple
+                                    mode="tags" 
+                                    :disabled="true"
+                                ></Multiselect>
+                            </BCol>
+
+                            <!-- Priority -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Prioritas</h5>
+                                <input type="text" class="form-control" :value="datas.priority" disabled />
+                            </BCol>
+
+                            <!-- Tanggal Dimulai -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Tanggal Dimulai</h5>
+                                <input type="text" class="form-control" :value="datas.startedAt" disabled />
+                            </BCol>
+
+                            <!-- Target -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Target</h5>
+                                <input type="text" class="form-control" :value="datas.targetedAt" disabled />
+                            </BCol>
+
+                            <!-- PIC Mekanik -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">PIC Mekanik</h5>
+                                <input type="text" class="form-control" :value="datas.mechanic" disabled />
+                            </BCol>
+
+                             <!-- Photo -->
+                             <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Dokumen</h5>
+                                <button class="btn btn-primary btn-sm" @click="downloadDocument">Download Document</button>
+                            </BCol>
+
+                            <!-- Photo -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Foto</h5>
+                                <button class="btn btn-primary btn-sm" @click="showModalPhoto = true">Lihat
+                                    Foto</button>
+                            </BCol>
+                        </BRow>
+
+                        <BRow>
+                            <!-- Komentar -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Komen</h5>
+                                <input type="text" class="form-control" :value="datas.comment" disabled />
+                            </BCol>
+
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Parameter Dimulai</h5>
+                                <input type="text" class="form-control" :value="datas.startParameter + ' ' + 'Km/Hour'"
+                                    disabled />
+                            </BCol>
+
+                            <!-- Parameter Selesai -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Parameter Selesai</h5>
+                                <input type="text" class="form-control" :value="datas.doneParameter + ' ' + 'Km/Hour'"
+                                    disabled />
+                            </BCol>
+
+                            <!-- Estimasi Biaya WO -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Estimasi Biaya Backlog</h5>
+                                <input type="text" class="form-control" :value="datas.workOrderEstimation" disabled />
+                            </BCol>
+
+                            <!-- Biaya WO -->
+                            <BCol md="6" class="mb-4">
+                                <h5 class="text-muted mb-2 fs-14">Biaya Backlog</h5>
+                                <!-- <input type="text" class="form-control" :value="datas.workOrderCost" disabled /> -->
+                            </BCol>
+                        </BRow>
                     </BCardBody>
+                </BCard>
 
-                    <!-- <BCardFooter>   
-                        <div class="d-flex gap-4">
-                            <div>
-                               <h5> <span class="text-muted">Role</span> : {{ datas.role.name }}</h5>
-                            </div>
-                            <div>
-                                <h5> <span class="text-muted">Status</span> : {{ datas.isActive ? 'Active' : 'Inactive' }}</h5>
+                <BCard>
+                    <BCardHeader>
+                        <div class="d-flex flex-wrap justify-content-between">
+                            <h4 class="mb-0">Aktivitas</h4>
+
+                            <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
+                                <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0"
+                                    style="flex-grow: 1;">
+                                    <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
+                                        <input type="text" class="form-control" placeholder="Search..."
+                                            style="width: 100%;" v-model="params.search" @input="fetchActivities">
+                                        <i class="ri-search-line search-icon"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </BCardFooter> -->
+                    </BCardHeader>
+                    <BCardBody v-if="activities.length > 0">
+                        <table-component :headers="headersActivity" :data="activities" :action="action"
+                            @sort="sort($event.sortBy)">
+                            <!-- No -->
+                            <template #no="{ index }">
+                                {{ index + 1 }}
+                            </template>
+
+                            <template #pagination>  
+
+                                <div class="d-flex justify-content-between mt-3" v-if="config.total_items >= 1">
+                                    <div class="d-flex align-items-center">
+                                        <!-- <label for="perPageSelect" class="me-2">Items per page:</label> -->
+                                        <select id="perPageSelect" v-model="params.limit" class="form-select" >
+                                            <option v-for="option in [10, 20, 30, 50]" :key="option" :value="option">{{ option }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="pagination-wrap hstack gap-2">
+                                        <BButton class="page-item pagination-prev" variant="light"  :disabled="params.page <= 1" @click="params.page--">
+                                            <i class="ri-arrow-left-s-line"></i>
+                                        </BButton>
+                                        <ul class="pagination listjs-pagination mb-0">
+                                            <li :class="{active: pageNumber == params.page, disabled: pageNumber == '...'}" v-for="(pageNumber, index) in config.total_pages" :key="index" @click="changePage(pageNumber)">
+                                            <BButton class="page" >{{ pageNumber }}</BButton>
+                                            </li>
+                                        </ul>
+                                        <BButton class="page-item pagination-next" variant="light"  :disabled="params.page >= config.total_pages" @click="params.page++">
+                                            <i class="ri-arrow-right-s-line"></i>
+                                        </BButton>
+                                    </div>
+                                </div>
+                            </template>
+                        </table-component>
+                    </BCardBody>
                 </BCard>
             </BCol>
+
+            <!-- <BCardFooter>    -->
+            <div class="d-flex justify-content-end">
+                <a :href="`/work-order/edit/${id}`" class="btn btn-light">Edit</a>
+            </div>
+            <!-- </BCardFooter> -->
         </BRow>
     </Layout>
 </template>

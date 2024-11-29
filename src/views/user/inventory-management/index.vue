@@ -6,7 +6,7 @@ import SelectHeader from "@/components/select-header.vue";
 import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
-import HeaderPage from "@/components/header-page.vue";
+// import HeaderPage from "@/components/header-page.vue";
 
 
 export default {
@@ -14,7 +14,7 @@ export default {
         Layout,
         TableComponent,
         SelectHeader,
-        HeaderPage
+        // HeaderPage
     },
     data() {
         return {
@@ -88,10 +88,16 @@ export default {
                 total_pages: 0,
                 total_items: 0,
             },
+            filter: {
+                startDate: '',
+                endDate: '',
+                tag: '',
+            },
             search: '',
             deleteId: null,
             showSelectHeader: false,
-            showModalDelete: false
+            showModalDelete: false,
+            modalFilter: false
         };
     },
     watch: {
@@ -103,20 +109,24 @@ export default {
         },
         params: {
             handler() {
-                this.getData();
+                this.listData();
             },
             deep: true
         },
         search: {
             handler(){
-                if(this.search.length === 0 || this.search.length > 5){
-                    this.getData({ search: this.search})
+                if(this.search.length === 0 || this.search.length > 1){
+                    this.params.search = this.search
+                    if(this.timeout) clearTimeout(this.timeout)
+                    this.timeout = setTimeout(() => {
+                        this.listData()
+                    }, 500)
                 }
             }
         }
     },
     methods: {
-        getData() {
+        listData() {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventories", {
                 params: this.params,
                 
@@ -186,7 +196,7 @@ export default {
             axios.delete(process.env.VUE_APP_API_URL + '/v1/inventories/' + this.deleteId, {
                 
             }).then(() => {
-                this.getData();
+                this.listData();
                 this.deleteId = null;
                 this.showModalDelete = false;
 
@@ -202,13 +212,17 @@ export default {
         },
         sort(sortBy) {
             this.params.sortBy = `${sortBy}.desc`;
-            this.getData();
+            this.listData();
         },
         exportExcel() {
 			axios.defaults.responseType = 'blob';
-			axios.get(process.env.VUE_APP_API_URL+'/cms/v1/admins/export', {
+			axios.get(process.env.VUE_APP_API_URL+'/v1/inventories/download', {
                 params:{
-					sortBy:"fullName.asc",
+					sortBy:"",
+					tag:"",
+					search:"",
+					limit:"",
+					page:"",
 				}
             }).then((res) => {
 					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
@@ -221,10 +235,13 @@ export default {
 
 				});
 		},
+        showModalFilter(){
+            this.modalFilter = true
+        }
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        this.getData();
+        this.listData();
     }
 
 };
@@ -247,10 +264,37 @@ export default {
                 </div>
             </div>
         </BModal>
+        <BModal v-model="modalFilter" hide-footer title="Filter" centered  class="v-modal-custom" width="300" size="md">
+            
+            <BForm class="">
+                <BRow class="gy-4">
+
+                    <BCol md="12">
+                        <label for="">Tanggal</label>
+                        <BRow>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="w-50">
+                                    <input class="form-control" type="date" v-model="filter.startDate">
+                                </div>
+                                <div class="mx-3">-</div>
+                                <div class="w-50">
+                                    <input class="form-control" type="date" v-model="filter.endDate">
+                                </div>
+                            </div>
+                        </BRow>
+                    </BCol>
+                    <BCol md="12">
+                        <label for="">Label Bebas</label>
+                        <BFormSelect v-model="filter.tag" :options="tags" value-field="value" text-field="name"></BFormSelect>
+                    </BCol>
+                    <div class="d-flex justify-content-end mt-4">
+                        <BButton variant="light" class="me-2" @click="modalFilter = false">Reset</BButton>
+                        <BButton variant="dark" @click="filter">Terapkan</BButton>
+                    </div>
+                </BRow>
+            </BForm>
+        </BModal>
         <!-- //Modal Delete -->
-
-        <HeaderPage title="Administrator" pageTitle="Admin" />
-
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -267,7 +311,7 @@ export default {
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </BButton>
                                
-                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;">
+                                <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter">
                                     <img src="@/assets/icons/filter.svg" alt="filter" />
                                     Filter
                                 </BButton>
@@ -295,6 +339,9 @@ export default {
                                 <!-- NO -->
                                 <template #no="{ index }">
                                     {{ index + 1 }}
+                                </template>
+                                <template #name="{ item }">
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px;">{{ item.name }}</span>
                                 </template>
                                 <!-- //Status -->
                                 <template #status="{ item }">   
