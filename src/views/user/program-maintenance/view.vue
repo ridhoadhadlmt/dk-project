@@ -5,6 +5,7 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import HeaderPage from "@/components/header-page.vue";
 import TableComponent from "@/components/table.vue";
+import Swal from "sweetalert2";
 import MultiSelect from "vue-multiselect";
 
 export default {
@@ -65,6 +66,8 @@ export default {
                 total_pages: 0,
                 total_item: 0,
             },
+            showModalDelete: false,
+            deleteId:'',
         }
     },
     watch: {
@@ -151,6 +154,23 @@ export default {
                 console.log(error);
             });
         },
+        showModalDeleteMethod(id) {
+            this.deleteId = id;
+            this.showModalDelete = true;
+        },
+
+        deleteDataMethod() {
+            // this.showModalDelete = false
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.deleteId).then(() => {
+                this.listData();
+                this.deleteId = null;
+                this.showModalDelete = false;
+
+                Swal.fire("Berhasil!", "Berhasil menghapus data", "success");
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
 
     },
     mounted() {
@@ -166,7 +186,16 @@ export default {
 <template>
     <Layout>
         <HeaderPage title="Program Maintenance" pageTitle="Program Maintenance" />
-        
+        <BModal v-model="showModalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="showModalDelete = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataMethod">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
@@ -217,7 +246,7 @@ export default {
                                 </BCol>
                             </BRow>
                             <div class="d-flex justify-content-end mt-4">
-                                <BButton variant="light" class="me-2">Edit</BButton>
+                                <BButton variant="light" class="me-2" :to="`/maintenance-programs/edit/${this.$route.params.id}`">Edit</BButton>
                             </div>
                         </BForm>
                     </BCardBody>
@@ -227,20 +256,12 @@ export default {
                 <div class="p-0 bg-white rounded-4">
                     <div class="d-flex flex-wrap justify-content-between p-lg-4">
                         <h4 class="card-title mb-0">Aktivitas</h4>
-
                         <div class="d-flex flex-wrap align-items-center mt-2 mt-lg-0" id="filter-button">
-                            
-                            
-                            
-
                             <div class="d-flex flex-wrap justify-content-sm-end me-2 mb-2 mb-lg-0" style="flex-grow: 1;">
                                 <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
                                     <input type="text" class="form-control" placeholder="Search..." v-model="search" style="width: 100%;">
                                     <i class="ri-search-line search-icon"></i>
-                                </div>
-
-                                
-                                
+                                </div>                                
                             </div>
                         </div>
                     </div>
@@ -253,7 +274,7 @@ export default {
                             <!-- //Status -->
                             
                             <template #action="{ item }">
-                                <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/maintenance-programs/edit/${item.id}`">
+                                <BButton variant="link" class="link-dark fs-22" size="sm" >
                                     <img src="@/assets/icons/edit.svg" alt="pencil" />
                                 </BButton>
                                 <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteMethod(item.id)">
