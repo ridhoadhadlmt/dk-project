@@ -361,8 +361,7 @@ export default {
         fetchData(){
             if(this.$route.params.id){
                 axios.get(process.env.VUE_APP_API_URL + '/v1/inventory-mutations/' + this.$route.params.id, ).then((response) => {
-                    console.log(response)
-                    this.form = response.data.data
+                    console.log(response.data.data)
                     this.form.mutationType = response.data.data.mutationType;
                     this.form.category = response.data.data.in.category;
                     this.form.note = response.data.data.in.note;
@@ -401,9 +400,9 @@ export default {
     
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
-        // this.fetchData();
-        // this.listCodeInventory();
-        // this.listUser();
+        this.fetchData();
+        this.listCodeInventory();
+        this.listUser();
     },
 
 };

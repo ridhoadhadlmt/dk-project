@@ -39,7 +39,7 @@ export default {
                 {text : 'Tools', value: 'tools'},
                 {text : 'Spare Part', value: 'sparepart'},
             ],
-            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}, {name: 'Body', value: 'body'}],
+            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
             dataTag: [],
             value: [],
             successAddModal: false,
@@ -258,7 +258,7 @@ export default {
                                         <label for="photo" class="form-label">Foto <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <BFormFile v-model="photo" @change="uploadImage"></BFormFile>
-                                            <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
+                                            <a :href="form.photo" target="_blank" class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></a>
                                         </div>
                                     </div>
                                 </BCol>
@@ -267,7 +267,7 @@ export default {
                                         <label for="document" class="form-label">Dokumen <span v-if="form.type === 'sparepart'" class="text-danger">*</span></label>
                                          <div class="input-group">
                                             <BFormFile v-model="document" @change="uploadDocument"></BFormFile>
-                                            <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
+                                            <a :href="form.document" target="_blank" class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></a>
                                         </div>
                                     </div>
                                 </BCol>
