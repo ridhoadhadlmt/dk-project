@@ -20,6 +20,7 @@ export default {
     },
     data() {
         return {
+            submitted: false,
             changePhoto: false,
             changeDocument: false,
             form: {
@@ -112,59 +113,66 @@ export default {
         },
 
         async submit() {
-            //update file first 
-            let photo = null;
-            let document = null;
+            this.submitted = true;
+            let validData = true;
 
-            if(this.changePhoto) {
-                photo = await this.uploadFile(this.form.photo, 'photo');
-            }
-
-            if(this.changeDocument) {
-                document = await this.uploadFile(this.form.document, 'document');
-            }
-
-            if (photo || document) {
-                this.form.photo = photo;
-                this.form.document = document;
-            }
-
-            if(this.$route.params.id) {
-                const body = {
-                    fleetId: this.form.fleetId,
-                    inspectionIds: this.form.inspectionIds,
-                    complaintParameter: this.form.complaintParameter,
-                    complaintTitle: this.form.complaintTitle,
-                    priority: this.form.priority,
-                    date: this.form.date,
-                    time: this.form.time,
-                    operatorId: this.form.operatorId,
-                    location: this.form.location,
-                    description: this.form.description,
-                    finishDate: this.form.finishDate,
-                    photo: this.form.photo,
-                    document: this.form.document,
-                    tags: this.form.tags,
+            for(let key in this.form) {
+                if(this.form[key] == null) {
+                    validData = false;
+                    break;
                 }
-                axios.put(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id, body).then(() => {
-                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
-                    this.$router.push('/issue-report');
-                }).catch((error) => {
-                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
-                    console.log(error);
-                });
-            } else {
+            }
+            if(this.submitted && validData) {
+                //update file first 
+                let photo = null;
+                let document = null;
 
-                
+                if(this.changePhoto) {
+                    photo = await this.uploadFile(this.form.photo, 'photo');
+                }
 
-                axios.post(process.env.VUE_APP_API_URL + '/v1/issues', this.form).then(() => {
-                    Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                    this.$router.push('/issue-report');
-                }).catch((error) => {
-                    Swal.fire("Gagal!", "Gagal menambahkan data", "error");
-                    console.log(error);
-                });
-            
+                if(this.changeDocument) {
+                    document = await this.uploadFile(this.form.document, 'document');
+                }
+
+                if (photo || document) {
+                    this.form.photo = photo;
+                    this.form.document = document;
+                }
+
+                if(this.$route.params.id) {
+                    const body = {
+                        fleetId: this.form.fleetId,
+                        inspectionIds: this.form.inspectionIds,
+                        complaintParameter: this.form.complaintParameter,
+                        complaintTitle: this.form.complaintTitle,
+                        priority: this.form.priority,
+                        date: this.form.date,
+                        time: this.form.time,
+                        operatorId: this.form.operatorId,
+                        location: this.form.location,
+                        description: this.form.description,
+                        finishDate: this.form.finishDate,
+                        photo: this.form.photo,
+                        document: this.form.document,
+                        tags: this.form.tags,
+                    }
+                    axios.put(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id, body).then(() => {
+                        Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                        this.$router.push('/issue-report');
+                    }).catch((error) => {
+                        Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                        console.log(error);
+                    });
+                } else {
+                    axios.post(process.env.VUE_APP_API_URL + '/v1/issues', this.form).then(() => {
+                            Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
+                            this.$router.push('/issue-report');
+                        }).catch((error) => {
+                            Swal.fire("Gagal!", "Gagal menambahkan data", "error");
+                            console.log(error);
+                        });
+                }
             }
         },
 
@@ -198,7 +206,11 @@ export default {
         fetchData() {
             if(this.$route.params.id) {
                 axios.get(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id).then((response) => {
-                    this.form = response.data.data;
+
+                    for(const key in this.form) {
+                        this.form[key] = response.data.data[key];
+                    }
+                    
                     this.preview.photo = response.data.data.photo;
                     this.preview.document = response.data.data.document;
 
@@ -249,16 +261,20 @@ export default {
                     </BCardHeader> -->
 
                     <BCardBody>
-                        <BForm @submit.prevent="submit">
+                        <BForm id="createIssueForm" autocomplete="off" class="needs-validation" novalidate>
                             <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
                                         <label for="code-fleet" class="form-label">Kode Fleet<span class="text-danger">*</span></label>
-                                        <multiselect v-model="form.fleetId" deselect-label="Can't remove this value"
-                                            value-prop="id" label="name" placeholder="Select one" :options="fleets"
-                                            :searchable="false" :allow-empty="false">
-                                            <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                        <multiselect v-model="form.fleetId" 
+                                            deselect-label="Can't remove this value"
+                                            value-prop="id" 
+                                            label="name" 
+                                            placeholder="Select one" :options="fleets"
+                                            :searchable="false" 
+                                            :allow-empty="false">
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.fleetId">Please select a fleet.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -269,18 +285,23 @@ export default {
                                             :searchable="false" :allow-empty="false">
                                             <template #singleLabel="{ option }"><strong>{{ option.fullName }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.inspectionIds.length">Please select a inspection.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="parameter" class="form-label">Parameter Keluhan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="parameter" placeholder="Masukkan Parameter Keluhan" v-model="form.complaintParameter" required>
+                                        <!-- <input type="text" class="form-control" id="parameter" placeholder="Masukkan Parameter Keluhan" v-model="form.complaintParameter" required> -->
+                                        <input type="text" id="parameter-field" class="form-control" placeholder="Enter job title"
+                                            v-model="form.complaintParameter" :class="{ 'is-invalid': submitted && !form.complaintParameter }" />
+                                        <div class="invalid-feedback">Please enter a parameter.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="title" class="form-label">Judul Keluhan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="title" placeholder="Masukkan Judul Keluhan" v-model="form.complaintTitle" required>
+                                        <input type="text" class="form-control" id="title" placeholder="Masukkan Judul Keluhan" v-model="form.complaintTitle" :class="{ 'is-invalid': submitted && !form.complaintTitle }" />
+                                        <div class="invalid-feedback">Please enter a title.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -291,17 +312,20 @@ export default {
                                             :searchable="false" :allow-empty="false">
                                             <template #singleLabel="{ option }"><strong>{{ option.label }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.priority">Please select a priority.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="date" class="form-label">Tanggal & Jam Keluhan <span class="text-danger">*</span></label>
                                     <BRow>
                                         <BCol md="6">
-                                            <flat-pickr v-model="form.date" class="form-control" id="date" placeholder="Pilih Tanggal" required></flat-pickr>
+                                            <flat-pickr v-model="form.date" class="form-control" id="date" placeholder="Pilih Tanggal" :class="{ 'is-invalid': submitted && !form.date }" />
+                                            <div class="text-danger" v-if="submitted && !form.date">Please select a date.</div>
                                         </BCol>
                                         <BCol md="6">
                                             <!-- <div class="input"> -->
-                                                <input type="time" class="form-control" id="date" placeholder="Pilih Jam" v-model="form.time" required>
+                                                <input type="time" class="form-control" id="date" placeholder="Pilih Jam" v-model="form.time" :class="{ 'is-invalid': submitted && !form.time }" />
+                                                <div class="text-danger" v-if="submitted && !form.time">Please select a time.</div>
                                                 <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><i class="bx bxs-time"></i></span> -->
                                             <!-- </div> -->
                                         </BCol>
@@ -317,29 +341,34 @@ export default {
                                             :searchable="false" :allow-empty="false">
                                             <template #singleLabel="{ option }"><strong>{{ option.fullName }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.operatorId">Please select a operator.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="title" class="form-label">Lokasi Info Awal Keluhan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="title" placeholder="Masukkan info awal keluhan" v-model="form.location" required>
+                                        <input type="text" class="form-control" id="title" placeholder="Masukkan info awal keluhan" v-model="form.location" :class="{ 'is-invalid': submitted && !form.location }" />
+                                        <div class="text-danger" v-if="submitted && !form.location">Please enter a location.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="12">
                                     <div>
                                         <label for="description" class="form-label">Deskripsi <span class="text-danger">*</span></label>
                                         <!-- <input type="text" class="form-control" id="description" placeholder="Masukkan deskripsi" v-model="form.description" required> -->
-                                        <textarea class="form-control" id="description" placeholder="Masukkan deskripsi" v-model="form.description" required></textarea>
+                                        <textarea class="form-control" id="description" placeholder="Masukkan deskripsi" v-model="form.description" :class="{ 'is-invalid': submitted && !form.description }"></textarea>
+                                        <div class="text-danger" v-if="submitted && !form.description">Please enter a description.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="date" class="form-label">Tanggal Harus Ditanggapi <span class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <flat-pickr v-model="form.finishDate" class="form-control" id="date" placeholder="Pilih tanggal" required></flat-pickr>
+                                            <flat-pickr v-model="form.finishDate" class="form-control" id="date" placeholder="Pilih tanggal" :class="{ 'is-invalid': submitted && !form.finishDate }"></flat-pickr>
+                                            
                                             <!-- <input type="date" class="form-control border-end-0" id="date" placeholder="Pilih tanggal" v-model="form.date" required>
                                             <span class="input-group-text border-start-0 bg-transparent" id="date"><i class="bx bxs-calendar fs-22"></i></span> -->
                                         </div>
+                                        <div class="text-danger" v-if="submitted && !form.finishDate">Please select a date.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -349,6 +378,8 @@ export default {
                                             <BFormFile v-model="form.photo" @change="handleFileChange($event,'photo')"></BFormFile>
                                             <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
+                                        <a :href="preview.photo" target="_blank" class="text-primary mt-2 text-decoration-underline" v-if="preview.photo">Lihat Foto</a>
+                                        <div class="text-danger" v-if="submitted && !form.photo">Please select a photo.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -357,6 +388,8 @@ export default {
                                         <BFormFile v-model="form.document" @change="handleFileChange($event,'document')"></BFormFile>
                                         <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
                                     </div>
+                                    <a :href="preview.document" target="_blank" class="text-primary mt-2 text-decoration-underline" v-if="preview.document">Lihat Dokumen</a>
+                                    <div class="text-danger" v-if="submitted && !form.document">Please select a document.</div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
@@ -365,6 +398,7 @@ export default {
                                         <Multiselect v-model="form.tags" mode="tags"
                                             :close-on-select="false" :searchable="true" :create-option="true" 
                                             :options="tags" value-prop="tag" label="tag"/>
+                                        <div class="text-danger" v-if="submitted && !form.tags.length">Please select a tag.</div>
                                     </div>
                                 </BCol>
                             </BRow>
@@ -372,7 +406,7 @@ export default {
                                 <router-link to="/issue-report">
                                     <BButton variant="light" class="me-2">Kembali</BButton>
                                 </router-link>
-                                <BButton type="submit" variant="primary">Simpan</BButton>
+                                <BButton variant="primary" type="button" @click="submit">Simpan</BButton>
                             </div>
                         </BForm>
                     </BCardBody>

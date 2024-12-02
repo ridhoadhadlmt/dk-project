@@ -83,6 +83,11 @@ export default {
     mounted() {
         this.getData();
         window.addEventListener("resize", this.resizerightcolumn);
+    },
+    computed: {
+        finishDate() {
+            return this.$filters.formatDate(this.datas.finishDate);
+        }
     }
 
 };
@@ -151,7 +156,7 @@ export default {
                             </BCol>
                             <BCol md="6" class="mb-4">  
                                 <h5 class="text-muted mb-2">Tanggal Harus Diselesaikan</h5>
-                                <input type="text" class="form-control" :value="datas.finishDate" disabled />
+                                <input type="text" class="form-control" :value="finishDate" disabled />
                             </BCol>
 
                             <BCol md="6" class="mb-4">  
@@ -164,7 +169,7 @@ export default {
                             </BCol>
 
                             <BCol md="6" class="mb-4">  
-                                <h5 class="text-muted mb-2">Alasan Bebas</h5>
+                                <h5 class="text-muted mb-2">Label Bebas</h5>
                                 <Multiselect :options="datas.tags" :label="tags" v-model="datas.tags" multiple mode="tags" :disabled="true"></Multiselect>
                             </BCol>
 
