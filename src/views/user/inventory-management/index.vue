@@ -75,9 +75,8 @@ export default {
                     order:false
                 }
             ],
-            data: [
- 
-            ],
+            tags: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
+            data: [],
             params: {
                 page: 1,
                 limit: 10,
@@ -91,7 +90,7 @@ export default {
             filter: {
                 startDate: '',
                 endDate: '',
-                tag: '',
+                tags: '',
             },
             search: '',
             deleteId: null,
@@ -107,12 +106,12 @@ export default {
             },
             deep: true
         },
-        params: {
-            handler() {
-                this.listData();
-            },
-            deep: true
+        filter: {
+            handler(){
+                this.listData({params: this.filter})
+            }
         },
+        
         search: {
             handler(){
                 if(this.search.length === 0 || this.search.length > 1){
@@ -128,8 +127,7 @@ export default {
     methods: {
         listData() {
             axios.get(process.env.VUE_APP_API_URL + "/v1/inventories", {
-                params: this.params,
-                
+                params: this.params
             })
                 .then((response) => {
                     this.data = response.data.data.items;
@@ -177,7 +175,7 @@ export default {
                 element.classList.add("d-none");
             }
         },
-
+        
         showSelectHeaderMethod() {
             this.showSelectHeader = true;
         },
@@ -237,6 +235,13 @@ export default {
 		},
         showModalFilter(){
             this.modalFilter = true
+        },
+        filterData(){
+            this.params.tags = this.filter.tags
+            // this.params.startDate = this.filter.startDate
+            // this.params.endDate = this.filter.endDate
+            this.listData()
+            this.modalFilter = false
         }
     },
     mounted() {
@@ -285,11 +290,11 @@ export default {
                     </BCol>
                     <BCol md="12">
                         <label for="">Label Bebas</label>
-                        <BFormSelect v-model="filter.tag" :options="tags" value-field="value" text-field="name"></BFormSelect>
+                        <BFormSelect v-model="filter.tags" :options="tags" value-field="value" text-field="name"></BFormSelect>
                     </BCol>
                     <div class="d-flex justify-content-end mt-4">
-                        <BButton variant="light" class="me-2" @click="modalFilter = false">Reset</BButton>
-                        <BButton variant="dark" @click="filter">Terapkan</BButton>
+                        <BButton variant="light" class="me-2" @click="filter = {}">Reset</BButton>
+                        <BButton variant="dark" @click="filterData">Terapkan</BButton>
                     </div>
                 </BRow>
             </BForm>
