@@ -122,7 +122,6 @@ export default {
                     break;
                 }
             }
-            
             if(this.submitted && validData) {
                 //update file first 
                 let photo = null;
@@ -207,7 +206,11 @@ export default {
         fetchData() {
             if(this.$route.params.id) {
                 axios.get(process.env.VUE_APP_API_URL + '/v1/issues/' + this.$route.params.id).then((response) => {
-                    this.form = response.data.data;
+
+                    for(const key in this.form) {
+                        this.form[key] = response.data.data[key];
+                    }
+                    
                     this.preview.photo = response.data.data.photo;
                     this.preview.document = response.data.data.document;
 

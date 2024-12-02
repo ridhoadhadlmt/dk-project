@@ -25,6 +25,8 @@ export default {
     },
     data() {
         return {
+            submitted: false,
+            submittedActivity: false,
             selectedViewActivity: null,
             showModalViewActivity: false,
             editActivityIndex: null,
@@ -356,31 +358,43 @@ export default {
             this.formDataActivity.items.splice(index, 1);
         },
         submitActivity() {
-            if (this.activityIndex == null) {
-                this.dataActivity.push(this.formDataActivity);
-            } else {
-                this.dataActivity[this.activityIndex] = this.formDataActivity;
-            }
+            // this.submittedActivity = true;
+            // let validData = true;
 
-            this.showModalActivity = false;
-            this.formDataActivity = {
-                title: '',
-                startDate: '',
-                endDate: '',
-                actualFinishDate: '',
-                note: '',
-                items: [
-                    {
-                        type: '',
-                        inventoryId: '',
-                        value: '',
-                        qty: '',
-                        unit: '',
-                        price: 10,
-                        total: 10
-                    }
-                ]
-            }
+            // for(let key in this.formDataActivity) {
+            //     if(this.formDataActivity[key] == null || this.formDataActivity[key] == '') {
+            //         validData = false;
+            //         break;
+            //     }
+            // }
+
+            // if(this.submittedActivity && validData) {
+                if (this.activityIndex == null) {
+                    this.dataActivity.push(this.formDataActivity);
+                } else {
+                    this.dataActivity[this.activityIndex] = this.formDataActivity;
+                }
+
+                this.showModalActivity = false;
+                this.formDataActivity = {
+                    title: '',
+                    startDate: '',
+                    endDate: '',
+                    actualFinishDate: '',
+                    note: '',
+                    items: [
+                        {
+                            type: '',
+                            inventoryId: '',
+                            value: '',
+                            qty: '',
+                            unit: '',
+                            price: 10,
+                            total: 10
+                        }
+                    ]
+                }
+            // }
         },
         handleFileChange(event, type) {
             if (type === 'photo') {
@@ -393,42 +407,59 @@ export default {
             this.preview[type] = URL.createObjectURL(event.target.files[0]);
         },
         async submit() {
+            this.form.startedAt = this.startedAtDate + ' ' + this.startedAtTime;
+            this.form.targetedAt = this.targetedAtDate + ' ' + this.targetedAtTime;
+            this.form.activities = this.dataActivity;
 
-            let photo = this.form.photo;
-            let document = this.form.document;
+            this.submitted = true;
+            let validData = true;
 
-            if (this.changePhoto) {
-                photo = await this.uploadFile(this.form.photo, 'photo')
-            }
-            if (this.changeDocument) {
-                document = await this.uploadFile(this.form.document, 'document')
-            }
-
-            const body = {
-                ...this.form,
-                startedAt: this.startedAtDate + ' ' + this.startedAtTime,
-                targetedAt: this.targetedAtDate + ' ' + this.targetedAtTime,
-                activities: this.dataActivity,
-                photo: photo,
-                document: document
+            for(let key in this.form) {
+                if(this.form[key] == null || this.form[key] == '') {
+                    validData = false;
+                    break;
+                }
             }
 
+            console.log(this.form);
 
-            if (this.$route.params.id) {
-                axios.put(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.$route.params.id, body).then(() => {
-                    Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
-                    this.$router.push('/work-order');
-                }).catch(() => {
-                    Swal.fire("Gagal!", "Gagal mengubah data", "error");
-                });
-            } else {
-                axios.post(process.env.VUE_APP_API_URL + '/v1/work-orders', body).then(() => {
-                    Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
-                    this.$router.push('/work-order');
-                }).catch(() => {
-                    Swal.fire("Gagal!", "Gagal menambahkan data", "error");
-                });
+
+            if(this.submitted && validData) {
+                let photo = this.form.photo;
+                let document = this.form.document;
+
+                if (this.changePhoto) {
+                    photo = await this.uploadFile(this.form.photo, 'photo')
+                }
+                if (this.changeDocument) {
+                    document = await this.uploadFile(this.form.document, 'document')
+                }
+
+                const body = {
+                    ...this.form,
+                    photo: photo,
+                    document: document
+                }
+
+
+                if (this.$route.params.id) {
+                    axios.put(process.env.VUE_APP_API_URL + '/v1/work-orders/' + this.$route.params.id, body).then(() => {
+                        Swal.fire("Berhasil!", "Berhasil mengubah data", "success");
+                        this.$router.push('/work-order');
+                    }).catch(() => {
+                        Swal.fire("Gagal!", "Gagal mengubah data", "error");
+                    });
+                } else {
+                    axios.post(process.env.VUE_APP_API_URL + '/v1/work-orders', body).then(() => {
+                        Swal.fire("Berhasil!", "Berhasil menambahkan data", "success");
+                        this.$router.push('/work-order');
+                    }).catch(() => {
+                        Swal.fire("Gagal!", "Gagal menambahkan data", "error");
+                    });
+                }
             }
+
+            
         },
         async uploadFile(file) {
             const formData = new FormData();
@@ -483,7 +514,7 @@ export default {
         <HeaderPage title="Work Order Report" pageTitle="Work Order Report" />
         <BModal v-model="showModalActivity" hide-footer title="Tambah Aktifitas" centered class="v-modal-custom"
             size="xl">
-            <BForm @submit.prevent="submitActivity">
+            <form @submit.prevent="submitActivity">
                 <BRow>
                     <BCol md="12" class="mb-3">
                         <div>
@@ -607,7 +638,7 @@ export default {
                         </div>
                     </BCol>
                 </BRow>
-            </BForm>
+            </form>
             <div class="cta">
 
                 <div class="d-flex justify-content-end mt-4">
@@ -633,7 +664,7 @@ export default {
             <BCol xl="12">
                 <BCard no-body>
                     <BCardBody>
-                        <BForm @submit.prevent="submit">
+                        <BForm id="createIssueForm" autocomplete="off" class="needs-validation" novalidate>
                             <BRow class="gy-4">
                                 <BCol md="6">
                                     <div>
@@ -645,6 +676,7 @@ export default {
                                             <template #singleLabel="{ option }"><strong>{{ option.name
                                                     }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.fleetId">Please select a fleet.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -665,6 +697,7 @@ export default {
                                             <template #singleLabel="{ option }"><strong>{{ option.issueCode + ' - ' +
                                                     option.complaintTitle }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.issueIds.length">Please select a issue.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -672,7 +705,9 @@ export default {
                                         <label for="title" class="form-label">Judul WO <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="title"
-                                            placeholder="Masukkan judul wo" v-model="form.title" required>
+                                            placeholder="Masukkan judul wo" v-model="form.title" required
+                                            :class="{ 'is-invalid': submitted && !form.title }" />
+                                        <div class="invalid-feedback">Please enter a title.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -685,6 +720,7 @@ export default {
                                             <template #singleLabel="{ option }"><strong>{{ option.name
                                                     }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.type">Please select a type.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -693,6 +729,7 @@ export default {
                                                 class="text-danger">*</span></label>
                                         <BFormRadioGroup size="lg" v-model="form.periodic" :options="periodics"
                                             value-prop="value" label-prop="text" name="radio-options" />
+                                        <div class="text-danger" v-if="submitted && !form.periodic">Please select a periodic.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -705,6 +742,7 @@ export default {
                                             <template #singleLabel="{ option }"><strong>{{ option.text
                                                     }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.priority">Please select a priority.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -714,18 +752,17 @@ export default {
                                         <BCol md="6">
                                             <div class="input-group">
                                                 <flat-pickr v-model="startedAtDate" class="form-control" id="date"
-                                                    placeholder="Pilih Tanggal" required></flat-pickr>
-                                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
+                                                    placeholder="Pilih Tanggal" :class="{ 'is-invalid': submitted && !startedAtDate }" />
                                             </div>
+                                            <div class="text-danger" v-if="submitted && !startedAtDate">Please select a date.</div>
                                         </BCol>
                                         <BCol md="6">
                                             <div class="input-group">
                                                 <flat-pickr v-model="startedAtTime" class="form-control" id="date"
-                                                    placeholder="Pilih Jam" required
+                                                    placeholder="Pilih Jam" :class="{ 'is-invalid': submitted && !startedAtTime }"
                                                     :config="{ enableTime: true, noCalendar: true }"></flat-pickr>
-                                                <!-- <input type="time" class="form-control" id="date" placeholder="Masukkan Jam" v-model="startedAtTime" required> -->
-                                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/clock.svg" width="20"></span> -->
                                             </div>
+                                            <div class="text-danger" v-if="submitted && !startedAtTime">Please select a time.</div>
                                         </BCol>
                                     </BRow>
                                 </BCol>
@@ -736,17 +773,18 @@ export default {
                                         <BCol md="6">
                                             <div class="input-group">
                                                 <flat-pickr v-model="targetedAtDate" class="form-control" id="date"
-                                                    placeholder="Pilih Tanggal" required></flat-pickr>
-                                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span> -->
+                                                    placeholder="Pilih Tanggal" :class="{ 'is-invalid': submitted && !targetedAtDate }" />
                                             </div>
+                                            <div class="text-danger" v-if="submitted && !targetedAtDate">Please select a date.</div>
                                         </BCol>
                                         <BCol md="6">
                                             <div class="input-group">
                                                 <flat-pickr v-model="targetedAtTime" class="form-control" id="date"
-                                                    placeholder="Pilih Jam" required
+                                                    placeholder="Pilih Jam" :class="{ 'is-invalid': submitted && !targetedAtTime }"
                                                     :config="{ enableTime: true, noCalendar: true }"></flat-pickr>
-                                                <!-- <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/clock.svg" width="20"></span> -->
+                                                
                                             </div>
+                                            <div class="text-danger" v-if="submitted && !targetedAtTime">Please select a time.</div>
                                         </BCol>
                                     </BRow>
                                 </BCol>
@@ -760,6 +798,7 @@ export default {
                                             <template #singleLabel="{ option }"><strong>{{ option.fullName
                                                     }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.picId">Please select a pic.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -772,6 +811,7 @@ export default {
                                             <span class="input-group-text bg-transparent fs-22"><img
                                                     src="@/assets/icons/image.svg" width="20"></span>
                                         </div>
+                                        <div class="text-danger" v-if="submitted && !form.photo">Please select a photo.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -785,13 +825,16 @@ export default {
                                             <span class="input-group-text bg-transparent fs-22"><img
                                                     src="@/assets/icons/doc.svg" width="20"></span>
                                         </div>
+                                        <div class="text-danger" v-if="submitted && !form.document">Please select a document.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="12">
                                     <div>
                                         <label for="title" class="form-label">Komen</label>
                                         <textarea name="" id="" cols="30" class="form-control" rows="10"
-                                            v-model="form.comment" placeholder="Masukkan komen"></textarea>
+                                            v-model="form.comment" placeholder="Masukkan komen"
+                                            :class="{ 'is-invalid': submitted && !form.comment }" />
+                                        <div class="invalid-feedback">Please enter a comment.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="3">
@@ -799,7 +842,9 @@ export default {
                                         <label for="title" class="form-label">Parameter Dimulai <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" class="form-control" id="title" placeholder="0"
-                                            v-model="form.startParameter" required>
+                                            v-model="form.startParameter" required
+                                            :class="{ 'is-invalid': submitted && !form.startParameter }" />
+                                        <div class="invalid-feedback">Please enter a start parameter.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="3">
@@ -807,7 +852,9 @@ export default {
                                         <label for="title" class="form-label">Estimasi Biaya <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" class="form-control" id="title" placeholder="0"
-                                            v-model="form.workOrderEstimation" required>
+                                            v-model="form.workOrderEstimation" required
+                                            :class="{ 'is-invalid': submitted && !form.workOrderEstimation }" />
+                                        <div class="invalid-feedback">Please enter a work order estimation.</div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -820,6 +867,7 @@ export default {
                                             <template #singleLabel="{ option }"><strong>{{ option.name
                                                     }}</strong></template>
                                         </multiselect>
+                                        <div class="text-danger" v-if="submitted && !form.tags.length">Please select a tag.</div>
                                     </div>
                                 </BCol>
                             </BRow>
@@ -889,13 +937,15 @@ export default {
 
                             <template #pagination>
 
-                                <div class="d-flex justify-content-end mt-3">
-                                    <a href="/work-order" class="btn btn-light me-2">Kembali</a>
-                                    <button class="btn btn-light me-2">Simpan sebagai Draft</button>
-                                    <button class="btn btn-primary" @click="submit">Publish</button>
-                                </div>
+                                
                             </template>
                         </table-component>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <a href="/work-order" class="btn btn-light me-2">Kembali</a>
+                        <button class="btn btn-light me-2">Simpan sebagai Draft</button>
+                        <button class="btn btn-primary" @click="submit" type="button">Publish</button>
                     </div>
                 </div>
             </BCol>
