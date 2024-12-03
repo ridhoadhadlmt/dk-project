@@ -456,7 +456,7 @@ export default {
                 limit: 10,
                 search: '',
                 sortBy: 'id.desc',
-                // fleetId: this.$route.params.id,
+                fleetId: this.$route.params.id,
             },
             config:{
                 total_pages: 0,
@@ -2156,9 +2156,9 @@ export default {
                                                     </template>
 
                                                     <template #description="{ item }">
-                                                        <BButton :variant="item.description === 'overdue' ? 'danger' : item.description === 'duenow' ? 'warning' : 'success' " size="sm">
-                                                            {{ item.description == 'overdue' ? 'overdue' : item.description == 'duenow' ? 'duenow' : 'completed' }}
-                                                        </BButton>
+                                                        <BBadge :variant="item.description === 'overdue' ? 'danger' : item.description === 'duenow' ? 'warning' : 'success'" pill size="sm">
+                                                            {{ item.description == 'overdue' ? 'Overdue' : item.description == 'Due Now' ? 'duenow' : 'Completed' }}
+                                                        </BBadge>
                                                         
                                                     </template>
                                                     <template #action="{  }">
@@ -2209,6 +2209,20 @@ export default {
                                                         <template #no="{ index }">
                                                             {{ index + 1 }}
                                                         </template>
+                                                        <template #status="{ item }">
+                                                            <BBadge v-if="item.status ==='open'" variant="success" pill>
+                                                                Terbuka
+                                                            </BBadge>
+                                                            <BBadge v-else-if="item.status ==='rejected'" variant="danger" pill>
+                                                                Ditolak
+                                                            </BBadge>
+                                                            <BBadge v-else-if="item.status ==='approved'" variant="danger" pill>
+                                                                Diterima
+                                                            </BBadge>
+                                                            <BBadge v-else variant="danger" pill>
+                                                                Tertutup
+                                                            </BBadge>
+                                                        </template>
                                                         <template #action="{ item }">
                                                             <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/issue-report/edit/${item.id}`">
                                                                 <img src="@/assets/icons/edit.svg" alt="pencil" />
@@ -2219,10 +2233,10 @@ export default {
                                                             <BButton variant="link" class="link-opacity-75" size="sm" :to="`/issue-report/view/${item.id}`">
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
                                                             </BButton> 
-                                                            <BButton variant="success" class="rounded-circle mx-3" size="sm" squared="true" @click="showModalApproveIssue(item.id)">
+                                                            <BButton variant="success" class="rounded-circle mx-3" size="sm" squared="true" v-if="item.status !== 'rejected' && item.status !== 'approved'" @click="showModalApproveIssue(item.id)">
                                                                 <img src="@/assets/icons/check.svg" width="10" height="10" alt="check" />
                                                             </BButton>
-                                                            <BButton variant="danger" class="rounded-circle" size="sm" squared="true" @click="showModalRejectIssue(item.id)">
+                                                            <BButton variant="danger" class="rounded-circle" size="sm" squared="true" v-if="item.status !== 'rejected' && item.status !== 'approved'" @click="showModalRejectIssue(item.id)">
                                                                 <img src="@/assets/icons/cancel.svg" width="10" height="10" alt="cancel" />
                                                             </BButton>
                                                         </template>
