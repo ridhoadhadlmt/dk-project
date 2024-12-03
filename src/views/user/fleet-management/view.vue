@@ -269,19 +269,19 @@ export default {
                 },
                 {
                     title: 'Kode Issue',
-                    key: 'codeIssue',
+                    key: 'issueCode',
                     show: true,
                     order:false
                 },
                 {
                     title: 'Kode Fleet',
-                    key: 'codeFleet',
+                    key: 'fleet.code',
                     show: true,
                     order:true
                 },
                 {
                     title: 'Judul Keluhan',
-                    key: 'title',
+                    key: 'complaintTitle',
                     show: true,
                     order:true
                 },
@@ -326,7 +326,7 @@ export default {
                 },
                 {
                     title: 'Tanggal & Jam WO',
-                    key: 'date',
+                    key: 'createdAt',
                     show: true,
                     order:true
                 },
@@ -344,7 +344,7 @@ export default {
                 },
                 
             ],
-            backLogOrderHeaders: [
+            backlogHeaders: [
                 {
                     title: 'No',
                     key: 'no',
@@ -353,7 +353,7 @@ export default {
                 },
                 {
                     title: 'No.Backlog Order',
-                    key: 'code',
+                    key: 'backlogCode',
                     show: true,
                     order:false
                 },
@@ -371,7 +371,7 @@ export default {
                 },
                 {
                     title: 'Tanggal & Jam WO',
-                    key: 'date',
+                    key: 'createdAt',
                     show: true,
                     order:true
                 },
@@ -389,7 +389,7 @@ export default {
                 },
                 
             ],
-            kuesionerHeaders: [
+            questionerHeaders: [
                 {
                     title: 'No',
                     key: 'no',
@@ -456,11 +456,15 @@ export default {
                 limit: 10,
                 search: '',
                 sortBy: 'id.desc',
-                fleetId: this.$route.params.id,
+                // fleetId: this.$route.params.id,
             },
             config:{
                 total_pages: 0,
                 total_items: 0,
+            },
+            reject: {
+                status: 'rejected',
+                rejectReason: '',
             },
             document: [],
             operators: [],
@@ -474,36 +478,12 @@ export default {
                 {code: 'XXXPMR2', date: '20 Sep 2024', parameter: 'Due 500 Km | Current 450 Km', description: 'duenow', action: 'action'},
                 {code: 'XXXPMR3', date: '21 Sep 2024', parameter: 'Due 500 Km | Executed 450 Km', description: 'completed', action: 'action'}
             ],
-            issues: [
-                {codeIssue: 'IS/01/2024', codeFleet: '001', title: 'Keluhan A', priority: 'High', status: 'Lorem Ipsum', 
-                    meta: {
-                        totalItems: 1,
-                        totalPages: 1,
-                    }
-                },
-                
-            ],
-            workOrders: [
-                {code: 'WO/01/2024', title: 'Lorem Ipsum', priority: 'Critical', date: '11 Des 2023, 08: 00 WIB' , status: 'Lorem Ipsum', 
-                    meta: {
-                        totalItems: 1,
-                        totalPages: 1,
-                    }
-                },
-                
-            ],
-            backLogs: [
-                {code: 'WO/01/2024', title: 'Lorem Ipsum', priority: 'Critical', date: '11 Des 2023, 08: 00 WIB' , status: 'Lorem Ipsum', 
-                    meta: {
-                        totalItems: 1,
-                        totalPages: 1,
-                    }
-                },
-                
-            ],
-            kuesioners: [
+            issues: [],
+            workOrders: [],
+            backlogs: [],
+            questioners: [
                 {code: 'K001', title: 'Lorem Ipsum', period: 'Harian', dateWork: '01 Juni 2024' , dateFill: '-', status: 'waiting', 
-            
+                
                 },
                 {code: 'K002', title: 'Lorem Ipsum', period: 'Mingguan', dateWork: '01 Juni 2024' , dateFill: '12 Juni 2024', status: 'done', 
             
@@ -514,7 +494,6 @@ export default {
                 {code: 'K004', title: 'Lorem Ipsum', period: 'Tahunan', dateWork: '01 Juni 2024' , dateFill: '-', status: 'nodone', 
             
                 },
-                
             ],
             dataMaintenanceProgram: [],
             dataAttachment: [],
@@ -523,17 +502,36 @@ export default {
             modalHeaderCost: false,
             modalHeaderTimesheet: false,
             modalHeaderFuel: false,
+            modalHeaderIssue: false,
+            modalHeaderWorkOrder: false,
+            modalHeaderBacklog: false,
             modalDelete: false,
+            modalDeleteParameter: false,
+            modalDeleteCost: false,
+            modalDeleteTimesheet: false,
+            modalDeleteFuel: false,
+            modalDeleteIssue: false,
+            modalDeleteWorkOrder: false,
+            modalDeleteBacklog: false,
             modalApproveParameter: false,
             modalApproveCost: false,
             modalApproveTimesheet: false,
             modalApproveFuel: false,
             modalSettingTolerance: false,
+            modalFilterIssue: false,
+            modalApproveIssue: false,
+            modalRejectIssue: false,
+            modalFilterWorkOrder: false,
+            modalFilterBacklog: false,
             fleetId: this.$route.params.id,
             fleetParameterId: '',
             fleetCostId: '',
             fleetTimesheetId: '',
             fleetFuelId: '',
+            issueId: '',
+            workOrderId: '',
+            backlogId: '',
+            questionerId: '',
             search: '',
         }
     },
@@ -554,6 +552,10 @@ export default {
                         if(this.tabItem == 'cost') this.listDataHistoryCost()
                         if(this.tabItem == 'timesheet') this.listDataHistoryTimesheet()
                         if(this.tabItem == 'fuel') this.listDataHistoryFuel()
+                        // this.listDataIssue();
+                        // this.listDataWorkOrder();
+                        // this.listDataBacklog();
+                        // this.listDataQuestioner();
                     }, 500)
                 }
                 
@@ -629,7 +631,6 @@ export default {
             this.modalApproveParameter = true;
         },
         deleteData(){
-       
             axios.delete(process.env.VUE_APP_API_URL + this.url + this.deleteId).then(() => {
                 if(this.url == '/v1/fleet-parameters/'){
                     this.listDataHistoryParameter();
@@ -649,8 +650,7 @@ export default {
                 console.log(error);
             });
         },
-        showModalDelete(id, url){
-            
+        showModalDelete(id, url){     
             this.modalDelete = true
             if(url == 'parameter') {
                 this.deleteId = id
@@ -668,6 +668,69 @@ export default {
                 this.deleteId = id
                 this.url = '/v1/fleet-fuels/'
             }
+        },
+        showModalDeleteIssue(id){  
+            this.issueId = id
+            this.modalDeleteIssue = true;
+        },
+        deleteDataIssue(){  
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/issues' + this.issueId).then(() => {
+                Swal.fire("Berhasil!", "Berhasil menghapus data", "success");
+                this.modalDeleteIssue = false;
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        showModalDeleteWorkOrder(id){  
+            this.workOrderId = id
+            this.modalDeleteWorkOrder = true;
+        },
+        deleteDataWorkOrder(){  
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/work-orders' + this.workOrderId).then(() => {
+                Swal.fire("Berhasil!", "Berhasil menghapus data", "success");
+                this.modalDeleteWorkOrder = false;
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        showSelectHeaderBacklog(){
+            this.modalHeaderBacklog = true
+        },
+        showModalFilterBacklog() {
+            this.modalFilterBacklog = true;
+        },
+        showModalDeleteBacklog(id){  
+            this.backlogId = id
+            this.modalDeleteBacklog = true;
+        },
+        deleteDataBacklog(){
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/backlogs' + this.backlogId).then(() => {
+                Swal.fire("Berhasil!", "Berhasil menghapus data", "success");
+                this.modalDeleteBacklog = false;
+            }).catch((error) => {
+                console.log(error);
+            });
+
+        },
+        showModalFilterIssue() {
+            this.modalFilterIssue = true;
+        },
+        showSelectHeaderIssue() {
+            this.modalHeaderIssue = true;
+        },
+        showModalApproveIssue(id) {
+            this.issueId = id
+            this.modalApproveIssue = true;
+        },
+        showModalRejectIssue(id) {
+            this.issueId = id
+            this.modalRejectIssue = true;
+        },
+        showSelectHeaderWorkOrder(){
+            this.modalHeaderWorkOrder = true
+        },
+        showModalFilterWorkOrder() {
+            this.modalFilterWorkOrder = true;
         },
         showModalApproveCost(id) {
             this.fleetCostId = id;
@@ -835,6 +898,56 @@ export default {
         listDataMaintenanceProgram() {
             axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-programs').then((response) => {
                 this.maintenancePrograms = response.data.data.items
+                this.config.total_items = response.data.data.meta.totalItems
+                this.config.total_pages = response.data.data.meta.totalPages
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataIssue(){
+            axios.get(process.env.VUE_APP_API_URL + '/v1/issues', {
+                params: this.params
+            }).then((response) => {
+                this.issues = response.data.data.items
+                this.issueId = response.data.data.items.id
+                this.config.total_items = response.data.data.meta.totalItems
+                this.config.total_pages = response.data.data.meta.totalPages
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataWorkOrder(){
+            axios.get(process.env.VUE_APP_API_URL + '/v1/work-orders', {
+                params: this.params
+            }).then((response) => {
+                this.workOrders = response.data.data.items
+                this.workOrderId = response.data.data.items.id
+                this.config.total_items = response.data.data.meta.totalItems
+                this.config.total_pages = response.data.data.meta.totalPages
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataBacklog(){
+            axios.get(process.env.VUE_APP_API_URL + '/v1/backlogs', {
+                params: this.params
+            }).then((response) => {
+                this.backlogs = response.data.data.items
+                this.backlogId = response.data.data.items.id
+                this.config.total_items = response.data.data.meta.totalItems
+                this.config.total_pages = response.data.data.meta.totalPages
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataQuestioner(){
+            axios.get(process.env.VUE_APP_API_URL + '/v1/questioners', {
+                params: this.params
+            }).then((response) => {
+                this.questioners = response.data.data.items
+                this.questionerId = response.data.data.items.id
+                this.config.total_items = response.data.data.meta.totalItems
+                this.config.total_pages = response.data.data.meta.totalPages
             }).catch((error) => {
                 console.log(error);
             });
@@ -915,6 +1028,64 @@ export default {
 
 				});
 		},
+        exportWorkOrder() {
+			axios.defaults.responseType = 'blob';
+			axios.get(process.env.VUE_APP_API_URL+'/v1/work-orders/download', {
+                params:{
+					sortBy:"",
+					search:"",
+					limit:"",
+					page:"",
+				}
+            }).then((res) => {
+					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
+					const link = document.createElement('a');
+					link.href = url;
+					link.setAttribute('download', `Work Order.xlsx`);
+					document.body.appendChild(link);
+					link.click();
+					axios.defaults.responseType = 'json'
+
+				});
+		},
+        exportBacklog() {
+			axios.defaults.responseType = 'blob';
+			axios.get(process.env.VUE_APP_API_URL+'/v1/backlogs/download', {
+                params:{
+					sortBy:"",
+					search:"",
+					limit:"",
+					page:"",
+				}
+            }).then((res) => {
+					const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.ms-excel' }));
+					const link = document.createElement('a');
+					link.href = url;
+					link.setAttribute('download', `Backlog.xlsx`);
+					document.body.appendChild(link);
+					link.click();
+					axios.defaults.responseType = 'json'
+
+				});
+		},
+        rejectDataIssue(){
+            axios.put(process.env.VUE_APP_API_URL + `/v1/issues/${this.issueId}/status`, this.reject).then(() => {
+                Swal.fire("Berhasil!", "Berhasil reject data", "success");
+                this.modalRejectIssue = false
+            }).catch((error) => {
+                Swal.fire("Gagal!", "Gagal reject data", "error");
+                console.log(error)
+            })
+        },
+        approveDataIssue(){
+            axios.put(process.env.VUE_APP_API_URL + `/v1/issues/${this.issueId}/status`, {status: 'approved'}).then(() => {
+                Swal.fire("Berhasil!", "Berhasil approve data", "success");
+                this.modalApproveIssue = false
+            }).catch((error) => {
+                Swal.fire("Gagal!", "Gagal approve data", "error");
+                console.log(error)
+            })
+        },
         searchHandler(event, tabItem){
             this.search = event.target.value
             this.tabItem = tabItem
@@ -924,6 +1095,10 @@ export default {
         
         window.addEventListener("resize", this.resizerightcolumn);
         this.fetchData();
+        this.listDataIssue();
+        this.listDataWorkOrder();
+        this.listDataBacklog();
+        this.listDataQuestioner();
         this.listDataOperator();
         this.listDataMaintenanceProgram();    
         this.listDataHistoryParameter();
@@ -942,9 +1117,11 @@ export default {
         <SelectHeader :showModal="modalHeaderCost" :headers="costHistoryHeaders" @hideModal="hideHeaderCost" @selectHeader="showHeaderCost" />
         <SelectHeader :showModal="modalHeaderTimesheet" :headers="timesheetHistoryHeaders" @hideModal="hideHeaderTimesheet" @selectHeader="hideHeaderTimesheet" />
         <SelectHeader :showModal="modalHeaderFuel" :headers="fuelHistoryHeaders" @hideModal="hideHeaderFuel" @selectHeader="hideHeaderFuel" />
+        <SelectHeader :showModal="modalHeaderIssue" :headers="issueHeaders" @hideModal="hideHeaderIssue" @selectHeader="hideHeaderIssue" />
+        <SelectHeader :showModal="modalHeaderWorkOrder" :headers="workOrderHeaders" @hideModal="hideHeaderWorkOrder" @selectHeader="hideHeaderWorkOrder" />
+        <SelectHeader :showModal="modalHeaderBacklog" :headers="backlogHeaders" @hideModal="hideHeaderBacklog" @selectHeader="hideHeaderBacklog" />
         
         <BModal v-model="modalDelete" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
-            
             <div class="text-center">
                 <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
                 <div class="d-flex justify-content-center mt-4">
@@ -953,6 +1130,280 @@ export default {
                 </div>
             </div>
         </BModal>
+        <BModal v-model="modalDeleteParameter" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDeleteParameter = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataParameter">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalDeleteCost" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDeleteCost = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataCost">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalDeleteTimesheet" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDeleteTimesheet = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataTimesheet">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalDeleteFuel" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDeleteFuel = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataFuelmodalDeleteFuel">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalDeleteIssue" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDeleteIssue = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataIssue">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalDeleteWorkOrder" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDeleteWorkOrder = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataWorkOrder">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalDeleteBacklog" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin menghapus data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalDeleteBacklog = false">Tidak</BButton>
+                    <BButton variant="light" @click="deleteDataBacklog">Ya</BButton>
+                </div>
+            </div>
+        </BModal>    
+        <BModal v-model="modalApproveIssue" hide-footer hide-header-close centered  class="v-modal-custom" size="sm">
+            
+            <div class="text-center">
+                <b class="fs-14">Apakah anda yakin mengkonfirmasi data ini?</b>
+                <div class="d-flex justify-content-center mt-4">
+                    <BButton variant="dark" class="me-2" @click="modalApproveIssue = false">Kembali</BButton>
+                    <BButton variant="light" @click="approveDataIssue">Ya</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalRejectIssue" hide-footer title="Reject" centered  class="v-modal-custom" size="sm">
+            <div class="">
+                <p class="fs-14">Silahkan tuliskan alasan menolak backlog ini</p>
+                <div>
+                    <label for="">Alasan</label>
+                    <BFormInput v-model="reject.rejectReason" placeholder="Tuliskan alasan"></BFormInput>
+                </div>
+                <div class="d-flex justify-content-end mt-4">
+                    <BButton variant="dark" @click="rejectDataIssue">Kirim</BButton>
+                </div>
+            </div>
+        </BModal>
+        <BModal v-model="modalFilterIssue" hide-footer title="Filter" centered  class="v-modal-custom" size="400">
+            
+            <BRow class="gy-4">
+                <BCol md="12">
+                    <label for="">Prioritas</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih Prioritas</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Tanggal Keluhan</label>
+                    <div class="d-flex align-items-center">
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                        <div class="mx-2">
+                            -
+                        </div>
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                    </div>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Tanggal Harus Diselesaikan</label>
+                    <div>
+                        <BFormInput type="date">
+                        </BFormInput>
+                    </div>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Status Keterlambatan</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih Status</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Status Issue</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih Status</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Label Bebas</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih label bebas</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <div class="d-flex justify-content-end mt-4">
+                    <BButton variant="light" class="me-2">Reset</BButton>
+                    <BButton variant="dark" @click="FilterDataIssue">Terapkan</BButton>
+                </div>
+            </BRow>
+        </BModal>
+        <BModal v-model="modalFilterWorkOrder" hide-footer title="Filter" centered  class="v-modal-custom" size="400">
+            
+            <BRow class="gy-4">
+                <BCol md="12">
+                    <label for="">Tipe Fleet</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih tipe</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Jenis WO</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih jenis WO</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Periodic WO</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih periodic WO</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Kategori Kerusakan</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih kategori</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Prioritas</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih prioritas</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Tanggal Mulai</label>
+                    <div class="d-flex align-items-center">
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                        <div class="mx-2">
+                            -
+                        </div>
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                    </div>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Tanggal Target Selesai</label>
+                    <div class="d-flex align-items-center">
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                        <div class="mx-2">
+                            -
+                        </div>
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                    </div>
+                </BCol>
+                <BCol md="12">
+                    <label for="">Tanggal Aktual Selesai</label>
+                    <div class="d-flex align-items-center">
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                        <div class="mx-2">
+                            -
+                        </div>
+                        <div class="w-50">
+                            <BFormInput type="date">
+        
+                            </BFormInput>
+                        </div>
+                    </div>
+                </BCol>
+                
+                <BCol md="12">
+                    <label for="">Status</label>
+                    <BFormSelect
+                    >
+                        <template #first>
+                            <BFormSelectOption value="" disabled>Pilih Status</BFormSelectOption>
+                        </template>
+                    </BFormSelect>
+                </BCol>
+                <div class="d-flex justify-content-end mt-4">
+                    <BButton variant="light" class="me-2">Reset</BButton>
+                    <BButton variant="dark" @click="FilterDataWorkOrder">Terapkan</BButton>
+                </div>
+            </BRow>
+        </BModal> -->
         <BModal v-model="modalApproveParameter" hide-footer centered  class="v-modal-custom">
             <div class="d-flex">
                 <div class="img w-50">
@@ -1172,14 +1623,14 @@ export default {
                                                         <BCol md="4">
                                                         <div>
                                                             <div class="input-group">
-                                                                <input type="number" class="form-control" id="width" v-model="data.width" required disabled>
+                                                                <input type="text" class="form-control" id="width" :value="data.width + 'm'" required disabled>
                                                             </div>
                                                         </div>
                                                     </BCol>
                                                     <BCol md="4">
                                                         <div>
                                                             <div class="input-group">
-                                                                <input type="number" class="form-control" id="height" v-model="data.height" required disabled>
+                                                                <input type="text" class="form-control" id="height" :value="data.height + 'm'" required disabled>
                                                                 
                                                             </div>
                                                         </div>
@@ -1187,7 +1638,7 @@ export default {
                                                     <BCol md="4">
                                                         <div>
                                                             <div class="input-group">
-                                                                <input type="number" class="form-control" id="length" v-model="data.length" required disabled>
+                                                                <input type="text" class="form-control" id="length" :value="data.length + 'm'" required disabled>
                                                                 
                                                             </div>
                                                         </div>
@@ -1197,7 +1648,7 @@ export default {
                                                 <BCol md="6">
                                                     <div>
                                                         <label for="weight" class="form-label">Berat </label>
-                                                        <input type="number" class="form-control" id="weight" v-model="data.weight" required disabled>
+                                                        <input type="text" class="form-control" id="weight" :value="data.weight + 'kg'" required disabled>
                                                     </div>
                                                 </BCol>
                                             
@@ -1339,11 +1790,11 @@ export default {
                                                     <div>
                                                         <label for="tenor" class="form-label">Tenor <span class="text-danger">*</span></label>
                                                         <div class="input-group">
-                                                            <input type="number" v-model="data.finance.tenor" class="form-control w-75" placeholder="0 km" aria-label="tenor" aria-describedby="tenor" disabled>
-                                                            <select class="form-select" v-model="data.finance.tenorUnit" disabled>
+                                                            <input type="text" :value="`${data.finance.tenor} ${data.finance.tenorUnit === 'month' ? 'Bulan' : 'Kali'}`" class="form-control w-75" placeholder="0" aria-label="tenor" aria-describedby="tenor" disabled>
+                                                            <!-- <select class="form-select" v-model="data.finance.tenorUnit" disabled>
                                                                 <option value="time">Kali</option>
                                                                 <option value="month">Bulan</option>
-                                                            </select>
+                                                            </select> -->
                                                         </div>
                                                     </div>
                                                 </BCol>
@@ -1355,8 +1806,8 @@ export default {
                                                 </BCol>
                                                 <BCol md="6">
                                                     <div>
-                                                        <label for="tenor" class="form-label">Tenor <span class="text-danger">*</span></label>
-                                                        <input type="number" class="form-control" v-model="data.finance.tenor" id="tenor" placeholder="Rp 0" required disabled>
+                                                        <label for="tenor" class="form-label">Tenor Ke<span class="text-danger">*</span></label>
+                                                        <input type="number" class="form-control" v-model="data.finance.tenor" id="tenor" placeholder="0" required disabled>
                                                         
                                                     </div>
                                                 </BCol>
@@ -1438,7 +1889,7 @@ export default {
                                                     <img src="@/assets/icons/check.svg" width="12" alt="check" />
                                                 </BButton>
                                             </template>
-                                            <!-- <template #pagination>  
+                                            <template #pagination>  
                                                 <div class="d-flex justify-content-between mt-3" v-if="config.total_items >= 1">
                                                     <div class="d-flex align-items-center">
                                                         <select id="perPageSelect" v-model="params.limit" class="form-select" >
@@ -1459,11 +1910,10 @@ export default {
                                                         </BButton>
                                                     </div>
                                                 </div>
-                                            </template> -->
+                                            </template>
                                         </table-component>
                                     </div>
                                 </div>
-                                
                                 <div class="tab-pane fade" id="nav-history-cost" role="tabpanel" aria-labelledby="nav-history-cost-tab" tabindex="0">
                                     <div class="d-flex flex-wrap justify-content-between py-lg-4">
                                         <h4 class="card-title mb-0">Histori Biaya</h4>
@@ -1738,18 +2188,17 @@ export default {
                                                 </div>
                                                 <div class="d-flex flex-wrap justify-content-between p-lg-4">
                                                     <div>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderIssue">
                                                             <i class="bx bx-dots-vertical-rounded"></i>
                                                         </BButton>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilterIssue">
                                                             <img src="@/assets/icons/filter.svg" alt="filter" />
-                                                            Filter
                                                         </BButton>
                                                     </div>
     
                                                     <div>
                                                         <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                                             <i class="ri-search-line search-icon"></i>
                                                         </div>
                                                     
@@ -1760,21 +2209,21 @@ export default {
                                                         <template #no="{ index }">
                                                             {{ index + 1 }}
                                                         </template>
-                                                        <template #action="{  }">
-                                                            <BButton variant="link" class="link-dark fs-22" size="sm" >
+                                                        <template #action="{ item }">
+                                                            <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/issue-report/edit/${item.id}`">
                                                                 <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 fs-22" size="sm" >
+                                                            <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteIssue(item.id)">
                                                                 <img src="@/assets/icons/delete.svg" alt="delete" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75" size="sm">
+                                                            <BButton variant="link" class="link-opacity-75" size="sm" :to="`/issue-report/view/${item.id}`">
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
                                                             </BButton> 
-                                                            <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm">
-                                                                <img src="@/assets/icons/check.svg" width="12" alt="check" />
+                                                            <BButton variant="success" class="rounded-circle mx-3" size="sm" squared="true" @click="showModalApproveIssue(item.id)">
+                                                                <img src="@/assets/icons/check.svg" width="10" height="10" alt="check" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle" size="sm">
-                                                                <img src="@/assets/icons/cancel.svg" width="14" alt="cancel" />
+                                                            <BButton variant="danger" class="rounded-circle" size="sm" squared="true" @click="showModalRejectIssue(item.id)">
+                                                                <img src="@/assets/icons/cancel.svg" width="10" height="10" alt="cancel" />
                                                             </BButton>
                                                         </template>
     
@@ -1819,14 +2268,14 @@ export default {
                                                 </div>
                                                 <div class="d-flex flex-wrap justify-content-between p-lg-4">
                                                     <div>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderWorkOrder">
                                                             <i class="bx bx-dots-vertical-rounded"></i>
                                                         </BButton>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilterWorkOrder">
                                                             <img src="@/assets/icons/filter.svg" alt="filter" />
                                                             Filter
                                                         </BButton>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportWorkOrder">
                                                             <img src="@/assets/icons/filter.svg" alt="filter" />
                                                             Export CSV
                                                         </BButton>
@@ -1834,7 +2283,7 @@ export default {
     
                                                     <div>
                                                         <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                                             <i class="ri-search-line search-icon"></i>
                                                         </div>
                                                     
@@ -1845,17 +2294,17 @@ export default {
                                                         <template #no="{ index }">
                                                             {{ index + 1 }}
                                                         </template>
-                                                        <template #action="{  }">
-                                                            <BButton variant="link" class="link-dark fs-22" size="sm" >
+                                                        <template #action="{ item }">
+                                                            <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/work-order/edit/${item.id}`">
                                                                 <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 fs-22" size="sm" >
+                                                            <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteWorkOrder(item.id)">
                                                                 <img src="@/assets/icons/delete.svg" alt="delete" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75" size="sm">
+                                                            <BButton variant="link" class="link-opacity-75" size="sm" :to="`/work-order/view/${item.id}`">
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
                                                             </BButton> 
-                                                                                                                    </template>
+                                                        </template>
     
                                                         <template #pagination>  
     
@@ -1898,48 +2347,44 @@ export default {
                                                 </div>
                                                 <div class="d-flex flex-wrap justify-content-between p-lg-4">
                                                     <div>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderMethod">
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showSelectHeaderBacklog">
                                                             <i class="bx bx-dots-vertical-rounded"></i>
                                                         </BButton>
-                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilter = true">
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="showModalFilterBacklog">
                                                             <img src="@/assets/icons/filter.svg" alt="filter" />
                                                             Filter
+                                                        </BButton>
+                                                        <BButton variant="light" class="btn btn-md me-2 mb-2 mb-lg-0" style="white-space: nowrap;" @click="exportBacklog">
+                                                            <img src="@/assets/icons/filter.svg" alt="filter" />
+                                                            Export CSV
                                                         </BButton>
                                                     </div>
     
                                                     <div>
                                                         <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                                             <i class="ri-search-line search-icon"></i>
                                                         </div>
                                                     
                                                     </div>
                                                 </div>
                                                 <div class="live-preview">
-                                                    <table-component :headers="backLogOrderHeaders" :data="backLogs" :action="action" v-if="backLogs.length > 0" @sort="sort($event.sortBy)">
+                                                    <table-component :headers="backlogHeaders" :data="backlogs" :action="action" v-if="backlogs.length > 0" @sort="sort($event.sortBy)">
                                                         <template #no="{ index }">
                                                             {{ index + 1 }}
                                                         </template>
-                                                        <template #action="{  }">
-                                                            <BButton variant="link" class="link-dark fs-22" size="sm" >
+                                                        <template #action="{ item }">
+                                                            <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/backlog-report/edit/${item.id}`">
                                                                 <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 fs-22" size="sm" >
+                                                            <BButton variant="link" class="link-opacity-75 fs-22" size="sm" @click="showModalDeleteBacklog(item.id)">
                                                                 <img src="@/assets/icons/delete.svg" alt="delete" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75" size="sm">
+                                                            <BButton variant="link" class="link-opacity-75" size="sm" :to="`/backlog-report/view/${item.id}`">
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
-                                                            </BButton> 
-                                                            <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm">
-                                                                <img src="@/assets/icons/check.svg" width="12" alt="check" />
-                                                            </BButton>
-                                                            <BButton variant="link" class="link-opacity-75 bg-danger rounded-circle p-1 mx-1" size="sm">
-                                                                <img src="@/assets/icons/cancel.svg" width="14" alt="cancel" />
                                                             </BButton>
                                                         </template>
-    
                                                         <template #pagination>  
-    
                                                             <div class="d-flex justify-content-between p-3 mt-3" v-if="config.total_items >= 1">
                                                                 <div class="d-flex align-items-center">
                                                                     <select id="perPageSelect" v-model="params.limit" class="form-select" >
@@ -1980,14 +2425,14 @@ export default {
                                                 <div class="d-flex flex-wrap justify-content-end p-lg-4">
                                                     <div>
                                                         <div class="search-box me-2" style="flex-grow: 1; max-width: 200px;">
-                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="params.search">
+                                                            <input type="text" class="form-control" placeholder="Search..." style="width: 100%;" v-model="search">
                                                             <i class="ri-search-line search-icon"></i>
                                                         </div>
                                                     
                                                     </div>
                                                 </div>
                                                 <div class="live-preview">
-                                                    <table-component :headers="kuesionerHeaders" :data="kuesioners" :action="action" v-if="kuesioners.length > 0" @sort="sort($event.sortBy)">
+                                                    <table-component :headers="questionerHeaders" :data="questioners" :action="action" v-if="questioners.length > 0" @sort="sort($event.sortBy)">
                                                         <template #no="{ index }">
                                                             {{ index + 1 }}
                                                         </template>
@@ -1998,10 +2443,10 @@ export default {
                                                             
                                                         </template>
                                                         <template #action="{ item }">
-                                                            <BButton v-if="item.status === 'waiting'" variant="link" class="link-dark fs-22" size="sm" >
+                                                            <BButton v-if="item.status === 'waiting'" variant="link" class="link-dark fs-22" size="sm" :to="`/inspection-response/edit/${item.id}`">
                                                                 <img src="@/assets/icons/edit.svg" alt="pencil" />
                                                             </BButton>
-                                                            <BButton variant="link" class="link-opacity-75" size="sm">
+                                                            <BButton variant="link" class="link-opacity-75" size="sm" :to="`/inspection-response/view/${item.id}`">
                                                                 <img src="@/assets/icons/view.svg" alt="eye" />
                                                             </BButton> 
                                                             <!-- <BButton variant="link" class="link-opacity-75 bg-success mx-1 rounded-2" size="sm">
