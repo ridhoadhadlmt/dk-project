@@ -9,6 +9,7 @@ import backlogReport from "./user/backlog-report";
 import workOrderReport from "./user/work-order-report";
 import inspectionResponse from "./user/inspection-response";
 import inspectionTemplate from "./user/inspection-template";
+// import questioner from "./user/questioner";
 import roleManagement from "./user/role-management";
 import userManagement from "./user/user-management";
 
@@ -23,6 +24,7 @@ export default [
   workOrderReport,
   inspectionResponse,
   inspectionTemplate,
+  // questioner,
   roleManagement,
   userManagement,
   {

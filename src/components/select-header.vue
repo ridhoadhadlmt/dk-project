@@ -1,6 +1,6 @@
 <template>  
     <div>
-        <BModal v-model="show" hide-footer title="Tampilkan Kolom" class="v-modal-custom" size="sm">
+        <BModal v-model="show" hide-footer title="Tampilkan Kolom" centered class="v-modal-custom" size="sm">
             
             <BFormGroup class="form-check-success mb-3" v-for="(header,index) in headers" :key="header.key">
                 <BFormCheckbox v-model="modelHeaders[index].show" :id="header.title">{{ header.title }}</BFormCheckbox>
