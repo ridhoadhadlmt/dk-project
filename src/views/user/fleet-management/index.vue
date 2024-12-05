@@ -272,7 +272,7 @@ export default {
         </BModal>
         <!-- //Modal Delete -->
 
-        <HeaderPage title="Administrator" pageTitle="Admin" />
+        <HeaderPage title="Fleet Management" description="Kamu bisa mengatur Fleet disini" />
 
         <BRow>
             <BCol xl="12">

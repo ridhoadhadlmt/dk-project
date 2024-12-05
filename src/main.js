@@ -12,6 +12,7 @@ import VueApexCharts from "vue3-apexcharts";
 import { vMaska } from "maska";
 
 import VueFeather from "vue-feather";
+import money from 'v-money3'
 
 import "@/assets/scss/config/default/app.scss";
 import "leaflet/dist/leaflet.css";
@@ -65,6 +66,7 @@ app
   .use(store)
   .use(router)
   .use(VueApexCharts)
+  .use(money)
   .use(BootstrapVueNext)
   .component(VueFeather.type, VueFeather)
   .directive("maska", vMaska)
