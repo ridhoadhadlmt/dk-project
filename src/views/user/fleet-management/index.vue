@@ -39,7 +39,7 @@ export default {
                 },
                 {
                     title: 'Tipe Fleet',
-                    key: 'type_fleet',
+                    key: 'fleetType.name',
                     show: true,
                     order:true
                 },
@@ -75,13 +75,13 @@ export default {
                 },
                 {
                     title: 'Efisiensi BBM',
-                    key: 'efficiency_bbm',
+                    key: 'fuelEfficiency',
                     show: true,
                     order:true
                 },
                 {
                     title: 'Tipe BBM',
-                    key: 'type_bbm',
+                    key: 'fuelType',
                     show: true,
                     order:true
                 },
@@ -111,9 +111,7 @@ export default {
                     order:false
                 }
             ],
-            data: [
-                {id: 1, name: 'Fleet 1', photo: "@/assets/images/nft/img-02.jpg", type_fleet: 'Lorem Ipsum',type_bbm: 'Lorem Ipsum', efficiency_bbm: 'Lorem Ipsum'}
-            ],
+            data: [],
             params: {
                 page: 1,
                 limit: 10,
@@ -124,7 +122,6 @@ export default {
                 total_pages: 0,
                 total_items: 0,
             },
-            
             deleteId: null,
             showSelectHeader: false,
             showModalDelete: false
@@ -139,24 +136,24 @@ export default {
         },
         params: {
             handler() {
-                this.getData();
+                this.listData();
             },
             deep: true
         }
     },
     methods: {
-        getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins", {
-            //     params: this.params
-            // })
-            //     .then((response) => {
-            //         this.data = response.data.data.items;
-            //         this.config.total_pages = response.data.data.meta.totalPages;
-            //         this.config.total_items = response.data.data.meta.totalItems;
-            //     })
-            //     .catch((error) => {
-            //         console.log(error);
-            //     });
+        listData() {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/fleets", {
+                params: this.params
+            })
+                .then((response) => {
+                    this.data = response.data.data.items;
+                    this.config.total_pages = response.data.data.meta.totalPages;
+                    this.config.total_items = response.data.data.meta.totalItems;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
 
         },
         rightcolumn() {
@@ -211,8 +208,8 @@ export default {
 
         deleteDataMethod() {
             // this.showModalDelete = false
-            axios.delete(process.env.VUE_APP_API_URL + '/cms/v1/admins/' + this.deleteId).then(() => {
-                this.getData();
+            axios.delete(process.env.VUE_APP_API_URL + '/v1/fleets/' + this.deleteId).then(() => {
+                this.listData();
                 this.deleteId = null;
                 this.showModalDelete = false;
 
@@ -228,7 +225,7 @@ export default {
         },
         sort(sortBy) {
             this.params.sortBy = `${sortBy}.desc`;
-            this.getData();
+            this.listData();
         },
         exportExcel() {
 			axios.defaults.responseType = 'blob';
@@ -249,7 +246,7 @@ export default {
 		},
     },
     mounted() {
-        this.getData();
+        this.listData();
         window.addEventListener("resize", this.resizerightcolumn);
     }
 
@@ -275,7 +272,7 @@ export default {
         </BModal>
         <!-- //Modal Delete -->
 
-        <HeaderPage title="Administrator" pageTitle="Admin" />
+        <HeaderPage title="Fleet Management" description="Kamu bisa mengatur Fleet disini" />
 
         <BRow>
             <BCol xl="12">
@@ -324,7 +321,8 @@ export default {
                                 </template>
                                 <!-- //img -->
                                 <template #photo="{ item }">   
-                                    <img :src="item.photo" width="20" alt="">
+                                    <img :src="item.photo " width="20" height="20">
+
                                 </template>
                                 <template #action="{ item }">
                                     <BButton variant="link" class="link-dark fs-22" size="sm" :to="`/fleet-management/edit/${item.id}`">

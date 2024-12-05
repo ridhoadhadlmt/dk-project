@@ -1,148 +1,168 @@
 <script>
-
-import "flatpickr/dist/flatpickr.css";
+import HeaderPage from '@/components/header-page.vue'
 import Layout from "@/layouts/main.vue";
-// import axios from "axios";
+import Overview from "./overview/index.vue";
+import HistoryParameter from "./history-parameter/index.vue";
+import HistoryCost from "./history-cost/index.vue";
+import HistoryTimesheet from "./history-timesheet/index.vue";
+import HistoryFuel from "./history-fuel/index.vue";
+import Others from "./others/index.vue";
+import axios from "axios";
 
 export default {
-    name: "fleet-management-create",
+    name: 'fleet-management-view',
     components: {
+        HeaderPage,
         Layout,
+        Overview,
+        HistoryParameter,
+        HistoryCost,
+        HistoryTimesheet,
+        HistoryFuel,
+        Others
     },
-    data() {
-        return {
-            // datas: null,
-            datas: [
-                {no: 1, name: 'Fleet 1', type_fleet: 'Lorem Ipsum', type_bbm: 'Lorem Ipsum', efficiency: 'Lorem Ipsum',},
-                {no: 2, name: 'Fleet 2', type_fleet: 'Lorem Ipsum', type_bbm: 'Lorem Ipsum', efficiency: 'Lorem Ipsum',},
-            ]
-        };
-    },
-    watch: {
+    data(){
+        return{
+            data: {}
+        }
     },
     methods: {
-        rightcolumn() {
-            if (document.querySelector('.layout-rightside-col').classList.contains('d-block')) {
-                document.querySelector('.layout-rightside-col').classList.remove('d-block');
-                document.querySelector('.layout-rightside-col').classList.add('d-none');
-            } else {
-                document.querySelector('.layout-rightside-col').classList.remove('d-none');
-                document.querySelector('.layout-rightside-col').classList.add('d-block');
-            }
+        fetchData() {
+            axios.get(process.env.VUE_APP_API_URL + "/v1/fleets/" + this.$route.params.id)
+                .then(response => {
+                    const data = response.data.data
+                    this.data = data
+                    this.data.fleetType = data.fleetType.name
+                    // this.data.photo = data.photo
+                    // this.data.merk = data.merk
+                    // this.data.code = data.code
+                    // this.data.parameterValue = data.parameterValue
+                    // this.data.status = data.status
+                    // this.data.name = data.name
+                    // this.data.year = data.year
+                    // this.data.serialNumber = data.serialNumber
+                    
+                })
+                .catch(error => {
+                    console.log(error);
+                });
         },
 
-        resizerightcolumn() {
-            const element = document.querySelector('.layout-rightside-col');
-
-            if (element) {
-                if (window.outerWidth < 1699) {
-                    element.classList.remove("d-block");
-                    element.classList.add("d-none");
-                } else {
-                    element.classList.add("d-block");
-                    element.classList.remove("d-none");
-                }
-            }
-
-            if (document.documentElement.getAttribute("data-layout") === "semibox") {
-                element.classList.remove("d-block");
-                element.classList.add("d-none");
-            }
-        },
-
-        hiderightcolumn() {
-            const element = document.querySelector('.layout-rightside-col');
-            if (element.classList.contains('d-block')) {
-                element.classList.remove("d-block");
-                element.classList.add("d-none");
-            }
-        },
-
-        getData() {
-            // axios.get(process.env.VUE_APP_API_URL + "/cms/v1/admins/" + this.$route.params.id)
-            //     .then(response => {
-            //         this.datas = response.data.data;
-            //         // console.log(response.data);
-            //     })
-            //     .catch(error => {
-            //         console.log(error);
-            //     });
-        },
     },
-    mounted() {
-        this.getData();
-        window.addEventListener("resize", this.resizerightcolumn);
+    mounted(){
+        this.fetchData()
     }
-
-};
+}
 </script>
 
 <template>
     <Layout>
+        <HeaderPage :title="$route.meta.title" link="/fleet-management" :description="$route.meta.description" :action="$route.meta.action"/>
+        
         <BRow>
-            <BCol>
-                <div class="h-100">
-                    <BRow class="mb-3 pb-1">
-                        <BCol cols="12">
-                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                                <div class="flex-grow-1">
-                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
-                                    <p class="text-muted mb-0">
-                                        {{$route.meta.description}}
-                                    </p>
-                                </div>
-
-                            </div>
+            <BCol lg="12">
+                <div class="shadow-lg rounded-2 p-3 bg-white">
+                    <BRow>
+                        <BCol md="2">
+                            <img :src="data.photo" class="object-fit-cover" alt="photo" style="width: 100%; height: 150px;">
+                        </BCol>
+                        <BCol md="10">
+                            <h2>{{ data.name }}</h2>
+                            <BRow>
+                                <BCol md="3">
+                                    <div class="d-flex">
+                                        <div class="w-50">
+                                            <h5 class="text-black-50 text-truncate">Tipe Fleet</h5>
+                                        </div>
+                                        <div class="w-50">
+                                            <h5><span class="px-3">: {{ data.fleetType }}</span></h5>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="w-50">
+                                            <h5 class="text-black-50">Tahun</h5>
+                                        </div>
+                                        <div class="w-50">
+                                            <h5><span class="px-3">:</span>{{ data.year}}</h5>
+                                        </div>
+                                    </div>
+                                </BCol>
+                                <BCol md="3">
+                                    <div class="d-flex">
+                                        <div class="w-50">
+                                            <h5 class="text-black-50 text-truncate">VIN/SN</h5>
+                                        </div>
+                                        <div class="w-50">
+                                            <h5><span class="px-3">:</span>{{ data.serialNumber}}</h5>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="w-50">
+                                            <h5 class="text-black-50">Merk</h5>
+                                        </div>
+                                        <div class="w-50">
+                                            <h5 class="text-truncate"><span class="px-3">:</span>{{ data.merk}}</h5>
+                                        </div>
+                                    </div>
+                                </BCol>
+                                <BCol md="3">
+                                    <div class="d-flex">
+                                        <div class="w-50">
+                                            <h5 class="text-black-50">Kode Fleet</h5>
+                                        </div>
+                                        <div class="w-50">
+                                            <h5 class="text-truncate"><span class="px-3">:</span>{{ data.code}}</h5>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="w-50">
+                                            <h5 class="text-black-50">Parameter Terbaru</h5>
+                                        </div>
+                                        <div class="w-50">
+                                            <h5><span class="px-3">:</span>{{ data.parameterValue}}</h5>
+                                        </div>
+                                    </div>
+                                </BCol>
+                                <BCol md="3">
+                                    <div class="d-flex">
+                                        <div class="w-50">
+                                            <h5 class="text-black-50">Status</h5>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <h5><span class="px-3">:</span>{{ data.status}}</h5>
+                                        </div>
+                                    </div>
+                                </BCol>
+                            </BRow>
                         </BCol>
                     </BRow>
-
+                    <BRow class="mt-4">
+                        <BCol lg="12">
+                            <BTabs>
+                                <BTab title="Overview">
+                                    <Overview/>
+                                </BTab>
+                                <BTab title="History Parameter">
+                                    <HistoryParameter/>
+                                </BTab>
+                                <BTab title="History Cost">
+                                    <HistoryCost/>
+                                </BTab>
+                                <BTab title="History Timesheet">
+                                    <HistoryTimesheet/>
+                                </BTab>
+                                <BTab title="History Fuel">
+                                    <HistoryFuel/>
+                                </BTab>
+                                <BTab title="Others">
+                                    <Others/>
+                                </BTab>
+                            </BTabs>
+                        </BCol>
+                    </BRow>
                 </div>
             </BCol>
         </BRow>
-
-        <BRow v-if="datas">
-            <BCol xl="12">
-                <BCard>
-                    <BCardBody>
-                        <!-- <div class="">
-                            <h3 class="mr-3">{{ datas.name }} </h3>
-                        </div> -->
-
-                        <div class="mt-3 d-flex gap-2">
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-phone fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.name || "-" }}</p>
-                            </div>
-
-                            
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-whatsapp fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.type_fleet || "-" }}</p>
-                            </div>
-
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-email fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.type_bbm || "-" }}</p>
-                            </div>
-                            <div class="d-flex align-items-bottom gap-2">
-                                <i class="mdi mdi-email fs-14 text-muted"></i>
-                                <p class="fs-14 text-muted">{{ datas.efficiency || "-" }}</p>
-                            </div>
-                        </div>
-                    </BCardBody>
-
-                    <!-- <BCardFooter>   
-                        <div class="d-flex gap-4">
-                            <div>
-                               <h5> <span class="text-muted">Role</span> : {{ datas.role.name }}</h5>
-                            </div>
-                            <div>
-                                <h5> <span class="text-muted">Status</span> : {{ datas.isActive ? 'Active' : 'Inactive' }}</h5>
-                            </div>
-                        </div>
-                    </BCardFooter> -->
-                </BCard>
-            </BCol>
-        </BRow>
     </Layout>
+    
 </template>

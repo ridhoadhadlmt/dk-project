@@ -19,3 +19,16 @@ form .form-select,form .form-control,form label{
     top: 50%;
     transform: translateY(-50%);
  }
+ .nav .nav-link{
+    color: #A1A5B7;
+    border: none;
+    font-size: 1.25rem;
+}
+.nav .nav-link.active{
+    color: #000;
+    font-size: 1.25rem;
+    background: transparent;
+    font-weight: 500;
+    border: none;
+    border-bottom: 1px solid #000;
+ }
