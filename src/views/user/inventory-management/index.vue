@@ -6,15 +6,14 @@ import SelectHeader from "@/components/select-header.vue";
 import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
-// import HeaderPage from "@/components/header-page.vue";
-
+import HeaderPage from "@/components/header-page.vue";
 
 export default {
     components: {
         Layout,
         TableComponent,
         SelectHeader,
-        // HeaderPage
+        HeaderPage
     },
     data() {
         return {
@@ -75,7 +74,7 @@ export default {
                     order:false
                 }
             ],
-            tags: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
+            tags: [],
             data: [],
             params: {
                 page: 1,
@@ -236,6 +235,13 @@ export default {
         showModalFilter(){
             this.modalFilter = true
         },
+        listDataTag(){
+            axios.get(process.env.VUE_APP_API_URL + '/v1/tags').then((response) => {
+                this.tags = response.data.data.items
+            }).catch((error) => {
+                console.log(error)
+            })
+        },
         filterData(){
             this.params.tags = this.filter.tags
             // this.params.startDate = this.filter.startDate
@@ -246,6 +252,7 @@ export default {
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
+        this.listDataTag()
         this.listData();
     }
 
@@ -254,7 +261,7 @@ export default {
 
 <template>
     <Layout>
-
+        <HeaderPage :title="$route.meta.title" :description="$route.meta.description"/>
         
         <SelectHeader :showModal="showSelectHeader" :headers="headers" @hideModal="hideSelectHeaderMethod" @selectHeader="selectHeaderMethod" />
         
@@ -290,7 +297,11 @@ export default {
                     </BCol>
                     <BCol md="12">
                         <label for="">Label Bebas</label>
-                        <BFormSelect v-model="filter.tags" :options="tags" value-field="value" text-field="name"></BFormSelect>
+                        <BFormSelect v-model="filter.tags" :options="tags" value-field="tag" text-field="tag">
+                            <template #first>
+                                <BFormSelectOption value="" disabled>Pilih label bebas</BFormSelectOption>
+                            </template>
+                        </BFormSelect>
                     </BCol>
                     <div class="d-flex justify-content-end mt-4">
                         <BButton variant="light" class="me-2" @click="filter = {}">Reset</BButton>

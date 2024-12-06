@@ -1,4 +1,25 @@
 <script>
+export default{
+    name: 'header-page',
+    props: {
+        title: {
+            type: String,
+            default: "",
+        },
+        description: {
+            type: String,
+            default: "",
+        },
+        action: {
+            type: String,
+            default: "",
+        },
+        link: {
+            type: String,
+            default: "",
+        },
+    }
+}
 </script>
 
 
@@ -11,10 +32,16 @@
                     <BCol cols="12">
                         <div class="d-flex align-items-lg-center flex-lg-row flex-column">
                             <div class="flex-grow-1">
-                                <h4 class="header-title">{{ $route.meta.title }}</h4>
-                                <p class="header-description">
-                                    {{ $route.meta.description }}
-                                </p>
+                                <h4 class="header-title">{{ title }}</h4>
+                                <div class="d-flex align-items-center">
+                                    <a :href="link" class="header-description">
+                                        {{ description }}
+                                    </a>
+                                    <span class="mx-2" v-if="action"> - </span>
+                                    <span class="header-action">
+                                        {{ action }}
+                                    </span>
+                                </div>
                             </div>
 
                         </div>

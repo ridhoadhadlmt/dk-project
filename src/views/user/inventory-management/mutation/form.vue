@@ -463,9 +463,20 @@ export default {
                                 <BCol md="6" v-if="form.mutationType !== 'out' && form.category !== 'purchase'">
                                     <div>
                                         <label>Kode Inventory <span class="text-danger">*</span></label>
-                                        <select v-model="inventoryCode" class="form-select" @change="selectInventory">
+                                        <!-- <select v-model="inventoryCode" class="form-select" @change="selectInventory">
                                             <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
-                                        </select>
+                                        </select> -->
+                                        <BFormSelect
+                                            :options="inventoryCodes"
+                                            v-model="inventoryCode"
+                                            text-field="code"
+                                            :value-field="inventoryCode"
+                                            @change="selectInventory"
+                                        >
+                                            <template #first>
+                                                <BFormSelectOption value="" disabled>Pilih Kode</BFormSelectOption>
+                                            </template>
+                                        </BFormSelect>
                                     </div>
                                 </BCol>
                                 <BCol md="12" v-if="form.category !== 'return' && form.category !== 'use' && form.category !== 'lost' ">
@@ -497,10 +508,21 @@ export default {
                                     <BRow class="align-items-center gy-3" v-for="(item, index) in form.items" :key="index">
                                         <BCol md="11">
                                             <div>
-                                                <select v-if="inventoryCodes.length" v-model="codeItem[index]" class="form-select" @change="selectInventory">
+                                                <!-- <select v-if="inventoryCodes.length" v-model="codeItem[index]" class="form-select" @change="selectInventory">
                                                     <option v-for="inventoryCode in inventoryCodes" :key="inventoryCode.code" :value="inventoryCode">{{ inventoryCode.code }}</option>
-                                                </select>
-                                                
+                                                </select> -->
+                                                <BFormSelect
+                                                    v-if="inventoryCodes.length"
+                                                    :options="inventoryCodes"
+                                                    v-model="codeItem[index]"
+                                                    text-field="code"
+                                                    :value-field="inventoryCode"
+                                                    @change="selectInventory"
+                                                >
+                                                    <template #first>
+                                                        <BFormSelectOption value="" disabled>Pilih Kode</BFormSelectOption>
+                                                    </template>
+                                                </BFormSelect>
                                                 <input v-if="!inventoryCodes.length" type="text" class="form-control" id="kode" placeholder="Kode Inventory" v-model="codeItem[index]">
                                             </div>
                                         </BCol>
@@ -543,11 +565,21 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.mutationType == 'out' && form.category !== 'lost'">
                                     <label for="peminjam" class="form-label">Peminjam <span class="text-danger">*</span></label>
-                                    <select class="form-select" v-model="form.userId">
+                                    <!-- <select class="form-select" v-model="form.userId">
                                         <option selected>Masukkan Peminjam</option>
                                         <option v-for="user in users" :key="user.id" :value="user.id">{{  user.fullName }}</option>
-                                        
-                                    </select>
+                                    </select> -->
+                                    <BFormSelect
+                                        :options="users"
+                                        v-model="form.userId"
+                                        text-field="fullName"
+                                        value-field="id"
+                                    >
+                                        <template #first>
+                                            <BFormSelectOption value="" disabled>Pilih Peminjam</BFormSelectOption>
+                                        </template>
+                                    </BFormSelect>
+                                    
                                 </BCol>
 
                                 <BCol md="6" v-if="form.mutationType == 'in' && form.category == 'return'">

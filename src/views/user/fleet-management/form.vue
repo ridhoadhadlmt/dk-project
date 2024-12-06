@@ -5,14 +5,17 @@ import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import HeaderPage from "@/components/header-page.vue";
-import MultiSelect from 'vue-multiselect'
+// import MultiSelect from 'vue-multiselect'
+import multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
 
 export default {
     name: "fleet-management-create",
     components: {
         Layout,
         HeaderPage,
-        MultiSelect
+        // MultiSelect,
+        multiselect
     },
     data() {
         return {
@@ -66,6 +69,22 @@ export default {
                     }
                 ],
             },
+            config: {
+                masked: false,
+                prefix: 'Rp ',
+                suffix: '',
+                thousands: '.',
+                decimal: ',',
+                precision: 0,
+                disableNegative: false,
+                disabled: false,
+                min: null,
+                max: null,
+                allowBlank: false,
+                minimumNumberOfCharacters: 0,
+                shouldRound: true,
+                focusOnRight: false,
+            },
             ownerships : [
                 {name: 'Perusahaan', value: 'company'},
                 {name: 'Financing', value: 'financing'},
@@ -74,11 +93,7 @@ export default {
                 {name: 'Solar', value: 'solar'},
                 {name: 'Bensin', value: 'bensin'},
             ],
-            tags: [
-                {name: 'Baut', value: 'baut'}, 
-                {name: 'Ring', value: 'ring'}, 
-                {name: 'Body', value: 'body'}
-            ],
+            tags: [],
             fleetTypes : [],
             maintenancePrograms : [],
             parameters: [
@@ -95,9 +110,24 @@ export default {
             photo: null,
             document: [],
             dataMaintenanceProgram: [],
-            valueTag: '',
+            dataTag: [],
             maintenanceProgramIndex: '',
         };
+    },
+    computed: {
+        initialFile: {
+            get() {
+                if (typeof this.form.photo === 'string') {
+                    console.log('benar')
+                    return new File([this.form.photo], this.form.photo, { type: 'text/plain' })
+                }
+
+                return this.form.photo
+            },
+            set() {
+                return this.form.photo
+            },
+        }
     },
     watch: {
     },
@@ -139,13 +169,13 @@ export default {
             }
         },
 
-        selectTag(option){
-            const value = []
-            value.push(option)
-            value.forEach((item) => {
-                this.form.tags.push(item.value)
-            })
-        },
+        // selectTag(option){
+        //     const value = []
+        //     value.push(option)
+        //     value.forEach((item) => {
+        //         this.form.tags.push(item.value)
+        //     })
+        // },
         selectMaintenanceProgram(event, index){
             if(!this.$route.params.id){
                 this.form.maintenancePrograms[index].maintenanceProgramId = event
@@ -172,6 +202,13 @@ export default {
         listDataOperator() {
             axios.get(process.env.VUE_APP_API_URL + '/v1/users').then((response) => {
                 this.operators = response.data.data.items
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+        listDataTag() {
+            axios.get(process.env.VUE_APP_API_URL + '/v1/tags').then((response) => {
+                this.tags = response.data.data.items
             }).catch((error) => {
                 console.log(error);
             });
@@ -251,6 +288,7 @@ export default {
         },
         updateData(){
             this.form.maintenancePrograms = this.dataMaintenanceProgram
+            console.log(this.form)
             axios.put(process.env.VUE_APP_API_URL + '/v1/fleets/' + this.$route.params.id , this.form).then(() => {
                 Swal.fire("Berhasil", "Berhasil update data", "success");
                 this.$router.push('/fleet-management')
@@ -300,9 +338,8 @@ export default {
                     this.form.terminalValue = data.terminalValue
                     this.form.buyPrice = data.buyPrice
                     this.form.ageEstimation = data.ageEstimation
-                    data.tags.forEach((item) => {
-                        this.form.tags.push(item)
-                    })
+                    this.dataTag = data.tags
+                    this.form.tags = this.dataTag.map(item => item)
                     if(data.maintenancePrograms.length > 0){
 
                         this.dataMaintenanceProgram = data.maintenancePrograms.map((maintenanceProgram) => {
@@ -343,6 +380,7 @@ export default {
         this.listDataFleetType();
         this.listDataMaintenanceProgram();
         this.listDataOperator();
+        this.listDataTag();
         this.fetchData();
     }
 
@@ -351,7 +389,7 @@ export default {
 
 <template>
     <Layout>
-        <HeaderPage title="Fleet Management" pageTitle="Fleet Management" />
+        <HeaderPage title="Fleet Management" link="/fleet-management" description="Fleet Management" :action="this.$route.params.id ? 'Edit Fleet' : 'Tambah Fleet'" />
 
         <BRow>
             <BCol xl="12">
@@ -368,8 +406,7 @@ export default {
                                         <label for="photo" class="form-label">Foto Profil <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <BFormFile v-model="form.photo" @change="uploadPhoto($event, 'photo')"></BFormFile>
-                                            <!-- <input type="text" class="form-control" id="photo" placeholder="Upload Foto" v-model="form.photo" required> -->
-                                            <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></span>
+                                            <a :href="form.photo" target="_blank" class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/image.svg" width="20"></a>
                                         </div>
                                     </div>
                                 </BCol>
@@ -382,10 +419,20 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="type" class="form-label">Tipe Fleet <span class="text-danger">*</span></label>
-                                        <select id="type" class="form-select" v-model="form.fleetTypeId" required>
+                                        <!-- <select id="type" class="form-select" v-model="form.fleetTypeId" required>
                                             <option selected>Pilih tipe fleet</option>
                                             <option v-for="fleetType in fleetTypes" :key="fleetType.id" :value="fleetType.id">{{ fleetType.name }}</option>
-                                        </select>
+                                        </select> -->
+                                        <BFormSelect
+                                            :options="fleetTypes"
+                                            v-model="form.fleetTypeId"
+                                            text-field="name"
+                                            value-field="id"
+                                        >
+                                            <template #first>
+                                                <BFormSelectOption value="" disabled>Pilih Tipe</BFormSelectOption>
+                                            </template>
+                                        </BFormSelect>
                                     </div>
                                 </BCol> 
                                 <BCol md="6">
@@ -405,9 +452,19 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                        <select class="form-select" v-model="form.status" required>
+                                        <!-- <select class="form-select" v-model="form.status" required>
                                             <option v-for="(item, index) in status" :key="index" :value="item.value">{{ item.label }}</option>
-                                        </select>
+                                        </select> -->
+                                        <BFormSelect
+                                            :options="status"
+                                            v-model="form.status"
+                                            text-field="label"
+                                            value-field="value"
+                                        >
+                                            <template #first>
+                                                <BFormSelectOption value="" disabled>Pilih Status</BFormSelectOption>
+                                            </template>
+                                        </BFormSelect>
                                     </div>
                                 </BCol>
                                 
@@ -434,9 +491,19 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="parameter" class="form-label">Parameter <span class="text-danger">*</span></label>
-                                        <select id="parameter" class="form-select" v-model="form.parameter" required>
+                                        <!-- <select id="parameter" class="form-select" v-model="form.parameter" required>
                                             <option v-for="(parameter, index) in parameters" :key="index" :value="parameter.value">{{ parameter.label }}</option>
-                                        </select>
+                                        </select> -->
+                                        <BFormSelect
+                                            :options="parameters"
+                                            v-model="form.parameter"
+                                            text-field="label"
+                                            value-field="value"
+                                        >
+                                            <template #first>
+                                                <BFormSelectOption value="" disabled>Pilih Parameter</BFormSelectOption>
+                                            </template>
+                                        </BFormSelect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -532,15 +599,30 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="operator" class="form-label">Operator <span class="text-danger">*</span></label>
-                                        <select id="operator" class="form-select" v-model="form.operatorId" required>
+                                        <!-- <select id="operator" class="form-select" v-model="form.operatorId" required>
                                             <option v-for="(operator, index) in operators" :key="index" :value="operator.id">{{ operator.fullName }}</option>
-                                        </select>
+                                        </select> -->
+                                        <BFormSelect
+                                            :options="operators"
+                                            v-model="form.operatorId"
+                                            text-field="fullName"
+                                            value-field="id"
+                                        >
+                                            <template #first>
+                                                <BFormSelectOption value="" disabled>Pilih Operator</BFormSelectOption>
+                                            </template>
+                                        </BFormSelect>
+                                        
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="tags" class="form-label">Label Bebas <span class="text-danger">*</span></label>
-                                        <MultiSelect maxHeight="100" v-model="valueTag" label="name" track-by="name"  @select="selectTag" :multiple="true" placeholder="Label Bebas" :options="tags"></MultiSelect>
+                                        <multiselect v-model="form.tags" mode="tags" value-prop="tag"
+                                            label="tag" :close-on-select="false" :searchable="true"
+                                            :create-option="true" placeholder="Label Bebas" :options="tags">
+                                            <template #singleLabel="{ option }"><strong>{{ option.tag }}</strong></template>
+                                        </multiselect>
                                     </div>
                                 </BCol>
                                 
@@ -551,9 +633,20 @@ export default {
                                             <div>
                                                 <label for="program-management" class="form-label">Program Maintenance <span class="text-danger">*</span></label>
                                                 <div >
-                                                    <select  id="program-management" v-model="form.maintenancePrograms[index].maintenanceProgramId" class="form-select" required @change="selectMaintenanceProgram($event.target.value, index)">
+                                                    <!-- <select  id="program-management" v-model="form.maintenancePrograms[index].maintenanceProgramId" class="form-select" required @change="selectMaintenanceProgram($event.target.value, index)">
                                                         <option v-for="(maintenanceProgram, index) in  maintenancePrograms" :key="index" :value="maintenanceProgram.id">{{  maintenanceProgram.name }}</option>
-                                                    </select>
+                                                    </select> -->
+                                                    <BFormSelect
+                                                        :options="maintenancePrograms"
+                                                        v-model="form.maintenancePrograms[index].maintenanceProgramId"
+                                                        text-field="name"
+                                                        value-field="id"
+                                                        @change="selectMaintenanceProgram($event.target.value, index)"
+                                                    >
+                                                        <template #first>
+                                                            <BFormSelectOption value="" disabled>Pilih Program</BFormSelectOption>
+                                                        </template>
+                                                    </BFormSelect>
                                                 </div>
                                                 
                                             </div>
@@ -581,9 +674,20 @@ export default {
                                             <div>
                                                 <label for="program-management" class="form-label">Program Maintenance <span class="text-danger">*</span></label>
                                                 <div >
-                                                    <select  id="program-management" v-model="dataMaintenanceProgram[index].maintenanceProgramId" class="form-select" required @change="selectMaintenanceProgram($event.target.value, index)">
+                                                    <!-- <select  id="program-management" v-model="dataMaintenanceProgram[index].maintenanceProgramId" class="form-select" required @change="selectMaintenanceProgram($event.target.value, index)">
                                                         <option v-for="(maintenanceProgram, index) in  maintenancePrograms" :key="index" :value="maintenanceProgram.id">{{  maintenanceProgram.name }}</option>
-                                                    </select>
+                                                    </select> -->
+                                                    <BFormSelect
+                                                        :options="maintenancePrograms"
+                                                        v-model="dataMaintenanceProgram[index].maintenanceProgramId"
+                                                        text-field="name"
+                                                        value-field="id"
+                                                        @change="selectMaintenanceProgram($event.target.value, index)"
+                                                    >
+                                                        <template #first>
+                                                            <BFormSelectOption value="" disabled>Pilih Program</BFormSelectOption>
+                                                        </template>
+                                                    </BFormSelect>
                                                 </div>
                                                 
                                             </div>
@@ -612,7 +716,7 @@ export default {
                                             <div class="mb-3 d-flex justify-content-between">
                                                 <div class="input-group">
                                                     <BFormFile v-model="document[index]" @change="uploadAttachment($event, index)"></BFormFile>
-                                                    <span class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></span>
+                                                    <a :href="form.attachments[index]" target="_blank" class="input-group-text bg-transparent fs-22"><img src="@/assets/icons/doc.svg" width="20"></a>
                                                 </div>
                                                 <div class="d-flex align-items-center">
                                                     <BButton variant="link" @click="copyAttachment(index)"><i class="bx bxs-copy fs-22"></i></BButton>
@@ -636,7 +740,8 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="payment-amount" class="form-label">Harga Pembelian <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" v-model="form.finance.paymentAmount" id="payment-amount" placeholder="Rp 0" required>
+                                        <!-- <input type="number" class="form-control" v-model="form.finance.paymentAmount" id="payment-amount" placeholder="Rp 0" required> -->
+                                        <money3 v-model="form.finance.paymentAmount" v-bind="config" class="form-control"></money3>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
@@ -653,7 +758,8 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="attachment" class="form-label">Uang Muka <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" v-model="form.finance.downPayment" id="attachment" placeholder="Rp 0" required>
+                                        <!-- <input type="number" class="form-control" v-model="form.finance.downPayment" id="attachment" placeholder="Rp 0" required> -->
+                                        <money3 v-model="form.finance.downPayment" v-bind="config" class="form-control"></money3>
                                     </div>
                                 </BCol>
                                 <BCol md="3">
@@ -673,22 +779,34 @@ export default {
                                         <label for="tenor" class="form-label">Tenor <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <input type="number" v-model="form.finance.tenor" class="form-control w-75" placeholder="0 km" aria-label="tenor" aria-describedby="tenor">
-                                            <select class="form-select" v-model="form.finance.tenorUnit">
+                                            <!-- <select class="form-select" v-model="form.finance.tenorUnit">
                                                 <option value="time">Kali</option>
                                                 <option value="month">Bulan</option>
-                                            </select>
+                                            </select> -->
+                                            <BFormSelect
+                                                v-model="form.finance.tenorUnit"
+                                                text-field="name"
+                                                value-field="id"
+                                            >
+                                                <template #first>
+                                                    <BFormSelectOption value="" disabled>Pilih Tenor</BFormSelectOption>
+                                                </template>
+                                                <BFormSelectOption value="time">Kali</BFormSelectOption>
+                                                <BFormSelectOption value="month">Bulan</BFormSelectOption>
+                                            </BFormSelect>
                                         </div>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
                                         <label for="nominal" class="form-label">Nominal Pembayaran <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" v-model="form.buyPrice" id="nominal" placeholder="Rp 0" required>
+                                        <!-- <input type="number" class="form-control" v-model="form.buyPrice" id="nominal" placeholder="Rp 0" required> -->
+                                        <money3 v-model="form.buyPrice" v-bind="config" class="form-control"></money3>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
                                     <div>
-                                        <label for="tenor" class="form-label">Tenor <span class="text-danger">*</span></label>
+                                        <label for="tenor" class="form-label">Tenor Ke<span class="text-danger">*</span></label>
                                         <input type="number" class="form-control" v-model="form.finance.tenor" id="tenor" placeholder="Rp 0" required>
                                         
                                     </div>
