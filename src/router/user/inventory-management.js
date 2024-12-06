@@ -12,37 +12,37 @@ export default {
             path: "",
             name: "inventory-management-index",
             component: Inventory,
-            meta: { title: "Inventory Management", description: "Kamu bisa mengatur inventory disini",authRequired: false },
+            meta: { title: "Inventory Management", description: "Kamu bisa mengatur inventory disini", authRequired: false },
         },
         {
             path: "create",
             name: "inventory-management-create",
             component: FormInventory,
-            meta: { title: "Create Inventory", description: "Inventory Management - Tambah Inventory",authRequired: false },
+            meta: { title: "Create Inventory", description: "Inventory Management", action: 'Tambah Inventory', authRequired: false },
         },
         {
             path: "edit/:id",
             name: "inventory-management-edit",
             component: FormInventory,
-            meta: { title: "Edit Inventory", description: "Inventory Management - Edit Inventory",authRequired: false },
+            meta: { title: "Edit Inventory", description: "Inventory Management", action: 'Edit Inventory', authRequired: false },
         },
         {
             path: "view/:id",
             name: "inventory-management-view",
             component: ViewInventory,
-            meta: { title: "Detail Inventory", description: "Inventory Management - Detail Inventory",authRequired: false },
+            meta: { title: "Detail Inventory", description: "Inventory Management", action: 'Detail Inventory', authRequired: false },
         },
         {
             path: ":id/mutation-create",
             name: "inventory-mutation-create",
             component: FormMutation,
-            meta: { title: "Tambah Mutasi Inventory", description: "Inventory Management - Detail Inventory",authRequired: false },
+            meta: { title: "Tambah Mutasi Inventory", description: "Inventory Management", action: 'Detail Inventory', authRequired: false },
         },
         {
             path: ":id/mutation-edit",
             name: "inventory-mutation-edit",
             component: FormMutation,
-            meta: { title: "Edit Mutasi Inventory", description: "Inventory Management - Detail Inventory",authRequired: false },
+            meta: { title: "Edit Mutasi Inventory", description: "Inventory Management", action: 'Detail Inventory', authRequired: false },
         },
     ]
 }

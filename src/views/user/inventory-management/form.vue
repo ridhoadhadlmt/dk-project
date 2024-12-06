@@ -30,16 +30,37 @@ export default {
                 unit: "",
                 price: "",
                 minStock: "",
-                type: '',
+                type: 'tools',
                 tags: [],
-                
-
+            },
+            config: {
+                masked: false,
+                prefix: 'Rp ',
+                suffix: '',
+                thousands: '.',
+                decimal: ',',
+                precision: 0,
+                disableNegative: false,
+                disabled: false,
+                min: null,
+                max: null,
+                allowBlank: false,
+                minimumNumberOfCharacters: 0,
+                shouldRound: true,
+                focusOnRight: false,
+            },
+            configNoMoney: {
+                masked: false,
+                prefix: '',
+                suffix: '',
+                precision: 0,
+                thousands:"."
             },
             types: [
                 {text : 'Tools', value: 'tools'},
                 {text : 'Spare Part', value: 'sparepart'},
             ],
-            labels: [{name: 'Baut', value: 'baut'}, {name: 'Ring', value: 'ring'}],
+            tags: [],
             dataTag: [],
             value: [],
             successAddModal: false,
@@ -193,11 +214,19 @@ export default {
                 });
             }
         },
+        listDataTag(){
+            axios.get(process.env.VUE_APP_API_URL + '/v1/tags').then((response) => {
+                this.tags = response.data.data.items
+            }).catch((error) => {
+                console.log(error)
+            })
+        }
         
 
     },
     mounted() {
         window.addEventListener("resize", this.resizerightcolumn);
+        this.listDataTag();
         this.fetchData();
     },
     computed: {
@@ -209,7 +238,7 @@ export default {
 
 <template>
     <Layout>
-        <HeaderPage title="Inventory" pageTitle="Management" />
+        <HeaderPage :title="$route.meta.title" :description="$route.meta.description" :action="$route.params.id ? $route.meta.action : $route.meta.action"/>
         <BModal v-model="successAddModal" hide-footer hide-header-close centered  class="v-modal-custom" size="200">
             <div class="text-center">
                 <b class="fs-14">Data Inventory berhasil ditambahkan!</b>
@@ -221,10 +250,6 @@ export default {
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
-                    <!-- <BCardHeader>
-                        
-                    </BCardHeader> -->
-
                     <BCardBody>
                         <BForm>
                             <div class="mb-4">
@@ -296,15 +321,16 @@ export default {
                                 </BCol>
                                 <BCol md="6" v-if="form.type != 'sparepart'">
                                     <label for="unitPrice" class="form-label">Harga/Unit <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="unitPrice" placeholder="Rp 0" v-model="form.price">
+                                    <!-- <input type="number" class="form-control" id="unitPrice" placeholder="Rp 0" v-model="form.price"> -->
+                                    <money3 v-model="form.price" v-bind="config" class="form-control"></money3>
                                 </BCol>
                                 <BCol md="6">
                                     <label for="label" class="form-label">Label Bebas <span class="text-danger">*</span></label>
-                                    <!-- <MultiSelect maxHeight="100" v-model="value" label="name" track-by="name"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="labels"></MultiSelect> -->
-                                    <multiselect v-model="form.tags" mode="tags" value-prop="value"
-                                        label="name" :close-on-select="false" :searchable="true"
-                                        :create-option="true" placeholder="Label Bebas" :options="labels">
-                                        <template #singleLabel="{ option }"><strong>{{ option.name }}</strong></template>
+                                    <!-- <MultiSelect maxHeight="100" v-model="value" label="name" track-by="name"  @select="selectOpt" :multiple="true" placeholder="Label Bebas" :options="tags"></MultiSelect> -->
+                                    <multiselect v-model="form.tags" mode="tags" value-prop="tag"
+                                        label="tag" :close-on-select="false" :searchable="true"
+                                        :create-option="true" placeholder="Label Bebas" :options="tags">
+                                        <template #singleLabel="{ option }"><strong>{{ option.tag }}</strong></template>
                                     </multiselect>
                                 </BCol>
                                 <BCol md="6">
