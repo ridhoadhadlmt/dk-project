@@ -60,7 +60,7 @@ export default {
             },
             types: [
                 {label: 'Teknis', value: 'teknis'},
-                {label: 'Non Teknis', value: 'nonteknis'},
+                {label: 'Non Teknis', value: 'non_teknis'},
             ],
             itemTypes: [
                 {label: 'Part', value: 'part'},
@@ -86,12 +86,13 @@ export default {
 
                 ],
             },
-            activityItem: [],
             inventories: [],
             dataActivity: [],
             dataUser: [],
-            valueUser: '',
+            activityItems: [],
+            users: [],
             items: [],
+            activityItem: {},
             params: {
                 page: 1,
                 limit: 10,
@@ -103,8 +104,6 @@ export default {
                 total_pages: 0,
                 total_item: 0,
             },
-            item: {},
-            users: [],
             showModalActivity: false,
             showModalDelete: false,
             isDelete: false,
@@ -175,17 +174,18 @@ export default {
             }
         },
 
-        selectUser(){
-            const users = []
-            this.valueUser.forEach((item) => {
-                users.push(item.id)
-            })
-            this.form.users = users
-            console.log(this.form.users)
+        // selectUser(){
+        //     const users = []
+        //     this.valueUser.forEach((item) => {
+        //         users.push(item.id)
+        //     })
+        //     this.form.users = users
+        //     console.log(this.form.users)
 
-        },
+        // },
         saveData(){
             this.form.activities = this.dataActivity
+            console.log(this.form)
             axios.post(process.env.VUE_APP_API_URL + '/v1/maintenance-programs', this.form).then(() => {
                 Swal.fire("Berhasil!", "Berhasil menambah data", "success");
                 
@@ -196,16 +196,8 @@ export default {
             });
         },
         updateData(){ 
-            const form = {}
-            form.code = this.form.code
-            form.name = this.form.name
-            form.type = this.form.type
-            form.parameterDuration = this.form.parameterDuration           
-            form.parameterDurationNotification = this.form.parameterDurationNotification     
-            form.users = this.form.users
-            form.activities = this.form.activities
-            console.log(form)
-            axios.put(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id, form).then(() => {
+            console.log(this.form)
+            axios.put(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id, this.form).then(() => {
                 Swal.fire("Berhasil!", "Berhasil update data", "success");
                 this.activity = {}
                 this.item = {}
@@ -259,7 +251,6 @@ export default {
 
                 ],
             }
-            
 
         },
         lineItemCalculate(index) {
@@ -270,13 +261,13 @@ export default {
         editActivity(index) {
 
             this.activityIndex = index;
-            this.activity = this.dataActivity[index];
+            this.activity.startDate = this.dataActivity[index].startDate.slice(0, 10)
+            this.activity.dueDate = this.dataActivity[index].dueDate.slice(0, 10)
+            this.activity.actualFinishDate = this.dataActivity[index].actualFinishDate.slice(0, 10)
+            // this.activity = this.dataActivity[index];
             // console.log(this.activity.startDate)
             // console.log(this.activity.dueDate)
             // console.log(this.activity.actualFinishDate)
-            // this.activity.startDate = this.dataActivity[index].startDate.slice(0, 10)
-            // this.activity.dueDate = this.dataActivity[index].dueDate.slice(0, 10)
-            // this.activity.actualFinishDateDate = this.dataActivity[index].actualFinishDateDate.slice(0, 10)
             this.showModalActivity = true;
         },
         handleAction(){
@@ -288,8 +279,9 @@ export default {
             }
         },
         selectTypeActivity(event, index) {
-            this.activity.items[index].inventoryId = this.items[index].id
-            this.activity.items[index].type = this.items[index].type
+            this.activity.items[index].type = this.inventories.find(item => item.id === event).type
+            // this.activity.items[index].inventoryId = this.items[index].id
+            // this.activity.items[index].type = this.items[index].type
             
         
         },
@@ -300,37 +292,42 @@ export default {
                 axios.get(process.env.VUE_APP_API_URL + '/v1/maintenance-programs/' + this.$route.params.id,{
                     
                 }).then((response) => {
-                    this.form.name = response.data.data.name
-                    this.form.type = response.data.data.type
-                    this.form.parameterDuration = response.data.data.parameterDuration
-                    this.form.parameterDurationNotification = response.data.data.parameterDurationNotification
-                    this.dataActivity = response.data.data.activities
-                    this.dataUser = response.data.data.users
+                    const data = response.data.data
+                    this.form.code = data.code
+                    this.form.name = data.name
+                    this.form.type = data.type
+                    this.form.parameterDuration = data.parameterDuration
+                    this.form.parameterDurationNotification = data.parameterDurationNotification
+                    this.dataActivity = data.activities
+                    this.dataUser = data.users
                     this.form.users = this.dataUser.map(item => item.userId)
-
-                    this.dataActivity.forEach((item) => {
-                        this.activityItem.id = item.id
-                        this.activityItem.title = item.title  
-                        this.activityItem.note = item.note  
-                        this.activityItem.startDate = item.startDate  
-                        this.activityItem.dueDate = item.dueDate
-                        this.activityItem.subtotal = item.subtotal  
-                        this.activityItem.actualFinishDate = item.actualFinishDate
-                        this.activityItem.isDelete = false
-                        this.activityItem.items = []
-                        item.items.forEach(item => {
-                            this.item.id = item.id
-                            this.item.type = item.type
-                            this.item.inventoryId = item.inventoryId
-                            this.item.value = item.value
-                            this.item.qty = item.qty
-                            this.item.unit = item.unit
-                            this.item.total = item.total
-                            this.item.price = item.price
-                            this.activityItem.items.push(this.item)
+                    this.dataActivity.forEach((activity) => {
+                        this.activity.id = activity.id
+                        this.activity.title = activity.title
+                        this.activity.note = activity.note
+                        this.activity.startDate = activity.startDate
+                        this.activity.dueDate = activity.dueDate
+                        this.activity.actualFinishDate = activity.actualFinishDate
+                        this.activity.subtotal = activity.subtotal
+                        this.activity.isDelete = false
+                        activity.items.forEach((item) => {
+                            this.activityItem.id = item.id
+                            this.activityItem.type = item.type
+                            this.activityItem.inventoryId = item.inventoryId
+                            this.activityItem.value = item.value
+                            this.activityItem.qty = item.qty
+                            this.activityItem.unit = item.unit
+                            this.activityItem.price = item.price
+                            this.activityItem.total = item.total
+                            this.activityItem.isDelete = false
+                            this.activityItems.push(this.activityItem)
+                            this.activity.items = this.activityItems
                         })
-                        this.form.activities.push(this.activityItem)
+                        this.form.activities = []
+                        this.form.activities.push(this.activity)
                     })
+                    
+                    
 
                 }).catch((error) => {
                     console.log(error);
@@ -348,8 +345,8 @@ export default {
             });
         },
         copyItem(index){
-            console.log(index)
-
+            const activity = this.activity.items[index]
+            this.activity.items.push({...activity})
         },
         deleteItem(index){
             this.activity.items.splice(index, 1)
@@ -381,103 +378,133 @@ export default {
         </BModal>
         <BModal v-model="showModalActivity" hide-footer title="Tambah Aktifitas" centered  class="v-modal-custom" size="xl">
             <BForm>
-                <BRow>
-                <BCol md="12" class="mb-3">
+                <BRow class="gy-4">
+                <BCol md="12">
                     <div>
                         <label for="">Judul <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" v-model="activity.title" placeholder="Masukkan judul">
                     </div>
                 </BCol>
-                <BRow class="mb-3">
-                    <BCol md="4">
-                        <div>
-                            <label for="" class="form-label">Start Date<span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.startDate" required>
-                            <!-- <div class="input-group">
-                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.startDate" required>
-                                <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
-                            </div> -->
-                        </div>
-                    </BCol>
-                    <BCol md="4">
-                        <div>
-                            <label for="" class="form-label">Due Date<span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.dueDate" required>
-                            <!-- <div class="input-group">
-                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.dueDate" required>
-                                <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
-                            </div> -->
-                        </div>
-                    </BCol>
-                    <BCol md="4">
-                        <div>
-                            <label for="" class="form-label">Actual Finish Date</label>
-                            <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.actualFinishDate" required>
-                            <!-- <div class="input-group">
-                                <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.actualFinishDate" required>
-                                <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
-                            </div> -->
-                        </div>
-                    </BCol>
-                </BRow>
-                <BCol md="12" class="mb-3">
+                <BCol md="12">
+                    <BRow>
+                        <BCol md="4">
+                            <div>
+                                <label for="" class="form-label">Start Date<span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.startDate" required>
+                                <!-- <div class="input-group">
+                                    <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.startDate" required>
+                                    <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
+                                </div> -->
+                            </div>
+                        </BCol>
+                        <BCol md="4">
+                            <div>
+                                <label for="" class="form-label">Due Date<span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.dueDate" required>
+                                <!-- <div class="input-group">
+                                    <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.dueDate" required>
+                                    <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
+                                </div> -->
+                            </div>
+                        </BCol>
+                        <BCol md="4">
+                            <div>
+                                <label for="" class="form-label">Actual Finish Date</label>
+                                <input type="date" class="form-control" id="date" placeholder="Pilih Tanggal" v-model="activity.actualFinishDate" required>
+                                <!-- <div class="input-group">
+                                    <input type="text" class="form-control border-end-0" id="date" placeholder="Pilih Tanggal" v-model="activity.actualFinishDate" required>
+                                    <span class="input-group-text border-start-0 bg-transparent fs-22"><img src="@/assets/icons/calendar.svg" width="20"></span>
+                                </div> -->
+                            </div>
+                        </BCol>
+                    </BRow>
+                </BCol>
+                <BCol md="12">
                     <div>
                         <label for="">Note</label>
                         <input type="text" class="form-control" v-model="activity.note" placeholder="Masukkan note">
                     </div>
                 </BCol>
-                <BRow class="mb-3" v-for="(item, index) in activity.items" :key="index">
+                <BCol md="12">
                     <label for="" class="form-label">Line Items <span class="text-danger">*</span></label>
-                    <BCol md="2">
-                        <div>
-                            <select id="type" v-model="items[index]" class="form-select" @change="selectTypeActivity($event.target.value, index)" required>
-                                <option v-for="inventory in inventories" :key="inventory.id" :value="inventory">{{ inventory.name}}</option>
-                            </select>
-
-                        </div>
-                    </BCol>
-                    <BCol md="2">
-                        <div>
-                            <!-- <input type="text" class="form-control" placeholder="Masukkan Nama" v-model="activity.items[index].type" disabled> -->
-                            <select id="" class="form-select" v-model="activity.items[index].value" required>
-                                <option selected>Sparepart</option>
-                            </select>
-                        </div>
-                    </BCol>
-                    <BCol md="2" class="pe-0">
-                        <div>
-                            <div class="input-group">
-                                <input type="text" class="form-control" v-model="activity.items[index].qty" id="quantity" width="80%" placeholder="Quantity" required @change="lineItemCalculate(index)">
-                                <select id="unit" class="form-select" v-model="activity.items[index].unit" required>
-                                    <option selected>Pcs</option>
-                                </select>
-                            </div>
-                        </div>
-                    </BCol>
-                    
-                    <BCol md="6" class="p-0">
-                        <div class="d-flex justify-content-between">
-                            <div class="d-flex align-items-center mx-2">
-                                <i class="bx bx-x fs-22"></i>
-                            </div>
+                    <BRow class="gy-4 mb-3" v-for="(item, index) in activity.items" :key="index">
+                        <BCol md="2">
                             <div>
-                                <input type="number" class="form-control" v-model="activity.items[index].price" placeholder="Rp0" @change="lineItemCalculate(index)">
+                                <!-- <select id="type" v-model="items[index]" class="form-select" @change="selectTypeActivity($event.target.value, index)" required>
+                                    <option v-for="inventory in inventories" :key="inventory.id" :value="inventory">{{ inventory.name}}</option>
+                                </select> -->
+                                <BFormSelect
+                                    v-model="activity.items[index].inventoryId"
+                                    :options="inventories"
+                                    text-field="name"
+                                    value-field="id"
+                                    @change="selectTypeActivity($event, index)" required
+                                >
+                                    <template #first>
+                                        <BFormSelectOption value="" disabled>Pilih Inventory</BFormSelectOption>
+                                    </template>
+                                </BFormSelect>
                             </div>
-                            <div class="d-flex align-items-center mx-2">
-                                <i class="las la-equals fs-22"></i>
-                            </div>
+                        </BCol>
+                        <BCol md="2">
                             <div>
-                                <input type="number" class="form-control" v-model="activity.items[index].total" placeholder="Rp0" disabled>
+                                <!-- <input type="text" class="form-control" placeholder="Masukkan Nama" v-model="activity.items[index].type" disabled> -->
+                                <!-- <select id="type" class="form-select" v-model="activity.items[index].value" required>
+                                    <option selected>Sparepart</option>
+                                </select> -->
+                                <BFormSelect
+                                    v-model="activity.items[index].value"
+                                >
+                                    <template #first>
+                                        <BFormSelectOption value="" disabled>Pilih Tipe</BFormSelectOption>
+                                    </template>
+                                    <BFormSelectOption value="sparepart">Sparepart</BFormSelectOption>
+                                </BFormSelect>
                             </div>
-                            <div class="d-flex align-items-center mx-2">
-                                <BButton variant="link" class="p-1 rounded-circle" @click="copyItem()"><i class="bx bxs-copy-alt fs-22"></i></BButton>
+                        </BCol>
+                        <BCol md="2" class="pe-0">
+                            <div>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" v-model="activity.items[index].qty" id="quantity" width="80%" placeholder="Quantity" required @change="lineItemCalculate(index)">
+                                    <!-- <select id="unit" class="form-select" v-model="activity.items[index].unit" required>
+                                        <option selected>Pcs</option>
+                                    </select> -->
+                                    <BFormSelect
+                                        v-model="activity.items[index].unit"
+                                    >
+                                        <template #first>
+                                            <BFormSelectOption value="" disabled>Pilih Unit</BFormSelectOption>
+                                        </template>
+                                        <BFormSelectOption value="pcs">Pcs</BFormSelectOption>
+                                    </BFormSelect>
+                                </div>
                             </div>
-                            <div class="d-flex align-items-center mx-2">
-                                <BButton variant="link" class="p-1 rounded-circle d-flex align-items-center bg-light" @click="deleteItem(index)" v-if="activity.items.length > 1"><i class="bx bx-x fs-22"></i></BButton>
+                        </BCol>
+                        
+                        <BCol md="6" class="p-0">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex align-items-center mx-2">
+                                    <i class="bx bx-x fs-22"></i>
+                                </div>
+                                <div>
+                                    <input type="number" class="form-control" v-model="activity.items[index].price" placeholder="Rp0" @change="lineItemCalculate(index)">
+                                </div>
+                                <div class="d-flex align-items-center mx-2">
+                                    <i class="las la-equals fs-22"></i>
+                                </div>
+                                <div>
+                                    <input type="number" class="form-control" v-model="activity.items[index].total" placeholder="Rp0" disabled>
+                                </div>
+                                <div class="d-flex align-items-center mx-2">
+                                    <BButton variant="link" class="p-1 rounded-circle" @click="copyItem(index)"><i class="bx bxs-copy-alt fs-22"></i></BButton>
+                                </div>
+                                <div class="d-flex align-items-center mx-2">
+                                    <BButton variant="link" class="p-1 rounded-circle d-flex align-items-center bg-light" @click="deleteItem(index)" v-if="activity.items.length > 1"><i class="bx bx-x fs-22"></i></BButton>
+                                </div>
                             </div>
-                        </div>
-                    </BCol>
-                </BRow>
+                        </BCol>
+                    </BRow>
+                </BCol>
                 <BCol md="12">
                     <div>
                         <label for="">Subtotal </label>
@@ -486,7 +513,6 @@ export default {
                 </BCol>
             </BRow>
             <div class="cta">
-                
                 <div class="d-flex justify-content-end mt-4">
                     <BButton variant="light" @click="showModalActivity = false" class="me-2">Kembali</BButton>
                     <BButton variant="dark" @click="saveModalData()">Simpan</BButton>
@@ -497,10 +523,6 @@ export default {
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
-                    <!-- <BCardHeader>
-                        
-                    </BCardHeader> -->
-
                     <BCardBody>
                         <BForm>
                             <BRow class="gy-4">
@@ -519,9 +541,19 @@ export default {
                                 <BCol md="6">
                                     <div>
                                         <label for="teknis" class="form-label">Teknis <span class="text-danger">*</span></label>
-                                        <select id="teknis" class="form-select" v-model="form.type" required>
+                                        <!-- <select id="teknis" class="form-select" v-model="form.type" required>
                                             <option v-for="type in types" :key="type.label">{{ type.label }}</option>
-                                        </select>
+                                        </select> -->
+                                        <BFormSelect
+                                            :options="types"
+                                            v-model="form.type"
+                                            text-field="label"
+                                            value-field="value"
+                                        >
+                                            <template #first>
+                                                <BFormSelectOption value="" disabled>Pilih Teknis</BFormSelectOption>
+                                            </template>
+                                        </BFormSelect>
                                     </div>
                                 </BCol>
                                 <BCol md="6">
