@@ -204,7 +204,7 @@ export default {
 
 <template>
     <Layout>
-
+        <HeaderPage :title="$route.meta.title" :description="$route.meta.description" :action="this.$route.params.id ? $route.meta.action : $route.meta.action"/>
         
         <SelectHeader :showModal="showSelectHeader" :headers="headers" @hideModal="hideSelectHeaderMethod" @selectHeader="selectHeaderMethod" />
         
@@ -220,16 +220,9 @@ export default {
             </div>
         </BModal>
         <!-- //Modal Delete -->
-
-        <HeaderPage title="Administrator" pageTitle="Admin" />
-
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
-                    <!-- <BCardHeader>
-                        
-                    </BCardHeader> -->
-
                     <BCardBody>
                         <div class="d-flex flex-wrap justify-content-between py-lg-4">
                             <h4 class="card-title mb-0"></h4>

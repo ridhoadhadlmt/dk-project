@@ -18,25 +18,25 @@ export default {
             path: "create",
             name: "maintenance-programs-create",
             component: FormProgramMaintenance,
-            meta: { title: "Tambah Program Maintenance", description: "Program Maintenance - Tambah Program Maintenance",authRequired: false },
+            meta: { title: "Tambah Program Maintenance", description: "Program Maintenance", action: 'Tambah Program Maintenance', authRequired: false },
         },
         {
             path: "edit/:id",
             name: "maintenance-programs-edit",
             component: FormProgramMaintenance,
-            meta: { title: "Edit Program Maintenance", description: "Program Maintenance - Edit Program Maintenance",authRequired: false },
+            meta: { title: "Edit Program Maintenance", description: "Program Maintenance", action: 'Edit Program Maintenance', authRequired: false },
         },
         {
             path: "view/:id",
             name: "maintenance-programs-view",
             component: ViewProgramMaintenance,
-            meta: { title: "Detail Program Maintenance", description: "Program Maintenance - Detail Program Maintenance",authRequired: false },
+            meta: { title: "Detail Program Maintenance", description: "Program Maintenance", action: 'Detail Program Maintenance', authRequired: false },
         },
         {
             path: "activity/view/:id",
             name: "maintenance-programs-activity-view",
             component: ViewProgramMaintenanceActivity,
-            meta: { title: "Aktifitas Servis", description: "Program Maintenance - Detail Program Maintenance -",authRequired: false },
+            meta: { title: "Aktifitas Servis", description: "Program Maintenance", action: 'Detail Program Maintenance', authRequired: false },
         },
     ]
 }
