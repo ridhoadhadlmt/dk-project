@@ -54,12 +54,12 @@ export default {
                     show: false,
                     order:true
                 },
-                // {
-                //     title: 'Lokasi Penyimpanan',
-                //     key: 'storageLocation',
-                //     show: true,
-                //     order:true
-                // },
+                {
+                    title: 'Lokasi Penyimpanan',
+                    key: 'locations',
+                    show: true,
+                    order:true
+                },
                 {
                     title: 'Pengguna Aktif',
                     key: 'activeUser',
@@ -248,6 +248,10 @@ export default {
             // this.params.endDate = this.filter.endDate
             this.listData()
             this.modalFilter = false
+        },
+        resetFilter(){
+            this.filter = {}
+            this.modalFilter = false
         }
     },
     mounted() {
@@ -304,7 +308,7 @@ export default {
                         </BFormSelect>
                     </BCol>
                     <div class="d-flex justify-content-end mt-4">
-                        <BButton variant="light" class="me-2" @click="filter = {}">Reset</BButton>
+                        <BButton variant="light" class="me-2" @click="resetFilter()">Reset</BButton>
                         <BButton variant="dark" @click="filterData">Terapkan</BButton>
                     </div>
                 </BRow>

@@ -4,11 +4,13 @@ import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
+import HeaderPage from "@/components/header-page.vue"
 
 export default {
     name: "inventory-mutation",
     components: {
         Layout,
+        HeaderPage
     },
     data() {
         return {
@@ -410,31 +412,10 @@ export default {
 
 <template>
     <Layout>
-        <BRow>
-            <BCol>
-                <div class="h-100">
-                    <BRow class="mb-3 pb-1">
-                        <BCol cols="12">
-                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                                <div class="flex-grow-1">
-                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
-                                    <p class="text-muted mb-0">
-                                        {{$route.meta.description}}
-                                    </p>
-                                </div>
-
-                            </div>
-                        </BCol>
-                    </BRow>
-
-                </div>
-            </BCol>
-        </BRow>
+        <HeaderPage :title="$route.meta.title" :description="$route.meta.description" :action="$route.meta.action"/>
         <BRow>
             <BCol xl="12">
                 <BCard no-body>
-
-
                     <BCardBody>
                         <BForm>
                             <BRow class="gy-4">
@@ -459,7 +440,6 @@ export default {
                                         />
                                     </div>
                                 </BCol>
-                                {{ test }}
                                 <BCol md="6" v-if="form.mutationType !== 'out' && form.category !== 'purchase'">
                                     <div>
                                         <label>Kode Inventory <span class="text-danger">*</span></label>
@@ -481,7 +461,7 @@ export default {
                                 </BCol>
                                 <BCol md="12" v-if="form.category !== 'return' && form.category !== 'use' && form.category !== 'lost' ">
                                     <label>Kode Inventory</label>
-                                    <BRow class="align-items-center gy-3" v-for="(item, index) in form.items" :key="index">
+                                    <BRow class="align-items-center mb-3" v-for="(item, index) in form.items" :key="index">
                                         <BCol md="11">
                                             <div>
                                                 <input type="text" class="form-control" id="kode" placeholder="Kode Inventory" v-model="codeItem[index]">
