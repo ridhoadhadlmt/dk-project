@@ -3,6 +3,7 @@
 import "flatpickr/dist/flatpickr.css";
 import Layout from "@/layouts/main.vue";
 import TableComponent from "@/components/table.vue";
+import HeaderPage from "@/components/header-page.vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -11,6 +12,7 @@ export default {
     components: {
         Layout,
         TableComponent,
+        HeaderPage,
 
     },
     data() {
@@ -212,26 +214,7 @@ export default {
                 </div>
             </div>
         </BModal>
-        <BRow>
-            <BCol>
-                <div class="h-100">
-                    <BRow class="mb-3 pb-1">
-                        <BCol cols="12">
-                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                                <div class="flex-grow-1">
-                                    <h4 class="fs-16 mb-1">{{$route.meta.title}}</h4>
-                                    <p class="text-muted mb-0">
-                                        {{$route.meta.description}}
-                                    </p>
-                                </div>
-
-                            </div>
-                        </BCol>
-                    </BRow>
-
-                </div>
-            </BCol>
-        </BRow>
+        <HeaderPage :title="$route.meta.title" :description="$route.meta.description" :action="$route.meta.action"/>
 
         <BRow>
             <BCol xl="12" class="mb-3">

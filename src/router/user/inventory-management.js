@@ -36,13 +36,13 @@ export default {
             path: ":id/mutation-create",
             name: "inventory-mutation-create",
             component: FormMutation,
-            meta: { title: "Tambah Mutasi Inventory", description: "Inventory Management", action: 'Detail Inventory', authRequired: false },
+            meta: { title: "Tambah Mutasi Inventory", description: "Inventory Management - Detail Inventory", action: 'Tambah Muatsi', authRequired: false },
         },
         {
             path: ":id/mutation-edit",
             name: "inventory-mutation-edit",
             component: FormMutation,
-            meta: { title: "Edit Mutasi Inventory", description: "Inventory Management", action: 'Detail Inventory', authRequired: false },
+            meta: { title: "Edit Mutasi Inventory", description: "Inventory Management - Detail Inventory", action: 'Edit Mutasi', authRequired: false },
         },
     ]
 }
